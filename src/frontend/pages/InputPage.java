@@ -25,18 +25,19 @@ public class InputPage extends JPanel {
     // Setting up the UI
     private void setupUI() {
         // set LayoutManager
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(0, 10));
+        setBackground(Color.white);
 
         // Creating subpanels inside this page
-        JPanel panelHeader = new HeaderPanel();
-        JPanel panelLeft = new SidePanel(Color.blue);
-        JPanel panelRight = new SidePanel(Color.cyan);
-        JPanel panelFooter = new FooterPanel();
+        JPanel headerPanel = new HeaderPanel();
+        JPanel leftPanel = new SidePanel();
+        JPanel rightPanel = new SidePanel();
+        JPanel footerPanel = new FooterPanel();
 
         // CONTENT PANEL ----------------------------------------
-        JPanel panelContent = new JPanel(new GridBagLayout());
-        panelContent.setBackground(Color.yellow);
-        panelContent.setPreferredSize(new Dimension(1040, 460));
+        JPanel contentPanel = new JPanel(new GridBagLayout());
+        contentPanel.setBackground(Color.white);
+        contentPanel.setPreferredSize(new Dimension());
 
         // formPanel
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -65,6 +66,7 @@ public class InputPage extends JPanel {
         formPanel.add(new JLabel("Number of Flights: "), gbc);
         gbc.gridx = 1;
         flightsField = new JTextField(15);
+        flightsField.setText("2");
         formPanel.add(flightsField, gbc);
 
         // Inbound rate
@@ -72,6 +74,7 @@ public class InputPage extends JPanel {
         formPanel.add(new JLabel("Inbound rate (aircraft/hour): "), gbc);
         gbc.gridx = 1;
         inboundRateField = new JTextField(15);
+        inboundRateField.setText("2");
         formPanel.add(inboundRateField, gbc);
 
         // Outbound rate
@@ -79,6 +82,7 @@ public class InputPage extends JPanel {
         formPanel.add(new JLabel("Outbound rate (aircraft/hour): "), gbc);
         gbc.gridx = 1;
         outboundRateField = new JTextField(15);
+        outboundRateField.setText("2");
         formPanel.add(outboundRateField, gbc);
 
         // Submit button
@@ -93,21 +97,21 @@ public class InputPage extends JPanel {
         formPanel.add(submitBtn, gbc);
 
 
-        // add formPanel into the panelContent
-        panelContent.add(formPanel);
+        // add formPanel into the contentPanel
+        contentPanel.add(formPanel);
 
 
 
         // FOOTER PANEL ----------------------------------------
         JLabel label = new JLabel("This is the input page.");
-        panelFooter.add(label);
+        footerPanel.add(label);
 
         // Add main panels
-        add(panelHeader, BorderLayout.NORTH);
-        add(panelLeft, BorderLayout.WEST);
-        add(panelContent, BorderLayout.CENTER);
-        add(panelRight, BorderLayout.EAST);
-        add(panelFooter, BorderLayout.SOUTH);
+        add(headerPanel, BorderLayout.NORTH);
+        add(leftPanel, BorderLayout.WEST);
+        add(contentPanel, BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
+        add(footerPanel, BorderLayout.SOUTH);
     }
 
 

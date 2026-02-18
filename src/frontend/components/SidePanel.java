@@ -5,8 +5,8 @@ import java.awt.*;
 
 public class SidePanel extends JPanel {
 
-    public SidePanel(Color color) {
-        setBackground(color);
+    public SidePanel() {
+        setBackground(Color.white);
         setPreferredSize(new Dimension(80, 460));
     }
 }
