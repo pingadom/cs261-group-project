@@ -1,12 +1,19 @@
 package frontend.pages;
 
 import frontend.App;
+import frontend.components.FooterPanel;
+import frontend.components.HeaderPanel;
+import frontend.components.RunwayCard;
+import frontend.components.SidePanel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class SimulationPage extends JPanel {
     private App app;
+
+    // Sample data - map
+
 
     // Constructor
     public SimulationPage(App app) {
@@ -20,39 +27,37 @@ public class SimulationPage extends JPanel {
         setLayout(new BorderLayout());
 
         // Creating subpanels inside this page
-        // HEADER PANEL ----------------------------------------
-        JPanel panelHeader = new JPanel(new BorderLayout());
-        panelHeader.setBackground(Color.green);
-        panelHeader.setPreferredSize(new Dimension(1100, 70));
+        JPanel panelHeader = new HeaderPanel();
+        JPanel panelLeft = new SidePanel(Color.blue);
+        JPanel panelRight = new SidePanel(Color.cyan);
 
-        JLabel titleLabel = new JLabel("Airport Simulator");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 35));
-        titleLabel.setVerticalAlignment(JLabel.CENTER);
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        panelHeader.add(titleLabel, BorderLayout.CENTER);
-
-        // LEFTMOST PANEL ----------------------------------------
-        JPanel panelLeft = new JPanel();
-        panelLeft.setBackground(Color.blue);
-        panelLeft.setPreferredSize(new Dimension(80, 460));
-
-        // RIGHTMOST PANEL ----------------------------------------
-        JPanel panelRight = new JPanel();
-        panelRight.setBackground(Color.cyan);
-        panelRight.setPreferredSize(new Dimension(80, 460));
 
         // CONTENT PANEL ----------------------------------------
         JPanel panelContent = new JPanel();
         panelContent.setBackground(Color.yellow);
         panelContent.setPreferredSize(new Dimension(1100, 460));
 
+        // Main container for all the runways
+        JPanel runwaysContainer = new JPanel();
+        runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
+
+        // Add runway card for each runway
+        runwaysContainer.add(new RunwayCard("1", "Available", "Landing", "AA100"));
+        runwaysContainer.add(new RunwayCard("2", "Available", "Take-off", "AA104"));
+        runwaysContainer.add(new RunwayCard("3", "Available", "Landing", "AA140"));
+        runwaysContainer.add(new RunwayCard("4", "Available", "Take-off", "AA141"));
+        runwaysContainer.add(new RunwayCard("5", "Available", "Landing", "AA120"));
+        runwaysContainer.add(new RunwayCard("6", "Available", "Mixed", "BB140"));
+
+        JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
+        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(700, 400));
+        scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
+
+        panelContent.add(scrollPaneRunwaysContainer);
 
 
         // FOOTER PANEL ----------------------------------------
-        JPanel panelFooter = new JPanel();
-        panelFooter.setBackground(Color.red);
-        panelFooter.setPreferredSize(new Dimension(1100, 70));
+        JPanel panelFooter = new FooterPanel();
 
         JLabel label = new JLabel("This is the SIMULATION page.");
         panelFooter.add(label);
@@ -66,7 +71,7 @@ public class SimulationPage extends JPanel {
         panelFooter.add(buttonBack);
 
 
-        // Add main panels
+        // Add main panels and set positions
         add(panelHeader, BorderLayout.NORTH);
         add(panelLeft, BorderLayout.WEST);
         add(panelContent, BorderLayout.CENTER);

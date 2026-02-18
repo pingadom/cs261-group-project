@@ -15,8 +15,9 @@ public class App extends JFrame {
     private SimulationPage simulationPage;
 
     public App() {
+        //
         setTitle("Airport Simulator");
-        setSize(1100, 600);
+        setSize(1280, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);

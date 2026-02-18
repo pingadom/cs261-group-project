@@ -1,6 +1,9 @@
 package frontend.pages;
 
 import frontend.App;
+import frontend.components.FooterPanel;
+import frontend.components.HeaderPanel;
+import frontend.components.SidePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,27 +28,10 @@ public class InputPage extends JPanel {
         setLayout(new BorderLayout());
 
         // Creating subpanels inside this page
-        // HEADER PANEL ----------------------------------------
-        JPanel panelHeader = new JPanel(new BorderLayout());
-        panelHeader.setBackground(Color.green);
-        panelHeader.setPreferredSize(new Dimension(1100, 70));
-
-        JLabel titleLabel = new JLabel("Airport Simulator");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 35));
-        titleLabel.setVerticalAlignment(JLabel.CENTER);
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        panelHeader.add(titleLabel, BorderLayout.CENTER);
-
-        // LEFTMOST PANEL ----------------------------------------
-        JPanel panelLeft = new JPanel();
-        panelLeft.setBackground(Color.blue);
-        panelLeft.setPreferredSize(new Dimension(80, 460));
-
-        // RIGHTMOST PANEL ----------------------------------------
-        JPanel panelRight = new JPanel();
-        panelRight.setBackground(Color.cyan);
-        panelRight.setPreferredSize(new Dimension(80, 460));
+        JPanel panelHeader = new HeaderPanel();
+        JPanel panelLeft = new SidePanel(Color.blue);
+        JPanel panelRight = new SidePanel(Color.cyan);
+        JPanel panelFooter = new FooterPanel();
 
         // CONTENT PANEL ----------------------------------------
         JPanel panelContent = new JPanel(new GridBagLayout());
@@ -112,16 +98,9 @@ public class InputPage extends JPanel {
 
 
 
-
-
         // FOOTER PANEL ----------------------------------------
-        JPanel panelFooter = new JPanel();
-        panelFooter.setBackground(Color.red);
-        panelFooter.setPreferredSize(new Dimension(1100, 70));
-
         JLabel label = new JLabel("This is the input page.");
         panelFooter.add(label);
-
 
         // Add main panels
         add(panelHeader, BorderLayout.NORTH);
