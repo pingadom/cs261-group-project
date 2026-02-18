@@ -1,4 +1,4 @@
-package frontend.components;
+package sim.view.components;
 
 import javax.swing.*;
 import java.awt.*;

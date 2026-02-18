@@ -1,10 +1,10 @@
-package frontend.pages;
+package sim.view.pages;
 
-import frontend.App;
-import frontend.components.FooterPanel;
-import frontend.components.HeaderPanel;
-import frontend.components.RunwayCard;
-import frontend.components.SidePanel;
+import sim.view.App;
+import sim.view.components.FooterPanel;
+import sim.view.components.HeaderPanel;
+import sim.view.components.RunwayCard;
+import sim.view.components.SidePanel;
 
 import javax.naming.ldap.Control;
 import javax.swing.*;
