@@ -8,7 +8,9 @@ import sim.core.Engine;
 import sim.core.EngineOptions;
 import sim.core.SimClock;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Command(
     name = "sim",
@@ -41,6 +43,11 @@ public class SimCommand implements Runnable {
 
   @Override
   public void run() {
+    // Test
+    Path testPath = Paths.get("src/main/resources/config.json");
+    System.out.println("File exists? " + Files.exists(testPath));
+    System.out.println("Absolute path: " + testPath.toAbsolutePath());
+
     SimConfig config = SimConfigLoader.loadAndValidate(configPath);
 
     EngineOptions opts = new EngineOptions(
