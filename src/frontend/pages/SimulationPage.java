@@ -1,20 +1,19 @@
 package frontend.pages;
 
 import frontend.App;
-import frontend.components.FooterPanel;
-import frontend.components.HeaderPanel;
-import frontend.components.RunwayCard;
-import frontend.components.SidePanel;
+import frontend.components.*;
 
-import javax.naming.ldap.Control;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class SimulationPage extends JPanel {
+public class SimulationPage extends JPanel implements ActionListener {
     private App app;
 
-    // Sample data - map
-
+    int toggleStartPause = 0;
+    JButton startPauseButton;
+    JLabel startPauseLabel;
 
     // Constructor
     public SimulationPage(App app) {
@@ -43,9 +42,39 @@ public class SimulationPage extends JPanel {
 
         // LEFT Column - Stats
         JPanel leftContentColumn = new JPanel();
-        // leftContentColumn.setBackground(Color.pink);
-        leftContentColumn.setBorder(BorderFactory.createLineBorder(Color.black));
-        leftContentColumn.setPreferredSize(new Dimension(200, 520));
+        leftContentColumn.setLayout(new BoxLayout(leftContentColumn, BoxLayout.Y_AXIS));
+        leftContentColumn.setBackground(Color.white);
+        // leftContentColumn.setBorder(BorderFactory.createLineBorder(Color.black));
+        leftContentColumn.setMinimumSize(new Dimension(200, 520));
+        leftContentColumn.setMaximumSize(new Dimension(200, 520));
+
+        // Panels for all stats
+        JPanel cancelledStats = new StatsPanel(Color.red, "Cancelled", "0");
+        JPanel divertedStats = new StatsPanel(Color.red, "Diverted", "0");
+        JPanel avgQueueStats = new StatsPanel(Color.orange, "Avg Queue", "0");
+        JPanel avgHoldingStats = new StatsPanel(Color.orange, "Avg Holding", "0");
+        JPanel maxQueueStats = new StatsPanel(Color.orange, "Max Queue", "0");
+        JPanel maxHoldingStats = new StatsPanel(Color.orange, "Max Holding", "0");
+        JPanel departedStats = new StatsPanel(Color.green, "Departed", "0");
+        JPanel arrivedStats = new StatsPanel(Color.green, "Arrived", "0");
+
+        leftContentColumn.add(Box.createVerticalGlue());
+        leftContentColumn.add(cancelledStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(divertedStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(avgQueueStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(avgHoldingStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(maxQueueStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(maxHoldingStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(departedStats);
+        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        leftContentColumn.add(arrivedStats);
+
 
         // RIGHT Column - Control + Clock + Runways + Buttons
         JPanel rightContentColumn = new JPanel();
@@ -61,9 +90,41 @@ public class SimulationPage extends JPanel {
 
         // Control panel
         JPanel controlPanel = new JPanel();
-        // controlPanel.setBackground(Color.orange);
+        controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
         controlPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         controlPanel.setPreferredSize(new Dimension(650, 70));
+        controlPanel.setMaximumSize(new Dimension(650, 70));
+        controlPanel.setMinimumSize(new Dimension(650, 70));
+
+        // Start button
+        startPauseButton = new JButton();
+        startPauseButton.setLayout(new BorderLayout());
+        startPauseButton.setFocusPainted(false);
+        startPauseButton.setBackground(Color.black);
+        startPauseButton.addActionListener(this);
+        startPauseButton.setPreferredSize(new Dimension(100, 40));
+        startPauseButton.setMaximumSize(new Dimension(100, 40));
+        startPauseLabel = new JLabel("Pause", JLabel.CENTER);
+        startPauseLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        startPauseLabel.setForeground(Color.white);
+        startPauseButton.add(startPauseLabel, BorderLayout.CENTER);
+
+        // Reset button
+        JButton resetButton = new JButton("Reset");
+        resetButton.setFocusPainted(false);
+        resetButton.setFont(new Font("Arial", Font.BOLD, 14));
+        resetButton.setForeground(Color.white);
+        resetButton.setBackground(Color.black);
+        resetButton.setMaximumSize(new Dimension(100, 40));
+
+
+
+
+        // Adding components into controlPanel
+        controlPanel.add(startPauseButton);
+        controlPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        controlPanel.add(resetButton);
+
 
         // Clock panel
         JPanel clockPanel = new JPanel();
@@ -102,10 +163,25 @@ public class SimulationPage extends JPanel {
         runwayPanel.add(scrollPaneRunwaysContainer);
 
         // Buttons panel
-        JPanel buttonsPanel = new JPanel();
-        // buttonsPanel.setBackground(Color.blue);
-        buttonsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        JPanel buttonsPanel = new JPanel(new GridBagLayout());
+        buttonsPanel.setBackground(Color.white);
+        // buttonsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         buttonsPanel.setPreferredSize(new Dimension(200, 440));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.insets = new Insets(20, 10, 20, 10);
+
+        JButton listOfFlightsButton = new StyledButton("List of Flights", Color.blue, Color.gray, Color.lightGray);
+        buttonsPanel.add(listOfFlightsButton, gbc);
+
+        gbc.gridy = 1;
+        JButton holdingPatternButton = new StyledButton("Holding Pattern", Color.MAGENTA, Color.gray, Color.lightGray);
+        buttonsPanel.add(holdingPatternButton, gbc);
+
+        gbc.gridy = 2;
+        JButton takeoffQueueButton = new StyledButton("Take-off Queue", Color.green, Color.gray, Color.lightGray);
+        buttonsPanel.add(takeoffQueueButton, gbc);
 
 
         // Add in controlPanel and clockPanel inside topRow panel
@@ -152,5 +228,22 @@ public class SimulationPage extends JPanel {
     // Functions
     public void refreshData() {
         System.out.println("Test");
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        // When the pause button clicked
+        if (e.getSource() == startPauseButton) {
+            if (toggleStartPause == 0) {
+                startPauseLabel.setText("Start");
+                toggleStartPause = 1;
+            } else if (toggleStartPause == 1) {
+                startPauseLabel.setText("Pause");
+                toggleStartPause = 0;
+            }
+        }
+
+
     }
 }
