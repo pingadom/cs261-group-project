@@ -1,7 +1,7 @@
-package frontend;
+package sim.view;
 
-import frontend.pages.InputPage;
-import frontend.pages.SimulationPage;
+import sim.view.pages.InputPage;
+import sim.view.pages.SimulationPage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +16,7 @@ public class App extends JFrame {
 
     public App() {
         setTitle("Airport Simulator");
-        setSize(1100, 600);
+        setSize(1280, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);

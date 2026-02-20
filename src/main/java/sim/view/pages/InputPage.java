@@ -1,6 +1,9 @@
-package frontend.pages;
+package sim.view.pages;
 
-import frontend.App;
+import sim.view.App;
+import sim.view.components.FooterPanel;
+import sim.view.components.HeaderPanel;
+import sim.view.components.SidePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,31 +28,15 @@ public class InputPage extends JPanel {
         setLayout(new BorderLayout());
 
         // Creating subpanels inside this page
-        // HEADER PANEL ----------------------------------------
-        JPanel panelHeader = new JPanel(new BorderLayout());
-        panelHeader.setBackground(Color.green);
-        panelHeader.setPreferredSize(new Dimension(1100, 70));
+        JPanel headerPanel = new HeaderPanel();
+        JPanel leftPanel = new SidePanel();
+        JPanel rightPanel = new SidePanel();
+        JPanel footerPanel = new FooterPanel();
 
-        JLabel titleLabel = new JLabel("Airport Simulator");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 35));
-        titleLabel.setVerticalAlignment(JLabel.CENTER);
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-
-        panelHeader.add(titleLabel, BorderLayout.CENTER);
-
-        // LEFTMOST PANEL ----------------------------------------
-        JPanel panelLeft = new JPanel();
-        panelLeft.setBackground(Color.blue);
-        panelLeft.setPreferredSize(new Dimension(80, 460));
-
-        // RIGHTMOST PANEL ----------------------------------------
-        JPanel panelRight = new JPanel();
-        panelRight.setBackground(Color.cyan);
-        panelRight.setPreferredSize(new Dimension(80, 460));
 
         // CONTENT PANEL ----------------------------------------
         JPanel panelContent = new JPanel(new GridBagLayout());
-        panelContent.setBackground(Color.yellow);
+        panelContent.setBackground(Color.white);
         panelContent.setPreferredSize(new Dimension(1040, 460));
 
         // formPanel
@@ -112,23 +99,17 @@ public class InputPage extends JPanel {
 
 
 
-
-
         // FOOTER PANEL ----------------------------------------
-        JPanel panelFooter = new JPanel();
-        panelFooter.setBackground(Color.red);
-        panelFooter.setPreferredSize(new Dimension(1100, 70));
-
         JLabel label = new JLabel("This is the input page.");
-        panelFooter.add(label);
+        footerPanel.add(label);
 
 
         // Add main panels
-        add(panelHeader, BorderLayout.NORTH);
-        add(panelLeft, BorderLayout.WEST);
+        add(headerPanel, BorderLayout.NORTH);
+        add(leftPanel, BorderLayout.WEST);
         add(panelContent, BorderLayout.CENTER);
-        add(panelRight, BorderLayout.EAST);
-        add(panelFooter, BorderLayout.SOUTH);
+        add(rightPanel, BorderLayout.EAST);
+        add(footerPanel, BorderLayout.SOUTH);
     }
 
 
