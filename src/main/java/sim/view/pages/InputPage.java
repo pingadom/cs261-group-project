@@ -1,9 +1,10 @@
-package frontend.pages;
+package sim.view.pages;
 
-import frontend.App;
-import frontend.components.FooterPanel;
-import frontend.components.HeaderPanel;
-import frontend.components.SidePanel;
+
+import sim.view.App;
+import sim.view.components.FooterPanel;
+import sim.view.components.HeaderPanel;
+import sim.view.components.SidePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -100,8 +101,6 @@ public class InputPage extends JPanel {
         // add formPanel into the contentPanel
         contentPanel.add(formPanel);
 
-
-
         // FOOTER PANEL ----------------------------------------
         JLabel label = new JLabel("This is the input page.");
         footerPanel.add(label);
@@ -110,6 +109,7 @@ public class InputPage extends JPanel {
         add(headerPanel, BorderLayout.NORTH);
         add(leftPanel, BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
+
         add(rightPanel, BorderLayout.EAST);
         add(footerPanel, BorderLayout.SOUTH);
     }

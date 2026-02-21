@@ -1,7 +1,7 @@
-package frontend.pages;
+package sim.view.pages;
 
-import frontend.App;
-import frontend.components.*;
+import sim.view.App;
+import sim.view.components.*;
 
 import javax.swing.*;
 import java.awt.*;
