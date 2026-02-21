@@ -33,7 +33,6 @@ public class SimulationPage extends JPanel implements ActionListener {
         JPanel rightPanel = new SidePanel();
         JPanel footerPanel = new FooterPanel();
 
-
         // CONTENT PANEL ----------------------------------------
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
@@ -76,25 +75,19 @@ public class SimulationPage extends JPanel implements ActionListener {
         leftContentColumn.add(arrivedStats);
 
 
-        // RIGHT Column - Control + Clock + Runways + Buttons
-        JPanel rightContentColumn = new JPanel();
-        rightContentColumn.setLayout(new BoxLayout(rightContentColumn, BoxLayout.Y_AXIS));
-        rightContentColumn.setBackground(Color.white);
-        rightContentColumn.setPreferredSize(new Dimension(910, 520));
-
-        // top - Control + Clock
-        JPanel topRow = new JPanel();
-        topRow.setLayout(new BoxLayout(topRow, BoxLayout.X_AXIS));
-        topRow.setBackground(Color.white);
-        topRow.setPreferredSize(new Dimension(910, 70));
+        // CENTER Column - Control + Runways
+        JPanel centerContentColumn = new JPanel();
+        centerContentColumn.setLayout(new BoxLayout(centerContentColumn, BoxLayout.Y_AXIS));
+        centerContentColumn.setBackground(Color.white);
+        centerContentColumn.setPreferredSize(new Dimension(670, 520));
 
         // Control panel
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
         controlPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        controlPanel.setPreferredSize(new Dimension(650, 70));
-        controlPanel.setMaximumSize(new Dimension(650, 70));
-        controlPanel.setMinimumSize(new Dimension(650, 70));
+        controlPanel.setPreferredSize(new Dimension(670, 50));
+        controlPanel.setMaximumSize(new Dimension(670, 50));
+        controlPanel.setMinimumSize(new Dimension(670, 50));
 
         // Start button
         startPauseButton = new JButton();
@@ -117,56 +110,57 @@ public class SimulationPage extends JPanel implements ActionListener {
         resetButton.setBackground(Color.black);
         resetButton.setMaximumSize(new Dimension(100, 40));
 
-
-
-
         // Adding components into controlPanel
         controlPanel.add(startPauseButton);
         controlPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         controlPanel.add(resetButton);
 
-
-        // Clock panel
-        JPanel clockPanel = new JPanel();
-        // clockPanel.setBackground(Color.yellow);
-        clockPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        clockPanel.setPreferredSize(new Dimension(250, 70));
-
-        // bottom - Runways + Buttons
-        JPanel bottomRow = new JPanel();
-        bottomRow.setLayout(new BoxLayout(bottomRow, BoxLayout.X_AXIS));
-        bottomRow.setBackground(Color.white);
-        bottomRow.setPreferredSize(new Dimension(910, 440));
-
         // Runway panel
         JPanel runwayPanel = new JPanel();
-        // runwayPanel.setBackground(Color.red);
         runwayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        runwayPanel.setPreferredSize(new Dimension(700, 440));
+        runwayPanel.setPreferredSize(new Dimension(670, 460));
 
         // Main container for all the runways
         JPanel runwaysContainer = new JPanel();
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
         // Add runway card for each runway
-        runwaysContainer.add(new RunwayCard("1", "Available", "Landing", "AA100"));
-        runwaysContainer.add(new RunwayCard("2", "Available", "Take-off", "AA104"));
-        runwaysContainer.add(new RunwayCard("3", "Available", "Landing", "AA140"));
-        runwaysContainer.add(new RunwayCard("4", "Available", "Take-off", "AA141"));
-        runwaysContainer.add(new RunwayCard("5", "Available", "Landing", "AA120"));
-        runwaysContainer.add(new RunwayCard("6", "Available", "Mixed", "BB140"));
+        runwaysContainer.add(new RunwayCard("1", "Available", "Landing", "AA100", true));
+        runwaysContainer.add(new RunwayCard("2", "Available", "Take-off", "AA104", true));
+        runwaysContainer.add(new RunwayCard("3", "Available", "Landing", "AA140", false));
+        runwaysContainer.add(new RunwayCard("4", "Available", "Take-off", "AA141", false));
+        runwaysContainer.add(new RunwayCard("5", "Available", "Landing", "AA120", false));
+        runwaysContainer.add(new RunwayCard("6", "Available", "Mixed", "BB140", true));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
-        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(680, 420));
+        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(660, 440));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
         runwayPanel.add(scrollPaneRunwaysContainer);
+
+        // Adding into topCenterColumn
+        centerContentColumn.add(controlPanel);
+        centerContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
+        centerContentColumn.add(runwayPanel);
+
+
+        // RIGHT Column - Clock + Buttons
+        JPanel rightContentColumn = new JPanel();
+        rightContentColumn.setLayout(new BoxLayout(rightContentColumn, BoxLayout.Y_AXIS));
+        rightContentColumn.setBackground(Color.white);
+        rightContentColumn.setPreferredSize(new Dimension(200, 520));
+
+        // Clock panel
+        JPanel clockPanel = new JPanel();
+        // clockPanel.setBackground(Color.yellow);
+        clockPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        clockPanel.setPreferredSize(new Dimension(200, 80));
 
         // Buttons panel
         JPanel buttonsPanel = new JPanel(new GridBagLayout());
         buttonsPanel.setBackground(Color.white);
         // buttonsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        buttonsPanel.setPreferredSize(new Dimension(200, 440));
+        buttonsPanel.setPreferredSize(new Dimension(200, 430));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 0;
@@ -183,25 +177,16 @@ public class SimulationPage extends JPanel implements ActionListener {
         JButton takeoffQueueButton = new StyledButton("Take-off Queue", Color.green, Color.gray, Color.lightGray);
         buttonsPanel.add(takeoffQueueButton, gbc);
 
-
-        // Add in controlPanel and clockPanel inside topRow panel
-        topRow.add(controlPanel);
-        topRow.add(Box.createRigidArea(new Dimension(10, 0)));
-        topRow.add(clockPanel);
-
-        // Adding runwayPanel and buttonsPanel inside bottomRow panel
-        bottomRow.add(runwayPanel);
-        bottomRow.add(Box.createRigidArea(new Dimension(10, 0)));
-        bottomRow.add(buttonsPanel);
-
-        // Adding topRow and bottomRow into rightColumn
-        rightContentColumn.add(topRow);
+        // Adding control panel and buttons panel into rightContentColumn
+        rightContentColumn.add(clockPanel);
         rightContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));    // Gap in between
-        rightContentColumn.add(bottomRow);
+        rightContentColumn.add(buttonsPanel);
 
         // Adding leftColumn and rightColumn into contentPanel
         contentPanel.add(leftContentColumn);
         contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));    // Gap in between
+        contentPanel.add(centerContentColumn);
+        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         contentPanel.add(rightContentColumn);
 
         // FOOTER PANEL ----------------------------------------
@@ -237,9 +222,11 @@ public class SimulationPage extends JPanel implements ActionListener {
         if (e.getSource() == startPauseButton) {
             if (toggleStartPause == 0) {
                 startPauseLabel.setText("Start");
+                System.out.println("System paused!");
                 toggleStartPause = 1;
             } else if (toggleStartPause == 1) {
                 startPauseLabel.setText("Pause");
+                System.out.println("System resumed!");
                 toggleStartPause = 0;
             }
         }
