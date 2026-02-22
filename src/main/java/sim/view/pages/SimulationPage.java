@@ -48,14 +48,14 @@ public class SimulationPage extends JPanel implements ActionListener {
         leftContentColumn.setMaximumSize(new Dimension(200, 520));
 
         // Panels for all stats
-        JPanel cancelledStats = new StatsPanel(Color.red, "Cancelled", "0");
-        JPanel divertedStats = new StatsPanel(Color.red, "Diverted", "0");
-        JPanel avgQueueStats = new StatsPanel(Color.orange, "Avg Queue", "0");
-        JPanel avgHoldingStats = new StatsPanel(Color.orange, "Avg Holding", "0");
-        JPanel maxQueueStats = new StatsPanel(Color.orange, "Max Queue", "0");
-        JPanel maxHoldingStats = new StatsPanel(Color.orange, "Max Holding", "0");
-        JPanel departedStats = new StatsPanel(Color.green, "Departed", "0");
-        JPanel arrivedStats = new StatsPanel(Color.green, "Arrived", "0");
+        JPanel cancelledStats = new StatsPanel(new Color(0xE00A0A), "Cancelled", "0");
+        JPanel divertedStats = new StatsPanel(new Color(0xE00A0A), "Diverted", "0");
+        JPanel avgQueueStats = new StatsPanel(new Color(0xFF8C0A), "Avg Queue", "0");
+        JPanel avgHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Avg Holding", "0");
+        JPanel maxQueueStats = new StatsPanel(new Color(0xFF8C0A), "Max Queue", "0");
+        JPanel maxHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Max Holding", "0");
+        JPanel departedStats = new StatsPanel(new Color(0x0AE04E), "Departed", "0");
+        JPanel arrivedStats = new StatsPanel(new Color(0x0AE04E), "Arrived", "0");
 
         leftContentColumn.add(Box.createVerticalGlue());
         leftContentColumn.add(cancelledStats);
@@ -103,12 +103,9 @@ public class SimulationPage extends JPanel implements ActionListener {
         startPauseButton.add(startPauseLabel, BorderLayout.CENTER);
 
         // Reset button
-        JButton resetButton = new JButton("Reset");
-        resetButton.setFocusPainted(false);
-        resetButton.setFont(new Font("Arial", Font.BOLD, 14));
-        resetButton.setForeground(Color.white);
-        resetButton.setBackground(Color.black);
+        StyledButton resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         resetButton.setMaximumSize(new Dimension(100, 40));
+        resetButton.setFont(new Font("SansSerif", Font.BOLD, 14));
 
         // Adding components into controlPanel
         controlPanel.add(startPauseButton);
@@ -166,15 +163,15 @@ public class SimulationPage extends JPanel implements ActionListener {
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.insets = new Insets(20, 10, 20, 10);
 
-        JButton listOfFlightsButton = new StyledButton("List of Flights", Color.blue, Color.gray, Color.lightGray);
+        JButton listOfFlightsButton = new StyledButton("List of Flights", new Color(0x1B30A6), new Color(0x2A45C9), new Color(0x0F1F73), new Color(0x8799E0));
         buttonsPanel.add(listOfFlightsButton, gbc);
 
         gbc.gridy = 1;
-        JButton holdingPatternButton = new StyledButton("Holding Pattern", Color.MAGENTA, Color.gray, Color.lightGray);
+        JButton holdingPatternButton = new StyledButton("Holding Pattern", new Color(0x4A1073), new Color(0x621A96), new Color(0x320A4F), new Color(0x9B6BCE));
         buttonsPanel.add(holdingPatternButton, gbc);
 
         gbc.gridy = 2;
-        JButton takeoffQueueButton = new StyledButton("Take-off Queue", Color.green, Color.gray, Color.lightGray);
+        JButton takeoffQueueButton = new StyledButton("Take-off Queue", new Color(0x141E54), new Color(0x1E2D7A), new Color(0x0B1238), new Color(0x5A6AB0));
         buttonsPanel.add(takeoffQueueButton, gbc);
 
         // Adding control panel and buttons panel into rightContentColumn
@@ -190,9 +187,6 @@ public class SimulationPage extends JPanel implements ActionListener {
         contentPanel.add(rightContentColumn);
 
         // FOOTER PANEL ----------------------------------------
-        JLabel label = new JLabel("This is the SIMULATION page.");
-        footerPanel.add(label);
-
         JButton buttonBack = new JButton("Back");
         buttonBack.setFocusPainted(false);
         buttonBack.addActionListener(e -> {
@@ -224,6 +218,14 @@ public class SimulationPage extends JPanel implements ActionListener {
                 startPauseLabel.setText("Start");
                 System.out.println("System paused!");
                 toggleStartPause = 1;
+
+                // Getting all fonts available in package
+//                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//                String fonts[] = ge.getAvailableFontFamilyNames();
+//                for (String i : fonts) {
+//                    System.out.println(i + " ");
+//                }
+
             } else if (toggleStartPause == 1) {
                 startPauseLabel.setText("Pause");
                 System.out.println("System resumed!");

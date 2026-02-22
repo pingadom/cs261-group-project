@@ -1,5 +1,7 @@
 package sim.view.components;
 
+import com.fasterxml.jackson.databind.cfg.CacheProvider;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -10,20 +12,22 @@ public class StyledButton extends JButton {
     private Color normalColor;
     private Color hoverColor;
     private Color pressColor;
+    private Color borderColor;
 
-    public StyledButton(String text, Color normalColor, Color hoverColor, Color pressColor) {
+    public StyledButton(String text, Color normalColor, Color hoverColor, Color pressColor, Color borderColor) {
         super(text);
 
         this.normalColor = normalColor;
         this.hoverColor = hoverColor;
         this.pressColor = pressColor;
+        this.borderColor = borderColor;
 
         // Basic setup
-        setFont(new Font("Arial", Font.BOLD, 20));
+        setFont(new Font("SansSerif", Font.BOLD, 20));
         setBackground(normalColor);
         setForeground(Color.WHITE);
         setFocusPainted(false);
-        setBorder(BorderFactory.createLineBorder(Color.darkGray, 2));
+        setBorder(BorderFactory.createLineBorder(borderColor, 2));
         setContentAreaFilled(false);
         setOpaque(true);
 

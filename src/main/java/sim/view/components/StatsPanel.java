@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class StatsPanel extends JPanel {
 
-    Font labelFont = new Font("Arial", Font.BOLD, 18);
+    Font labelFont = new Font("SansSerif", Font.BOLD, 18);
 
     public StatsPanel(Color color, String title, String value) {
         setLayout(new GridBagLayout());

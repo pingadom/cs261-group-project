@@ -97,19 +97,14 @@ public class InputPage extends JPanel {
         });
         formPanel.add(submitBtn, gbc);
 
-
         // add formPanel into the contentPanel
         contentPanel.add(formPanel);
 
-        // FOOTER PANEL ----------------------------------------
-        JLabel label = new JLabel("This is the input page.");
-        footerPanel.add(label);
 
         // Add main panels
         add(headerPanel, BorderLayout.NORTH);
         add(leftPanel, BorderLayout.WEST);
         add(contentPanel, BorderLayout.CENTER);
-
         add(rightPanel, BorderLayout.EAST);
         add(footerPanel, BorderLayout.SOUTH);
     }
