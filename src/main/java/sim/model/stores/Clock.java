@@ -1,14 +1,12 @@
-package stores;
+package sim.model.stores;
 
-import java.time.LocalDate; 
+import java.time.LocalTime; 
 
 /** Clock object */
 
 public class Clock {
-    private LocalDate simulationTime;
-    private LocalDate elapsedTime;
-    private int mult;
-
-    
+    public LocalTime simulationTime;
+    public LocalTime elapsedTime;
+    public int mult;
 
 }

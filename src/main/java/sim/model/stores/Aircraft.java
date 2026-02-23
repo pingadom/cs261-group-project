@@ -1,6 +1,6 @@
-package stores;
+package sim.model.stores;
 
-import java.time.LocalDate; 
+import java.time.LocalTime; 
 
 /** aircaft store */
 
@@ -8,13 +8,13 @@ public class Aircraft {
     private String callsign;
     private String operator;
     private String origin;
-    private LocalDate time;
+    private LocalTime time;
     private int altitude;
     private int groundSpeed;
     private int fuel;
     private String emergency;
 
-    public Aircraft(String _callsign,String _operator,String _origin,LocalDate _time,int _altitude,int _groundSpeed,int _fuel,String _emergency){
+    public Aircraft(String _callsign,String _operator,String _origin,LocalTime _time,int _altitude,int _groundSpeed,int _fuel,String _emergency){
         callsign = _callsign;
         operator = _operator;
         origin = _origin;
@@ -37,7 +37,7 @@ public class Aircraft {
         return origin;
     }
 
-    public LocalDate getTime(){
+    public LocalTime getTime(){
         return time;
     }
 
@@ -78,7 +78,7 @@ public class Aircraft {
         return 1;
     }
 
-    public int setTime(LocalDate newTime){
+    public int setTime(LocalTime newTime){
         time = newTime;
         return 1;
     }

@@ -1,4 +1,4 @@
-package stores;
+package sim.model.stores;
 
 /** runway store */
 
@@ -9,9 +9,9 @@ public class Runway {
     private String status;
     private int timeRemaining;
 
-    public Runway(int _ID,String _occupied,String _mode,String _status,int _timeRemaining){
+    public Runway(int _ID,String _mode,String _status,int _timeRemaining){
         ID = _ID;
-        occupied = _occupied;
+        occupied = "";
         mode = _mode;
         status = _status;
         timeRemaining = _timeRemaining;

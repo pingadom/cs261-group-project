@@ -1,6 +1,6 @@
-package stores;
+package sim.model.stores;
 
-import java.time.LocalDate; 
+import java.time.LocalTime; 
 
 /** Linked list implmentation*/
 
