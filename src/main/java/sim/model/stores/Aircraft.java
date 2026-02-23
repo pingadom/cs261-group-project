@@ -85,7 +85,7 @@ public class Aircraft {
 
     public int setAltitude(int newAltitude){
         if (newAltitude > 0 && newAltitude < 40000){
-        altitude = newAltitude
+        altitude = newAltitude;
         return 1;}
         return 0;
     }

@@ -9,7 +9,7 @@ public class List<E> {
     private LinkedListElement<E> tail;
     private int size;
 
-    Public List(){
+    public List(){
         head = null;
         tail = null;
         size = 0;
@@ -29,19 +29,20 @@ public class List<E> {
 
     public LinkedListElement<E> get(int index){
         if (size <= index && index >= 0){
-            return 0;
+            return null;
         }
-        ptr = head;
+        LinkedListElement<E> ptr = head;
         for (int i = 0; i < index;i++){
-            ptr = ptr.next;
+            ptr = ptr.getNext();
         }
         return ptr;
     }
 
     public int add(LinkedListElement<E> element){
-        tail.next = elem;
-        tail = elem;
+        tail.setNext(element);
+        tail = element;
         size++;
+        return 1;
     }
 
     public LinkedListElement<E> pop(int index){
@@ -55,14 +56,14 @@ public class List<E> {
         }
         if (index == 0){
             LinkedListElement<E> element = head;
-            head = head.next;
-            size--
+            head = head.getNext();
+            size--;
             return element;
         }
         LinkedListElement<E> element = get(index);
         LinkedListElement<E> prev = get(index - 1);
-        prev.next = element.next;
-        size--
+        prev.setNext(element.getNext());
+        size--;
         return element;
         
     }
@@ -71,6 +72,7 @@ public class List<E> {
         head = null;
         tail = null;
         size = 0;
+        return 1;
     }
 
 }

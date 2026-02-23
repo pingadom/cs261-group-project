@@ -36,10 +36,10 @@ public class HoldingPattern<E> {
 
     public LinkedListElement<E> pop(){
         if (emergency.getSize() > 0){
-            return emergency.pop();
+            return emergency.pop(0);
         }
         else{
-            return nonEmergency.pop();
+            return nonEmergency.pop(0);
         }
     }
 }

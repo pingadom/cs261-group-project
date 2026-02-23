@@ -13,7 +13,6 @@ public class LinkedListElement<E>{
     public LinkedListElement(){
         value = null;
         next = null;
-        priority = null;
     }
 
     public E getValue(){
@@ -41,7 +40,7 @@ public class LinkedListElement<E>{
     public int setPriority(int _priority){
         if (_priority == 0 || _priority == 1){
             priority = _priority;
-            return 1
+            return 1;
         }
         return 0;
     }

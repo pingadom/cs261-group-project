@@ -26,11 +26,11 @@ public class Runway {
         }
 
     public String getMode(){
-            return ID;
+            return mode;
         }
 
     public String getStatus(){
-            return Status;
+            return status;
         }
 
     public int getTimeRemaining(){
@@ -45,19 +45,19 @@ public class Runway {
         return 0;
     }
 
-    public int setOccupied(int newOccupied){
+    public int setOccupied(String newOccupied){
         occupied = newOccupied;
         return 1;
     }
 
-    public int setMode(int newMode){
+    public int setMode(String newMode){
         if (newMode == "landing" || newMode == "takeoff" || newMode == "mixed"){
         mode = newMode;
         return 1;}
         return 0;
     }
 
-    public int setStatus(int newStatus){
+    public int setStatus(String newStatus){
         if (newStatus == "available"){
         status = newStatus;
         return 1;}
