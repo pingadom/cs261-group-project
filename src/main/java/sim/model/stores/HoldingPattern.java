@@ -8,6 +8,11 @@ public class HoldingPattern<E> {
     private List<E> emergency;
     private List<E> nonEmergency;
 
+    public HoldingPattern() {
+        emergency = new List<>();
+        nonEmergency = new List<>();
+    }
+
     public List<E> getEmergency(){
         return emergency;
     }

@@ -50,17 +50,20 @@ public class Runway {
         return 1;
     }
 
+    // change to .equals
     public int setMode(String newMode){
-        if (newMode == "landing" || newMode == "takeoff" || newMode == "mixed"){
-        mode = newMode;
-        return 1;}
+        if ("landing".equals(newMode) || "takeoff".equals(newMode) || "mixed".equals(newMode)){
+            mode = newMode;
+            return 1;
+        }
         return 0;
     }
 
     public int setStatus(String newStatus){
-        if (newStatus == "available"){
-        status = newStatus;
-        return 1;}
+        if ("available".equals(newStatus) || "inspection".equals(newStatus) || "snow".equals(newStatus) || "failure".equals(newStatus)){
+            status = newStatus;
+            return 1;
+        }
         return 0;
     }
 
