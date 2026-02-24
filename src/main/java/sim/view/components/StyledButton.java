@@ -62,6 +62,12 @@ public class StyledButton extends JButton {
                 // setMargin(new Insets(20, 20, 20, 20));
             }
         });
+    }
 
+    public void setButtonsize(int width, int height) {
+        Dimension size = new Dimension(width, height);
+        setPreferredSize(size);
+        setMaximumSize(size);
+        setMinimumSize(size);
     }
 }

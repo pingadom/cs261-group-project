@@ -46,7 +46,6 @@ public class App extends JFrame {
     }
 
     public void showSimulationPage() {
-        simulationPage.refreshData();
         this.setTitle("Airport Simulator - Simulation");
         cardLayout.show(mainPanel, "SIMULATION");
     }

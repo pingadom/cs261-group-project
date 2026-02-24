@@ -205,10 +205,6 @@ public class SimulationPage extends JPanel implements ActionListener {
     }
 
     // Functions
-    public void refreshData() {
-        System.out.println("Test");
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
 
