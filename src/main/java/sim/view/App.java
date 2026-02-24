@@ -15,6 +15,7 @@ public class App extends JFrame {
     private SimulationPage simulationPage;
 
     public App() {
+        //
         setTitle("Airport Simulator");
         setSize(1280, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,7 +46,6 @@ public class App extends JFrame {
     }
 
     public void showSimulationPage() {
-        simulationPage.refreshData();
         this.setTitle("Airport Simulator - Simulation");
         cardLayout.show(mainPanel, "SIMULATION");
     }
