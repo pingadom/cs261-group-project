@@ -218,14 +218,6 @@ public class SimulationPage extends JPanel implements ActionListener {
                 startPauseLabel.setText("Start");
                 System.out.println("System paused!");
                 toggleStartPause = 1;
-
-                // Getting all fonts available in package
-//                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-//                String fonts[] = ge.getAvailableFontFamilyNames();
-//                for (String i : fonts) {
-//                    System.out.println(i + " ");
-//                }
-
             } else if (toggleStartPause == 1) {
                 startPauseLabel.setText("Pause");
                 System.out.println("System resumed!");

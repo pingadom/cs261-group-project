@@ -7,15 +7,23 @@ import sim.view.components.HeaderPanel;
 import sim.view.components.SidePanel;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
 public class InputPage extends JPanel {
     private App app;
 
+    // Global parameters
+    int numRunways = 1;
+    private final int MAX_RUNWAYS = 10;
+    JPanel runwaysContainer;
+    JButton addRunwayButton;
+
     // User input fields
     JTextField flightsField;
     JTextField inboundRateField;
     JTextField outboundRateField;
+    JTextField durationField;
 
     // Constructor
     public InputPage(App app) {
@@ -36,70 +44,42 @@ public class InputPage extends JPanel {
         JPanel footerPanel = new FooterPanel();
 
         // CONTENT PANEL ----------------------------------------
-        JPanel contentPanel = new JPanel(new GridBagLayout());
+        JPanel contentPanel = new JPanel();
         contentPanel.setBackground(Color.white);
-        contentPanel.setPreferredSize(new Dimension());
 
         // formPanel
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.lightGray);
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setPreferredSize(new Dimension(700, 480));
         formPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.gray, 2),
-                BorderFactory.createEmptyBorder(30, 50, 20, 50)
+                BorderFactory.createLineBorder(Color.black),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // Title inside form
-        JLabel formTitle = new JLabel("Simulation Configuration");
-        formTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        // 1. TITLE PANEL
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        // titlePanel.setBackground(Color.red);
+        JLabel titleLabel = new JLabel("Create a new Simulation");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 26));
+        titlePanel.add(titleLabel);
+        formPanel.add(titlePanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 0;   // Set starting position
-        gbc.gridwidth = 2;  // specifies number of columns a component should span horizontally
-        gbc.insets = new Insets(0, 0, 20, 0);   // External padding (margin) added around a component
-        formPanel.add(formTitle, gbc);
+        // 2. SIMULATION CONFIG PANEL
+        JPanel simConfigPanel = createSimConfigPanel();
+        formPanel.add(simConfigPanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Form Fields
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(5,5,5,5);
+        // 3. RUNWAY CONFIG PANEL
+        JPanel runwayConfigPanel = createRunwayConfigPanel();
+        formPanel.add(runwayConfigPanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Number of flights
-        gbc.gridx = 0; gbc.gridy = 1;   // Move one position down
-        formPanel.add(new JLabel("Number of Flights: "), gbc);
-        gbc.gridx = 1;
-        flightsField = new JTextField(15);
-        flightsField.setText("2");
-        formPanel.add(flightsField, gbc);
+        // 4. START SIMULATION BUTTON
 
-        // Inbound rate
-        gbc.gridx = 0; gbc.gridy = 2;
-        formPanel.add(new JLabel("Inbound rate (aircraft/hour): "), gbc);
-        gbc.gridx = 1;
-        inboundRateField = new JTextField(15);
-        inboundRateField.setText("2");
-        formPanel.add(inboundRateField, gbc);
-
-        // Outbound rate
-        gbc.gridx = 0; gbc.gridy = 3;
-        formPanel.add(new JLabel("Outbound rate (aircraft/hour): "), gbc);
-        gbc.gridx = 1;
-        outboundRateField = new JTextField(15);
-        outboundRateField.setText("2");
-        formPanel.add(outboundRateField, gbc);
-
-        // Submit button
-        gbc.gridx = 0; gbc.gridy = 4;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 5, 5, 5);
-        JButton submitBtn = new JButton("Start Simulation");
-        submitBtn.setFocusPainted(false);
-        submitBtn.addActionListener(e -> {
-            submitClicked();
-        });
-        formPanel.add(submitBtn, gbc);
 
         // add formPanel into the contentPanel
         contentPanel.add(formPanel);
-
 
         // Add main panels
         add(headerPanel, BorderLayout.NORTH);
@@ -107,6 +87,210 @@ public class InputPage extends JPanel {
         add(contentPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
         add(footerPanel, BorderLayout.SOUTH);
+    }
+
+    // SIMULATION CONFIG PANEL
+    private JPanel createSimConfigPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        // panel.setBackground(Color.blue);
+
+        Font labelFont = new Font("Arial", Font.PLAIN, 18);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 0, 2, 0);
+
+        // Row 1: Title
+        gbc.gridx = 0; gbc.gridy = 0;
+        JLabel simConfigTitle = new JLabel("Simulation Configuration");
+        simConfigTitle.setFont(new Font("Arial", Font.ITALIC + Font.BOLD, 20));
+        panel.add(simConfigTitle, gbc);
+
+        // Row 2: Inbound rate
+        gbc.insets = new Insets(5, 10, 2, 0);
+        gbc.gridx = 0; gbc.gridy = 1;
+        JLabel inboundRateLabel = new JLabel("Inbound Rate (aircraft/hour)");
+        inboundRateLabel.setFont(labelFont);
+        panel.add(inboundRateLabel, gbc);
+
+        gbc.gridx = 1;
+        inboundRateField = new JTextField("eg. 8");
+        inboundRateField.setColumns(15);
+        inboundRateField.setFont(labelFont);
+        panel.add(inboundRateField, gbc);
+
+        // Row 3: Outbound rate
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0.3;
+        JLabel outboundRateLabel = new JLabel("Outbound Rate (aircraft/hour)");
+        outboundRateLabel.setFont(labelFont);
+        panel.add(outboundRateLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        outboundRateField = new JTextField("eg. 8");
+        outboundRateField.setColumns(15);
+        outboundRateField.setFont(labelFont);
+        panel.add(outboundRateField, gbc);
+
+        // Row 4: Duration
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.weightx = 0.3;
+        JLabel durationLabel = new JLabel("Duration (hour)");
+        durationLabel.setFont(labelFont);
+        panel.add(durationLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        durationField = new JTextField("eg. 8");
+        durationField.setColumns(15);
+        durationField.setFont(labelFont);
+        panel.add(durationField, gbc);
+
+        return panel;
+    }
+
+
+    // RUNWAY CONFIG PANEL
+    private JPanel createRunwayConfigPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.yellow);
+        panel.setPreferredSize(new Dimension(680, 230));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        // TITLE PANEL
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
+        titlePanel.setPreferredSize(new Dimension(680, 50));
+
+        JLabel titleLabel = new JLabel("Runway Configuration");
+        titleLabel.setFont(new Font("Arial", Font.ITALIC + Font.BOLD, 20));
+
+        addRunwayButton = new JButton("+ Add Runways");
+        addRunwayButton.setFocusable(false);
+        addRunwayButton.addActionListener(e -> {
+            addNewRunway();
+        });
+
+        titlePanel.add(titleLabel);
+        titlePanel.add(Box.createHorizontalGlue());
+        titlePanel.add(addRunwayButton);
+
+        panel.add(titlePanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        // RUNWAY PANEL
+        runwaysContainer = new JPanel();
+        runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
+
+        // Dynamically add runways
+        runwaysContainer.add(createRunwayPanel(numRunways));
+
+        JScrollPane scrollPaneRunways = new JScrollPane(runwaysContainer);
+        scrollPaneRunways.setPreferredSize(new Dimension(680, 225));
+        scrollPaneRunways.getVerticalScrollBar().setUnitIncrement(10);
+
+        panel.add(scrollPaneRunways);
+        return panel;
+    }
+
+    // addNewRunway
+    private void addNewRunway() {
+        if (numRunways < MAX_RUNWAYS) {
+            numRunways++;
+
+            JPanel newRunway = createRunwayPanel(numRunways);
+            runwaysContainer.add(newRunway);
+            // runwaysContainer.add(Box.createRigidArea(new Dimension(0, 5)));
+
+            // Refresh the UI
+            runwaysContainer.revalidate();
+            runwaysContainer.repaint();
+
+            // Disable the add button if number of runways reach max
+            if (numRunways >= MAX_RUNWAYS) {
+                addRunwayButton.setEnabled(false);
+                // Add a tooltip
+            }
+        }
+    }
+
+    // Function to create runways
+    private JPanel createRunwayPanel(int numRunway) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.lightGray),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        panel.setMinimumSize(new Dimension(650, 80));
+        panel.setPreferredSize(new Dimension(650, 80));
+
+        // titlePanel : title with delete button
+        JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(Color.pink);
+        titlePanel.setPreferredSize(new Dimension(650, 30));
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
+        JLabel titleLabel = new JLabel("Runway " + numRunway);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        titlePanel.add(titleLabel);
+
+        // Delete button
+        if (numRunways > 1) {
+            JButton deleteButton = new JButton("x");
+            deleteButton.setFocusPainted(false);
+            deleteButton.setPreferredSize(new Dimension(25, 25));
+            deleteButton.setBackground(Color.red);
+            deleteButton.setForeground(Color.white);
+
+            // Add action listener
+            deleteButton.addActionListener(e -> {
+                Container parent = panel.getParent();
+                if (parent != null) {
+                    parent.remove(panel);
+                    numRunways--;
+
+                    if (!addRunwayButton.isEnabled() && numRunways < MAX_RUNWAYS) {
+                        addRunwayButton.setEnabled(true);
+                    }
+
+                    // Refresh the UI
+                    parent.revalidate();
+                    parent.repaint();
+                }
+            });
+            titlePanel.add(Box.createHorizontalGlue());
+            titlePanel.add(deleteButton);
+        }
+        panel.add(titlePanel);
+
+
+        // optionPanel : status and mode for each runway
+        JPanel optionPanel = new JPanel(new GridBagLayout());
+        optionPanel.setBackground(Color.cyan);
+        optionPanel.setMinimumSize(new Dimension(650, 50));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Mode
+        gbc.gridx = 0; gbc.gridy = 0;
+        optionPanel.add(new JLabel("Mode"), gbc);
+        gbc.gridx = 1;
+        JComboBox<String> modeCombo = new JComboBox<>(new String[]{"Landing Only", "Takeoff Only", "Mixed Mode"});
+        optionPanel.add(modeCombo, gbc);
+
+        // Status
+        gbc.gridx = 2; gbc.gridy = 0;
+        optionPanel.add(new JLabel("Status"), gbc);
+        gbc.gridx = 3;
+        JComboBox<String> statusCombo = new JComboBox<>(new String[]{"Available", "Maintenance"});
+        optionPanel.add(statusCombo, gbc);
+
+        panel.add(optionPanel);
+
+        return panel;
     }
 
 

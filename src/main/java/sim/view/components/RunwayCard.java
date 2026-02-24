@@ -2,6 +2,7 @@ package sim.view.components;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 
 public class RunwayCard extends JPanel {
     private JLabel runwayIDLabel;
@@ -9,7 +10,6 @@ public class RunwayCard extends JPanel {
     private JLabel modeLabel;
     private JLabel aircraftLabel;
     private JLabel occupiedLabel;
-
 
     // Constructor
     public RunwayCard(String id, String status, String mode, String aircraft, Boolean occupied) {
