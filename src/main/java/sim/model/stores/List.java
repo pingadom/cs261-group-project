@@ -40,17 +40,17 @@ public class List<E> {
 
     public int add(LinkedListElement<E> element){
         // added check for empty
-    if (size == 0) {
-        head = element;
+        if (size == 0) {
+            head = element;
+            tail = element;
+            size = 1;
+            return 1;
+        }
+        tail.setNext(element);
         tail = element;
-        size = 1;
+        size++;
         return 1;
     }
-    tail.setNext(element);
-    tail = element;
-    size++;
-    return 1;
-}
 
     public LinkedListElement<E> pop(int index){
         if (size == 1){
