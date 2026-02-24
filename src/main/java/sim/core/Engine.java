@@ -3,12 +3,23 @@ package sim.core;
 import sim.config.SimConfig;
 import sim.core.metrics.Metrics;
 import sim.core.metrics.MetricsCsvWriter;
+import sim.model.stores.HoldingPattern;
+import sim.model.stores.LinkedListElement;
+import sim.model.stores.Aircraft;
+import java.util.ArrayList;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Random;
 
+import sim.core.ArrivalEvent;
+import sim.core.ArrivalSchedule;
+
 public final class Engine {
+
+  private final HoldingPattern<Aircraft> holdingPattern = new HoldingPattern<>();
+  private ArrayList<ArrivalEvent> inboundEvents;
+  private int inboundPtr = 0;
 
   private final SimConfig cfg;
   private final EngineOptions opts;
@@ -30,6 +41,23 @@ public final class Engine {
         + ", departures/hr=" + cfg.departureRatePerHour);
     System.out.println("Options: duration=" + opts.durationSeconds() + "s, dt=" + opts.dtSeconds()
         + "s, speed=" + opts.speedMultiplier() + "x, seed=" + opts.seed());
+
+    inboundEvents = ArrivalSchedule.preGenerateInbound(
+        cfg.arrivalRatePerHour,
+        opts.durationSeconds(),
+        rng
+      );
+    System.out.println("Pre-generated inbound flights: " + inboundEvents.size());
+    System.out.println("First 10 inbound events (actual seconds):");
+    for (int i = 0; i < Math.min(10, inboundEvents.size()); i++) {
+        ArrivalEvent e = inboundEvents.get(i);
+        System.out.printf("  #%02d %s target=%.0fs actual=%.0fs%n",
+                i,
+                e.aircraft.getCallsign(),
+                e.aircraft.getTime().toSecondOfDay() * 1.0,  // if you stored LocalTime
+                e.releaseTimeSeconds
+        );
+      }
 
     if (opts.csvPath() != null) {
       try {
@@ -77,31 +105,37 @@ public final class Engine {
     double arrivalsPerSec = cfg.arrivalRatePerHour / 3600.0;
     double depsPerSec = cfg.departureRatePerHour / 3600.0;
 
-    if (rng.nextDouble() < arrivalsPerSec * dt) metrics.arrivalsGenerated++;
-    if (rng.nextDouble() < depsPerSec * dt) metrics.departuresGenerated++;
+    // Release inbound aircraft into holding pattern when their (actual) time is reached
+    while (inboundPtr < inboundEvents.size() && inboundEvents.get(inboundPtr).releaseTimeSeconds <= clock.now()) {
 
-    long available = cfg.runways.stream().filter(r -> r.status == SimConfig.RunwayStatus.AVAILABLE).count();
-    int capacityPerStep = (int) Math.max(1, available);
+      Aircraft ac = inboundEvents.get(inboundPtr).aircraft;
+      System.out.printf("[t=%.0fs] RELEASE to holding: %s (emergency=%s)%n",
+        clock.now(),
+        ac.getCallsign(),
+        ac.getEmergency());
 
-    int processArr = Math.min(capacityPerStep, metrics.arrivalsGenerated - metrics.arrivalsProcessed);
-    int processDep = Math.min(capacityPerStep, metrics.departuresGenerated - metrics.departuresProcessed);
+      LinkedListElement<Aircraft> node = new LinkedListElement<>();
+      node.setValue(ac);
 
-    metrics.arrivalsProcessed += Math.max(0, processArr);
-    metrics.departuresProcessed += Math.max(0, processDep);
+      // priority: emergency=1 else 0 (can improve this later)
+      int priority = ("None".equals(ac.getEmergency()) ? 0 : 1);
+      node.setPriority(priority);
 
-    metrics.arrivalQueue = (int) (metrics.arrivalsGenerated - metrics.arrivalsProcessed);
-    metrics.departureQueue = (int) (metrics.departuresGenerated - metrics.departuresProcessed);
+      holdingPattern.add(node);
+
+      metrics.arrivalsGenerated++;  // now means "arrived into holding"
+      inboundPtr++;
+    }
   }
 
   private void printStatus() {
     String hhmm = SimClock.formatHHMM(clock.now());
-    System.out.printf(
-        "[%s | t=%.0fs] ArrQ=%d DepQ=%d ArrGen=%d ArrProc=%d DepGen=%d DepProc=%d%n",
-        hhmm, clock.now(),
-        metrics.arrivalQueue, metrics.departureQueue,
+    System.out.printf("[%s | t=%.0fs] Holding=%d ArrGen=%d ArrProc=%d DepGen=%d DepProc=%d%n",
+        SimClock.formatHHMM(clock.now()), clock.now(),
+        holdingPattern.getSize(),
         metrics.arrivalsGenerated, metrics.arrivalsProcessed,
         metrics.departuresGenerated, metrics.departuresProcessed
-    );
+);
   }
 
   private void tryWriteCsvRow() {
