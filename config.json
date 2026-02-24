@@ -1,0 +1,9 @@
+{
+  "runways": [
+    { "id": "RWY-01", "mode": "LANDING", "status": "AVAILABLE" },
+    { "id": "RWY-02", "mode": "TAKEOFF", "status": "AVAILABLE" }
+  ],
+  "arrivalRatePerHour": 60,
+  "departureRatePerHour": 30,
+  "maxRunways": 10
+}
