@@ -10,12 +10,14 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimulationPage extends JPanel implements ActionListener {
+public class SimulationPage extends JPanel {
     private App app;
 
     int toggleStartPause = 0;
-    JButton startPauseButton;
+    StyledButton startPauseButton;
+    StyledButton resetButton;
     JLabel startPauseLabel;
+
     int simulationSpeed = 1;
 
     // Constructor
@@ -59,8 +61,10 @@ public class SimulationPage extends JPanel implements ActionListener {
         contentPanel.add(rightContentColumn);
 
         // FOOTER PANEL ----------------------------------------
-        JButton buttonBack = new JButton("Back");
-        buttonBack.setFocusPainted(false);
+        StyledButton buttonBack = new StyledButton("Back", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
+        buttonBack.setPreferredSize(new Dimension(100, 30));
+        buttonBack.setMaximumSize(new Dimension(100, 30));
+        buttonBack.setFont(new Font("Arial", Font.BOLD, 14));
         buttonBack.addActionListener(e -> {
             app.showInputPage();
         });
@@ -146,23 +150,30 @@ public class SimulationPage extends JPanel implements ActionListener {
         controlPanel.setMinimumSize(new Dimension(670, 40));
 
         // Start button
-        startPauseButton = new JButton();
+        startPauseButton = new StyledButton("", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         startPauseButton.setLayout(new BorderLayout());
         startPauseButton.setFocusPainted(false);
         startPauseButton.setBackground(Color.black);
-        startPauseButton.addActionListener(this);
         startPauseButton.setPreferredSize(new Dimension(120, 40));
         startPauseButton.setMaximumSize(new Dimension(120, 40));
+        startPauseButton.addActionListener(e -> {
+            toggleStartButton();
+        });
+
+        // Add an icon
         startPauseLabel = new JLabel("Pause", JLabel.CENTER);
-        startPauseLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        startPauseLabel.setFont(new Font("Arial", Font.BOLD, 16));
         startPauseLabel.setForeground(Color.white);
         startPauseButton.add(startPauseLabel, BorderLayout.CENTER);
 
         // Reset button
-        StyledButton resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
+        resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         resetButton.setPreferredSize(new Dimension(120, 40));
         resetButton.setMaximumSize(new Dimension(120, 40));
-        resetButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        resetButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        resetButton.addActionListener(e -> {
+            resetSimulation();
+        });
 
         // SPEEDUP PANEL
         JPanel speedupPanel = createSpeedPanel();
@@ -329,24 +340,21 @@ public class SimulationPage extends JPanel implements ActionListener {
         return panel;
     }
 
-
     // Functions
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        // When the pause button clicked
-        if (e.getSource() == startPauseButton) {
-            if (toggleStartPause == 0) {
-                startPauseLabel.setText("Start");
-                System.out.println("System paused!");
-                toggleStartPause = 1;
-            } else if (toggleStartPause == 1) {
-                startPauseLabel.setText("Pause");
-                System.out.println("System resumed!");
-                toggleStartPause = 0;
-            }
+    private void toggleStartButton() {
+        if (toggleStartPause == 0) {
+            startPauseLabel.setText("Start");
+            System.out.println("System paused!");
+            toggleStartPause = 1;
+        } else if (toggleStartPause == 1) {
+            startPauseLabel.setText("Pause");
+            System.out.println("System resumed!");
+            toggleStartPause = 0;
         }
-
-
     }
+
+    private void resetSimulation() {
+        System.out.println("System reset");
+    }
+
 }
