@@ -33,6 +33,7 @@ public class RunwayPanel extends JPanel {
 
         Font titleFont = new Font("Arial", Font.ITALIC, 16);
         Font labelFont = new Font("Arial", Font.BOLD, 14);
+        Font comboFont = new Font("Arial", Font.PLAIN, 14);
 
         // titlePanel : title with delete button
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -57,7 +58,7 @@ public class RunwayPanel extends JPanel {
         optionPanel.add(modeLabel, gbc);
         gbc.gridx = 1;
         modeCombo = new JComboBox<>(new String[]{"None", "Landing Only", "Takeoff Only", "Mixed Mode"});
-        modeCombo.setFont(labelFont);
+        modeCombo.setFont(comboFont);
         modeCombo.setPreferredSize(new Dimension(150, 25));
         modeCombo.addActionListener(e -> {
             updateMode();
@@ -71,7 +72,7 @@ public class RunwayPanel extends JPanel {
         optionPanel.add(statusLabel, gbc);
         gbc.gridx = 3;
         statusCombo = new JComboBox<>(new String[]{"None", "Available", "Maintenance"});
-        statusCombo.setFont(labelFont);
+        statusCombo.setFont(comboFont);
         statusCombo.setPreferredSize(new Dimension(150, 25));
         statusCombo.addActionListener(e-> {
             updateStatus();

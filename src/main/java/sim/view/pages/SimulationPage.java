@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimulationPage extends JPanel implements ActionListener {
     private App app;
@@ -14,6 +16,7 @@ public class SimulationPage extends JPanel implements ActionListener {
     int toggleStartPause = 0;
     JButton startPauseButton;
     JLabel startPauseLabel;
+    int simulationSpeed = 1;
 
     // Constructor
     public SimulationPage(App app) {
@@ -40,54 +43,107 @@ public class SimulationPage extends JPanel implements ActionListener {
         contentPanel.setPreferredSize(new Dimension());
 
         // LEFT Column - Stats
-        JPanel leftContentColumn = new JPanel();
-        leftContentColumn.setLayout(new BoxLayout(leftContentColumn, BoxLayout.Y_AXIS));
-        leftContentColumn.setBackground(Color.white);
-        // leftContentColumn.setBorder(BorderFactory.createLineBorder(Color.black));
-        leftContentColumn.setMinimumSize(new Dimension(200, 520));
-        leftContentColumn.setMaximumSize(new Dimension(200, 520));
-
-        // Panels for all stats
-        JPanel cancelledStats = new StatsPanel(new Color(0xE00A0A), "Cancelled", "0");
-        JPanel divertedStats = new StatsPanel(new Color(0xE00A0A), "Diverted", "0");
-        JPanel avgQueueStats = new StatsPanel(new Color(0xFF8C0A), "Avg Queue", "0");
-        JPanel avgHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Avg Holding", "0");
-        JPanel maxQueueStats = new StatsPanel(new Color(0xFF8C0A), "Max Queue", "0");
-        JPanel maxHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Max Holding", "0");
-        JPanel departedStats = new StatsPanel(new Color(0x0AE04E), "Departed", "0");
-        JPanel arrivedStats = new StatsPanel(new Color(0x0AE04E), "Arrived", "0");
-
-        leftContentColumn.add(Box.createVerticalGlue());
-        leftContentColumn.add(cancelledStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(divertedStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(avgQueueStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(avgHoldingStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(maxQueueStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(maxHoldingStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(departedStats);
-        leftContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        leftContentColumn.add(arrivedStats);
-
+        JPanel leftContentColumn = createStatsPanel();
 
         // CENTER Column - Control + Runways
-        JPanel centerContentColumn = new JPanel();
-        centerContentColumn.setLayout(new BoxLayout(centerContentColumn, BoxLayout.Y_AXIS));
-        centerContentColumn.setBackground(Color.white);
-        centerContentColumn.setPreferredSize(new Dimension(670, 520));
+        JPanel centerContentColumn = createCenterColumnPanel();
+
+        // RIGHT Column - Clock + Buttons
+        JPanel rightContentColumn = createRightColumnPanel();
+
+        // Adding leftColumn and rightColumn into contentPanel
+        contentPanel.add(leftContentColumn);
+        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));    // Gap in between
+        contentPanel.add(centerContentColumn);
+        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        contentPanel.add(rightContentColumn);
+
+        // FOOTER PANEL ----------------------------------------
+        JButton buttonBack = new JButton("Back");
+        buttonBack.setFocusPainted(false);
+        buttonBack.addActionListener(e -> {
+            app.showInputPage();
+        });
+
+        footerPanel.add(buttonBack);
+
+
+        // Add main panels and set positions
+        add(headerPanel, BorderLayout.NORTH);
+        add(leftPanel, BorderLayout.WEST);
+        add(contentPanel, BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
+        add(footerPanel, BorderLayout.SOUTH);
+    }
+
+    private JPanel createStatsPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.white);
+        // leftContentColumn.setBorder(BorderFactory.createLineBorder(Color.black));
+        panel.setMinimumSize(new Dimension(200, 520));
+        panel.setMaximumSize(new Dimension(200, 520));
+
+        // Panels for all stats
+        JPanel cancelledStats = new StatsPanel(new Color(0xE00A0A), "Cancelled", 0);
+        JPanel divertedStats = new StatsPanel(new Color(0xE00A0A), "Diverted", 0);
+        JPanel avgQueueStats = new StatsPanel(new Color(0xFF8C0A), "Avg Queue", 0);
+        JPanel avgHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Avg Holding", 0);
+        JPanel maxQueueStats = new StatsPanel(new Color(0xFF8C0A), "Max Queue", 0);
+        JPanel maxHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Max Holding", 0);
+        JPanel departedStats = new StatsPanel(new Color(0x0AE04E), "Departed", 0);
+        JPanel arrivedStats = new StatsPanel(new Color(0x0AE04E), "Arrived", 0);
+
+        panel.add(Box.createVerticalGlue());
+        panel.add(cancelledStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(divertedStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(avgQueueStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(avgHoldingStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(maxQueueStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(maxHoldingStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(departedStats);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(arrivedStats);
+
+        return panel;
+    }
+
+    private JPanel createCenterColumnPanel() {
+        // CENTER Column - Control + Runways
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.white);
+        panel.setPreferredSize(new Dimension(670, 520));
 
         // Control panel
+        JPanel controlPanel = createControlPanel();
+
+        // Runway panel
+        JPanel runwayPanel = createRunwayPanel();
+
+        // Adding into topCenterColumn
+        panel.add(controlPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(runwayPanel);
+
+        return panel;
+    }
+
+    private JPanel createControlPanel() {
+        // Control panel
         JPanel controlPanel = new JPanel();
+        controlPanel.setBackground(Color.white);
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
-        controlPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        controlPanel.setPreferredSize(new Dimension(670, 50));
-        controlPanel.setMaximumSize(new Dimension(670, 50));
-        controlPanel.setMinimumSize(new Dimension(670, 50));
+        // controlPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        controlPanel.setPreferredSize(new Dimension(670, 40));
+        controlPanel.setMaximumSize(new Dimension(670, 40));
+        controlPanel.setMinimumSize(new Dimension(670, 40));
 
         // Start button
         startPauseButton = new JButton();
@@ -95,8 +151,8 @@ public class SimulationPage extends JPanel implements ActionListener {
         startPauseButton.setFocusPainted(false);
         startPauseButton.setBackground(Color.black);
         startPauseButton.addActionListener(this);
-        startPauseButton.setPreferredSize(new Dimension(100, 40));
-        startPauseButton.setMaximumSize(new Dimension(100, 40));
+        startPauseButton.setPreferredSize(new Dimension(120, 40));
+        startPauseButton.setMaximumSize(new Dimension(120, 40));
         startPauseLabel = new JLabel("Pause", JLabel.CENTER);
         startPauseLabel.setFont(new Font("Arial", Font.BOLD, 14));
         startPauseLabel.setForeground(Color.white);
@@ -104,18 +160,111 @@ public class SimulationPage extends JPanel implements ActionListener {
 
         // Reset button
         StyledButton resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
-        resetButton.setMaximumSize(new Dimension(100, 40));
+        resetButton.setPreferredSize(new Dimension(120, 40));
+        resetButton.setMaximumSize(new Dimension(120, 40));
         resetButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+
+        // SPEEDUP PANEL
+        JPanel speedupPanel = createSpeedPanel();
 
         // Adding components into controlPanel
         controlPanel.add(startPauseButton);
         controlPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         controlPanel.add(resetButton);
+        controlPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        controlPanel.add(speedupPanel);
 
+        return controlPanel;
+    }
+
+    private JPanel createSpeedPanel() {
+        // SPEEDUP CONTROL PANEL
+        JPanel speedupPanel = new JPanel(new GridBagLayout());
+        speedupPanel.setBackground(Color.white);
+
+        JLabel speedupLabel = new JLabel("Speed: ");
+        speedupLabel.setForeground(Color.black);
+        speedupLabel.setFont(new Font("Arial", Font.BOLD, 16));
+
+        // Create radio buttons
+        JToggleButton x1Button = new JToggleButton("x1");
+        JToggleButton x2Button = new JToggleButton("x2");
+        JToggleButton x5Button = new JToggleButton("x5");
+        JToggleButton x10Button = new JToggleButton("x10");
+
+        List<JToggleButton> speedButtons = new ArrayList<>();
+        speedButtons.add(x1Button);
+        speedButtons.add(x2Button);
+        speedButtons.add(x5Button);
+        speedButtons.add(x10Button);
+
+        ButtonGroup speedGroup = new ButtonGroup();
+
+        // Style the radio button to look like buttons and add into button group
+        for (JToggleButton btn : speedButtons) {
+            speedGroup.add(btn);
+
+            btn.setFont(new Font("Arial", Font.BOLD, 14));
+            btn.setPreferredSize(new Dimension(50, 35));
+            btn.setBackground(Color.white);
+            btn.setForeground(Color.black);
+            btn.setBorder(BorderFactory.createLineBorder(Color.gray));
+            btn.setFocusPainted(false);
+
+            btn.setContentAreaFilled(false);
+            btn.setOpaque(true);
+
+            // Changes appearance when selected
+            btn.addItemListener(e -> {
+                if (btn.isSelected()) {
+                    // System.out.println("Button " + btn.getText() + " selected");
+                    btn.setBackground(Color.black);
+                    btn.setForeground(Color.white);
+                } else {
+                    btn.setBackground(Color.white);
+                    btn.setForeground(Color.black);
+                }
+            });
+        }
+
+        // Default selection
+        x1Button.setSelected(true);
+
+        // Add ActionListeners for each
+        x1Button.addActionListener(e -> setSimulationSpeed(1));
+        x2Button.addActionListener(e -> setSimulationSpeed(2));
+        x5Button.addActionListener(e -> setSimulationSpeed(5));
+        x10Button.addActionListener(e -> setSimulationSpeed(10));
+
+        // Add labels and buttons
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        speedupPanel.add(speedupLabel);
+
+        gbc.gridx = 1; speedupPanel.add(Box.createRigidArea(new Dimension(5, 0)), gbc); // Spacer
+        gbc.gridx = 2; speedupPanel.add(x1Button);
+        gbc.gridx = 3; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
+        gbc.gridx = 4; speedupPanel.add(x2Button);
+        gbc.gridx = 5; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
+        gbc.gridx = 6; speedupPanel.add(x5Button);
+        gbc.gridx = 7; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
+        gbc.gridx = 8; speedupPanel.add(x10Button);
+
+        return speedupPanel;
+    }
+
+    private void setSimulationSpeed(int speed) {
+        simulationSpeed = speed;
+        System.out.println("Simulation speed is: " + simulationSpeed);
+    }
+
+    private JPanel createRunwayPanel() {
         // Runway panel
         JPanel runwayPanel = new JPanel();
         runwayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        runwayPanel.setPreferredSize(new Dimension(670, 460));
+        runwayPanel.setPreferredSize(new Dimension(670, 470));
 
         // Main container for all the runways
         JPanel runwaysContainer = new JPanel();
@@ -130,22 +279,20 @@ public class SimulationPage extends JPanel implements ActionListener {
         runwaysContainer.add(new RunwayCard("6", "Available", "Mixed", "BB140", true));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
-        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(660, 440));
+        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(660, 460));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
         runwayPanel.add(scrollPaneRunwaysContainer);
 
-        // Adding into topCenterColumn
-        centerContentColumn.add(controlPanel);
-        centerContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));
-        centerContentColumn.add(runwayPanel);
+        return runwayPanel;
+    }
 
-
+    private JPanel createRightColumnPanel() {
         // RIGHT Column - Clock + Buttons
-        JPanel rightContentColumn = new JPanel();
-        rightContentColumn.setLayout(new BoxLayout(rightContentColumn, BoxLayout.Y_AXIS));
-        rightContentColumn.setBackground(Color.white);
-        rightContentColumn.setPreferredSize(new Dimension(200, 520));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.white);
+        panel.setPreferredSize(new Dimension(200, 520));
 
         // Clock panel
         JPanel clockPanel = new JPanel();
@@ -174,35 +321,14 @@ public class SimulationPage extends JPanel implements ActionListener {
         JButton takeoffQueueButton = new StyledButton("Take-off Queue", new Color(0x141E54), new Color(0x1E2D7A), new Color(0x0B1238), new Color(0x5A6AB0));
         buttonsPanel.add(takeoffQueueButton, gbc);
 
-        // Adding control panel and buttons panel into rightContentColumn
-        rightContentColumn.add(clockPanel);
-        rightContentColumn.add(Box.createRigidArea(new Dimension(0, 10)));    // Gap in between
-        rightContentColumn.add(buttonsPanel);
+        // Adding control panel and buttons panel into panel
+        panel.add(clockPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));    // Gap in between
+        panel.add(buttonsPanel);
 
-        // Adding leftColumn and rightColumn into contentPanel
-        contentPanel.add(leftContentColumn);
-        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));    // Gap in between
-        contentPanel.add(centerContentColumn);
-        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        contentPanel.add(rightContentColumn);
-
-        // FOOTER PANEL ----------------------------------------
-        JButton buttonBack = new JButton("Back");
-        buttonBack.setFocusPainted(false);
-        buttonBack.addActionListener(e -> {
-            app.showInputPage();
-        });
-
-        footerPanel.add(buttonBack);
-
-
-        // Add main panels and set positions
-        add(headerPanel, BorderLayout.NORTH);
-        add(leftPanel, BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
-        add(rightPanel, BorderLayout.EAST);
-        add(footerPanel, BorderLayout.SOUTH);
+        return panel;
     }
+
 
     // Functions
     @Override
