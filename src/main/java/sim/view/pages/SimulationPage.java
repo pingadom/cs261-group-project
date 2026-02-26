@@ -91,10 +91,10 @@ public class SimulationPage extends JPanel {
         // Panels for all stats
         JPanel cancelledStats = new StatsPanel(new Color(0xE00A0A), "Cancelled", 0);
         JPanel divertedStats = new StatsPanel(new Color(0xE00A0A), "Diverted", 0);
-        JPanel avgQueueStats = new StatsPanel(new Color(0xFF8C0A), "Avg Queue", 0);
-        JPanel avgHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Avg Holding", 0);
-        JPanel maxQueueStats = new StatsPanel(new Color(0xFF8C0A), "Max Queue", 0);
-        JPanel maxHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Max Holding", 0);
+        JPanel avgQueueStats = new StatsPanel(new Color(0xFF8C0A), "Avg Queue Delay", 0);
+        JPanel avgHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Avg Holding Delay", 0);
+        JPanel maxQueueStats = new StatsPanel(new Color(0xFF8C0A), "Max Queue Delay", 0);
+        JPanel maxHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Max Holding Delay", 0);
         JPanel departedStats = new StatsPanel(new Color(0x0AE04E), "Departed", 0);
         JPanel arrivedStats = new StatsPanel(new Color(0x0AE04E), "Arrived", 0);
 
@@ -154,8 +154,7 @@ public class SimulationPage extends JPanel {
         startPauseButton.setLayout(new BorderLayout());
         startPauseButton.setFocusPainted(false);
         startPauseButton.setBackground(Color.black);
-        startPauseButton.setPreferredSize(new Dimension(120, 40));
-        startPauseButton.setMaximumSize(new Dimension(120, 40));
+        startPauseButton.setButtonsize(120, 40);
         startPauseButton.addActionListener(e -> {
             toggleStartButton();
         });
@@ -168,8 +167,7 @@ public class SimulationPage extends JPanel {
 
         // Reset button
         resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
-        resetButton.setPreferredSize(new Dimension(120, 40));
-        resetButton.setMaximumSize(new Dimension(120, 40));
+        resetButton.setButtonsize(120, 40);
         resetButton.setFont(new Font("SansSerif", Font.BOLD, 16));
         resetButton.addActionListener(e -> {
             resetSimulation();
@@ -274,7 +272,8 @@ public class SimulationPage extends JPanel {
     private JPanel createRunwayPanel() {
         // Runway panel
         JPanel runwayPanel = new JPanel();
-        runwayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        runwayPanel.setBackground(Color.white);
+        // runwayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         runwayPanel.setPreferredSize(new Dimension(670, 470));
 
         // Main container for all the runways
@@ -282,15 +281,15 @@ public class SimulationPage extends JPanel {
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
         // Add runway card for each runway
-        runwaysContainer.add(new RunwayCard(1, "Available", "Landing", "AA100", true));
-        runwaysContainer.add(new RunwayCard(2, "Available", "Take-off", "AA104", true));
-        runwaysContainer.add(new RunwayCard(3, "Available", "Landing", "AA140", false));
-        runwaysContainer.add(new RunwayCard(4, "Available", "Take-off", "AA141", false));
-        runwaysContainer.add(new RunwayCard(5, "Available", "Landing", "AA120", false));
-        runwaysContainer.add(new RunwayCard(6, "Available", "Mixed", "BB140", true));
+        runwaysContainer.add(new RunwayCard(1, "Available", "Landing", "AA100", true, this));
+        runwaysContainer.add(new RunwayCard(2, "Available", "Take-off", "AA104", true, this));
+        runwaysContainer.add(new RunwayCard(3, "Available", "Landing", "AA140", false, this));
+        runwaysContainer.add(new RunwayCard(4, "Available", "Take-off", "AA141", false, this));
+        runwaysContainer.add(new RunwayCard(5, "Available", "Landing", "AA120", false, this));
+        runwaysContainer.add(new RunwayCard(6, "Available", "Mixed", "BB140", true, this));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
-        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(660, 460));
+        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(670, 460));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
         runwayPanel.add(scrollPaneRunwaysContainer);
@@ -314,7 +313,6 @@ public class SimulationPage extends JPanel {
         // Buttons panel
         JPanel buttonsPanel = new JPanel(new GridBagLayout());
         buttonsPanel.setBackground(Color.white);
-        // buttonsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         buttonsPanel.setPreferredSize(new Dimension(200, 430));
 
         GridBagConstraints gbc = new GridBagConstraints();

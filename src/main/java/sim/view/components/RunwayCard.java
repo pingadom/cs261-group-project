@@ -1,11 +1,14 @@
 package sim.view.components;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.Map;
 
 public class RunwayCard extends JPanel {
     private int runwayId;
+    private JPanel parentPanel;
 
     private JLabel statusLabel;
     private JLabel modeLabel;
@@ -13,40 +16,86 @@ public class RunwayCard extends JPanel {
     private JLabel occupiedLabel;
 
     // Constructor
-    public RunwayCard(int id, String status, String mode, String aircraft, Boolean occupied) {
+    public RunwayCard(int id, String status, String mode, String aircraft, Boolean occupied, JPanel parent) {
         this.runwayId = id;
+        this.parentPanel = parent;
 
-        setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createTitledBorder("Runway " + id));
-        setPreferredSize(new Dimension(500, 100));
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        // Add the labels
+        TitledBorder titleBorder = BorderFactory.createTitledBorder("Runway " + runwayId);
+        titleBorder.setTitleFont(new Font("Arial", Font.ITALIC, 16));
+        titleBorder.setTitleColor(Color.black);
+        titleBorder.setTitleJustification(TitledBorder.LEFT);
+
+        Border padding = BorderFactory.createEmptyBorder(10, 10, 10, 10);
+        Border compoundBorder = BorderFactory.createCompoundBorder(titleBorder, padding);
+
+        setBorder(compoundBorder);
+        setPreferredSize(new Dimension(640, 100));
+        setMinimumSize(new Dimension(640, 100));
+        setMaximumSize(new Dimension(640, 100));
+
+        Font labelFont = new Font("Arial", Font.BOLD, 14);
+
+        JPanel modePanel = new JPanel();
+        //modePanel.setBackground(Color.cyan);
+        modePanel.setPreferredSize(new Dimension(110, 80));
+        modePanel.setLayout(new BorderLayout());
         modeLabel = new JLabel("Mode: " + mode);
+        modeLabel.setFont(labelFont);
+        modeLabel.setHorizontalAlignment(JLabel.CENTER);
+        modePanel.add(modeLabel, BorderLayout.CENTER);
+
+        JPanel statusPanel = new JPanel();
+        //statusPanel.setBackground(Color.pink);
+        statusPanel.setPreferredSize(new Dimension(140, 80));
+        statusPanel.setLayout(new BorderLayout());
         statusLabel = new JLabel("Status: " + status);
+        statusLabel.setFont(labelFont);
+        statusLabel.setHorizontalAlignment(JLabel.CENTER);
+        statusPanel.add(statusLabel, BorderLayout.CENTER);
+
+        JPanel aircraftPanel = new JPanel();
+        //aircraftPanel.setBackground(Color.orange);
+        aircraftPanel.setPreferredSize(new Dimension(110, 80));
+        aircraftPanel.setLayout(new BorderLayout());
         aircraftLabel = new JLabel("Aircraft: " + aircraft);
+        aircraftLabel.setFont(labelFont);
+        aircraftLabel.setHorizontalAlignment(JLabel.CENTER);
+        aircraftPanel.add(aircraftLabel, BorderLayout.CENTER);
+
+        JPanel occupiedPanel = new JPanel();
+        //occupiedPanel.setBackground(Color.red);
+        occupiedPanel.setPreferredSize(new Dimension(80, 80));
+        occupiedPanel.setLayout(new BorderLayout());
         if (occupied) {
             occupiedLabel = new JLabel("Occupied");
         } else {
             occupiedLabel = new JLabel("Free");
         }
-
-        // Define GridBagLayout
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 15, 0, 15);
-
-        gbc.gridx = 0; gbc.gridy = 0;
-        add(modeLabel, gbc);
-        gbc.gridx = 1; add(statusLabel, gbc);
-        gbc.gridx = 2; add(aircraftLabel, gbc);
-        gbc.gridx = 3; add(occupiedLabel, gbc);
+        occupiedLabel.setFont(labelFont);
+        occupiedLabel.setHorizontalAlignment(JLabel.CENTER);
+        occupiedPanel.add(occupiedLabel, BorderLayout.CENTER);
 
         // Button to change the runway's configuration
-        JButton runwayConfigButton = new JButton("Configure Runway");
+        StyledButton runwayConfigButton = new StyledButton("Configure", new Color(70, 130, 180), new Color(100, 150, 200), new Color(70, 130, 180), new Color(70, 130, 180));
+        runwayConfigButton.setButtonsize(90, 30);
+        runwayConfigButton.setFont(new Font("Arial", Font.BOLD, 14));
         runwayConfigButton.addActionListener(e -> {
             createRunwayConfigPanel();
         });
 
-        gbc.gridx = 4; add(runwayConfigButton, gbc);
+
+        // Add labels and buttons
+        add(modePanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+        add(statusPanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+        add(aircraftPanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+        add(occupiedPanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+        add(runwayConfigButton);
     }
 
     // Setter for runway attributes
@@ -68,7 +117,7 @@ public class RunwayCard extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 10 ,20, 10));
-        panel.setPreferredSize(new Dimension(400, 200));
+        panel.setPreferredSize(new Dimension(400, 180));
 
         // Title
         JPanel titlePanel = new JPanel(new BorderLayout());
@@ -84,34 +133,35 @@ public class RunwayCard extends JPanel {
 
         // Mode and Status
         JPanel comboPanel = new JPanel(new GridBagLayout());
-        comboPanel.setPreferredSize(new Dimension(380, 150));
+        comboPanel.setPreferredSize(new Dimension(380, 130));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(5, 5, 5, 5);
 
         // Mode Selection
-        Font labelFont = new Font("Arial", Font.BOLD, 16);
+        Font labelFontBold = new Font("Arial", Font.BOLD, 16);
+        Font labelFontPlain = new Font("Arial", Font.PLAIN, 16);
 
         JLabel modeLabel = new JLabel("Mode: ");
-        modeLabel.setFont(labelFont);
+        modeLabel.setFont(labelFontBold);
         JComboBox<String> modeCombo = new JComboBox<>(
           new String[]{"Landing Only", "Takeoff Only", "Mixed Mode"}
         );
-        modeCombo.setFont(labelFont);
+        modeCombo.setFont(labelFontPlain);
 
         // Status Selection
         JLabel statusLabel = new JLabel("Status: ");
-        statusLabel.setFont(labelFont);
+        statusLabel.setFont(labelFontBold);
         JComboBox<String> statusCombo = new JComboBox<>(
           new String[]{"Available", "Maintenance"}
         );
-        statusCombo.setFont(labelFont);
+        statusCombo.setFont(labelFontPlain);
 
         gbc.gridx = 0; gbc.gridy = 0;
         comboPanel.add(modeLabel, gbc);
         gbc.gridy = 1; comboPanel.add(modeCombo, gbc);
-        gbc.gridx = 1; comboPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+        gbc.gridx = 1; comboPanel.add(Box.createRigidArea(new Dimension(50, 0)));
         gbc.gridx = 2; gbc.gridy = 0;
         comboPanel.add(statusLabel, gbc);
         gbc.gridy = 1; comboPanel.add(statusCombo, gbc);
@@ -121,7 +171,7 @@ public class RunwayCard extends JPanel {
 
         // Show the JOptionPane
         int result = JOptionPane.showConfirmDialog(
-          this,
+          parentPanel,
           panel,
           "Configure Runway " + runwayId,
           JOptionPane.OK_CANCEL_OPTION,
