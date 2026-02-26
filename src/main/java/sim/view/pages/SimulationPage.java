@@ -282,12 +282,12 @@ public class SimulationPage extends JPanel {
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
         // Add runway card for each runway
-        runwaysContainer.add(new RunwayCard("1", "Available", "Landing", "AA100", true));
-        runwaysContainer.add(new RunwayCard("2", "Available", "Take-off", "AA104", true));
-        runwaysContainer.add(new RunwayCard("3", "Available", "Landing", "AA140", false));
-        runwaysContainer.add(new RunwayCard("4", "Available", "Take-off", "AA141", false));
-        runwaysContainer.add(new RunwayCard("5", "Available", "Landing", "AA120", false));
-        runwaysContainer.add(new RunwayCard("6", "Available", "Mixed", "BB140", true));
+        runwaysContainer.add(new RunwayCard(1, "Available", "Landing", "AA100", true));
+        runwaysContainer.add(new RunwayCard(2, "Available", "Take-off", "AA104", true));
+        runwaysContainer.add(new RunwayCard(3, "Available", "Landing", "AA140", false));
+        runwaysContainer.add(new RunwayCard(4, "Available", "Take-off", "AA141", false));
+        runwaysContainer.add(new RunwayCard(5, "Available", "Landing", "AA120", false));
+        runwaysContainer.add(new RunwayCard(6, "Available", "Mixed", "BB140", true));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
         scrollPaneRunwaysContainer.setPreferredSize(new Dimension(660, 460));
