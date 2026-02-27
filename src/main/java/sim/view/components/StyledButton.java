@@ -23,7 +23,7 @@ public class StyledButton extends JButton {
         this.borderColor = borderColor;
 
         // Basic setup
-        setFont(new Font("SansSerif", Font.BOLD, 20));
+        setFont(new Font("SansSerif", Font.BOLD, 17));
         setBackground(normalColor);
         setForeground(Color.WHITE);
         setFocusPainted(false);
@@ -32,8 +32,8 @@ public class StyledButton extends JButton {
         setOpaque(true);
 
         // Size
-        setPreferredSize(new Dimension(200, 90));
-        setMinimumSize(new Dimension(200, 90));
+        setPreferredSize(new Dimension(210, 70));
+        setMinimumSize(new Dimension(210, 70));
         // setMargin(new Insets(20, 20, 20, 20));  - no change
 
         // Hover and press effects

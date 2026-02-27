@@ -132,8 +132,9 @@ public class SimulationPage extends JPanel {
         JPanel runwayPanel = createRunwayPanel();
 
         // Adding into topCenterColumn
+        panel.add(Box.createVerticalGlue());
         panel.add(controlPanel);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
         panel.add(runwayPanel);
 
         return panel;
@@ -274,7 +275,7 @@ public class SimulationPage extends JPanel {
         JPanel runwayPanel = new JPanel();
         runwayPanel.setBackground(Color.white);
         // runwayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        runwayPanel.setPreferredSize(new Dimension(670, 470));
+        runwayPanel.setPreferredSize(new Dimension(670, 475));
 
         // Main container for all the runways
         JPanel runwaysContainer = new JPanel();
@@ -289,7 +290,7 @@ public class SimulationPage extends JPanel {
         runwaysContainer.add(new RunwayCard(6, "Available", "Mixed", "BB140", true, this));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
-        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(670, 460));
+        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(670, 470));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
         runwayPanel.add(scrollPaneRunwaysContainer);
@@ -317,20 +318,44 @@ public class SimulationPage extends JPanel {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 0;
-        gbc.insets = new Insets(20, 10, 20, 10);
+        gbc.insets = new Insets(7, 5, 7, 5);
 
-        JButton listOfFlightsButton = new StyledButton("List of Flights", new Color(0x1B30A6), new Color(0x2A45C9), new Color(0x0F1F73), new Color(0x8799E0));
-        buttonsPanel.add(listOfFlightsButton, gbc);
+        JButton flightsSoonArrivingButton = new StyledButton("Flights Soon Arriving", new Color(0x1B30A6), new Color(0x2A45C9), new Color(0x0F1F73), new Color(0x8799E0));
+        flightsSoonArrivingButton.addActionListener(e -> {
+            showFlightsSoonArrivingPage();
+        });
+        buttonsPanel.add(flightsSoonArrivingButton, gbc);
 
         gbc.gridy = 1;
-        JButton holdingPatternButton = new StyledButton("Holding Pattern", new Color(0x4A1073), new Color(0x621A96), new Color(0x320A4F), new Color(0x9B6BCE));
-        buttonsPanel.add(holdingPatternButton, gbc);
+        JButton flightsSoonDepartingButton = new StyledButton("Flights Soon Departing", new Color(0x1B30A6), new Color(0x2A45C9), new Color(0x0F1F73), new Color(0x8799E0));
+        flightsSoonDepartingButton.addActionListener(e -> {
+            showFlightsSoonDepartingPage();
+        });
+        buttonsPanel.add(flightsSoonDepartingButton, gbc);
 
         gbc.gridy = 2;
-        JButton takeoffQueueButton = new StyledButton("Take-off Queue", new Color(0x141E54), new Color(0x1E2D7A), new Color(0x0B1238), new Color(0x5A6AB0));
+        JButton holdingPatternButton = new StyledButton("Holding Pattern", new Color(0x4A1073), new Color(0x621A96), new Color(0x320A4F), new Color(0x9B6BCE));
+        holdingPatternButton.addActionListener(e -> {
+            showHoldingPatternPage();
+        });
+        buttonsPanel.add(holdingPatternButton, gbc);
+
+        gbc.gridy = 3;
+        JButton takeoffQueueButton = new StyledButton("Takeoff Queue", new Color(0x4A1073), new Color(0x621A96), new Color(0x320A4F), new Color(0x9B6BCE));
+        takeoffQueueButton.addActionListener(e -> {
+            showTakeoffQueuePage();
+        });
         buttonsPanel.add(takeoffQueueButton, gbc);
 
+        gbc.gridy = 4;
+        JButton processedFlightsButton = new StyledButton("Processed Flights", new Color(0x141E54), new Color(0x1E2D7A), new Color(0x0B1238), new Color(0x5A6AB0));
+        processedFlightsButton.addActionListener(e -> {
+            showProcessedFlightsPage();
+        });
+        buttonsPanel.add(processedFlightsButton, gbc);
+
         // Adding control panel and buttons panel into panel
+        panel.add(Box.createVerticalGlue());
         panel.add(clockPanel);
         panel.add(Box.createRigidArea(new Dimension(0, 10)));    // Gap in between
         panel.add(buttonsPanel);
@@ -353,6 +378,32 @@ public class SimulationPage extends JPanel {
 
     private void resetSimulation() {
         System.out.println("System reset");
+    }
+
+
+    private void showFlightsSoonArrivingPage() {
+        // Show the page
+        System.out.println("Flights soon arriving");
+    }
+
+    private void showFlightsSoonDepartingPage() {
+        // Show the page
+        System.out.println("Flights soon departing");
+    }
+
+    private void showHoldingPatternPage() {
+        // Show the page
+        System.out.println("Holding Pattern");
+    }
+
+    private void showTakeoffQueuePage() {
+        // Show the page
+        System.out.println("Takeoff Queue");
+    }
+
+    private void showProcessedFlightsPage() {
+        // Show the page
+        System.out.println("Processed Flights");
     }
 
 }

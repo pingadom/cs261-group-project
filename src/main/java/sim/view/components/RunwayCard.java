@@ -85,7 +85,6 @@ public class RunwayCard extends JPanel {
             createRunwayConfigPanel();
         });
 
-
         // Add labels and buttons
         add(modePanel);
         add(Box.createRigidArea(new Dimension(10, 0)));

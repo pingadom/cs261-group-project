@@ -32,7 +32,7 @@ public class RunwayPanel extends JPanel {
         setPreferredSize(new Dimension(610, 80));
 
         Font titleFont = new Font("Arial", Font.ITALIC, 16);
-        Font labelFont = new Font("Arial", Font.BOLD, 14);
+        Font labelFont = new Font("Arial", Font.BOLD, 15);
         Font comboFont = new Font("Arial", Font.PLAIN, 14);
 
         // titlePanel : title with delete button
