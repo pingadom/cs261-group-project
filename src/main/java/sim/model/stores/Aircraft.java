@@ -8,13 +8,14 @@ public class Aircraft {
     private String callsign;
     private String operator;
     private String origin;
-    private LocalTime time;
+    private double time;
     private int altitude;
     private int groundSpeed;
-    private int fuel;
+    private double fuel;
     private String emergency;
+    private String status;
 
-    public Aircraft(String _callsign,String _operator,String _origin,LocalTime _time,int _altitude,int _groundSpeed,int _fuel,String _emergency){
+    public Aircraft(String _callsign,String _operator,String _origin,double _time,int _altitude,int _groundSpeed,double _fuel,String _emergency){
         callsign = _callsign;
         operator = _operator;
         origin = _origin;
@@ -23,6 +24,11 @@ public class Aircraft {
         groundSpeed = _groundSpeed;
         fuel = _fuel;
         emergency = _emergency;
+        status = "unprocessed";
+    }
+
+    public String getStatus(){
+        return status;
     }
     
     public String getCallsign(){
@@ -37,7 +43,7 @@ public class Aircraft {
         return origin;
     }
 
-    public LocalTime getTime(){
+    public double getTime(){
         return time;
     }
 
@@ -49,7 +55,7 @@ public class Aircraft {
         return groundSpeed;
     }
 
-    public int getFuel(){
+    public double getFuel(){
         return fuel;
     }
 
@@ -78,7 +84,7 @@ public class Aircraft {
         return 1;
     }
 
-    public int setTime(LocalTime newTime){
+    public int setTime(double newTime){
         time = newTime;
         return 1;
     }
@@ -97,7 +103,7 @@ public class Aircraft {
         return 0;
     }
 
-    public int setFuel(int newFuel){
+    public int setFuel(double newFuel){
         if (newFuel > 0){
         fuel = newFuel;
         return 1;}
@@ -106,6 +112,11 @@ public class Aircraft {
 
     public int setEmergency(String newEmergency){
         emergency = newEmergency;
+        return 1;
+    }
+
+    public int setStatus(String newStatus){
+        status = newStatus;
         return 1;
     }
 

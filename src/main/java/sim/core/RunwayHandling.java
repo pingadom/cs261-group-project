@@ -2,7 +2,6 @@ package sim.core;
 
 import sim.model.stores.*;
 
-import java.time.LocalTime;
 
 public class RunwayHandling{
 
@@ -12,7 +11,7 @@ public class RunwayHandling{
                             HoldingPattern<Aircraft> holdingPattern,
                             List<Runway> runways,
                             List<Aircraft> postProcessing,
-                            Clock clock){
+                            SimClock clock){
         boolean flag = true;
         while (flag)  {
             flag = moveToHoldingPattern(arrivals,holdingPattern,clock);
@@ -25,16 +24,16 @@ public class RunwayHandling{
         boolean landingFlag = true;
         while (takeOffFlag || landingFlag){
             if (landingFlag){
-                landingFlag = landPlane(holdingPattern,runways,postProcessing,clock);
+                landingFlag = landPlane(holdingPattern,runways,postProcessing);
             }
             if (takeOffFlag) {
-                takeOffFlag = takeOff(takeOffQueue,runways,postProcessing,clock);
+                takeOffFlag = takeOff(takeOffQueue,runways,postProcessing);
             }
         }
                             }
 
-        public boolean moveToHoldingPattern(List<Aircraft> arrivals,HoldingPattern<Aircraft> holdingPattern,Clock clock){
-            if (arrivals.get(0).getValue().getTime().compareTo(clock.simulationTime) <= 0){
+        public boolean moveToHoldingPattern(List<Aircraft> arrivals,HoldingPattern<Aircraft> holdingPattern,SimClock clock){
+            if (arrivals.get(0).getValue().getTime() <= clock.now()){
                 LinkedListElement<Aircraft> arrival = new LinkedListElement<>();
                 arrival = arrivals.pop(0);
                 holdingPattern.add(arrival);
@@ -43,8 +42,8 @@ public class RunwayHandling{
             return false;
         }
 
-        public boolean moveToTakeOff(List<Aircraft> departures,List<Aircraft> takeOffQueue,Clock clock){
-            if (departures.get(0).getValue().getTime().compareTo(clock.simulationTime) <= 0){
+        public boolean moveToTakeOff(List<Aircraft> departures,List<Aircraft> takeOffQueue,SimClock clock){
+            if (departures.get(0).getValue().getTime() <= clock.now()){
                 LinkedListElement<Aircraft> departure = new LinkedListElement<>();
                 departure = departures.pop(0);
                 takeOffQueue.add(departure);
@@ -53,7 +52,7 @@ public class RunwayHandling{
             return false;
         }
 
-        public boolean landPlane(HoldingPattern<Aircraft> holdingPattern,List<Runway> runways,List<Aircraft> postProcessing,Clock clock){
+        public boolean landPlane(HoldingPattern<Aircraft> holdingPattern,List<Runway> runways,List<Aircraft> postProcessing){
             if (holdingPattern.getSize() == 0){
                 return false;
             }
@@ -64,6 +63,7 @@ public class RunwayHandling{
                 ptr.getValue().getMode().compareTo("landing") == 0 &&
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     arrival = holdingPattern.pop();
+                    arrival.getValue().setStatus("arrived");
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
                     return true;
@@ -75,6 +75,7 @@ public class RunwayHandling{
                 ptr.getValue().getMode().compareTo("mixed") == 0 &&
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     arrival = holdingPattern.pop();
+                    arrival.getValue().setStatus("arrived");
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
                     return true;
@@ -84,7 +85,7 @@ public class RunwayHandling{
 
         }
 
-        public boolean takeOff(List<Aircraft> takeOffQueue,List<Runway> runways,List<Aircraft> postProcessing,Clock clock){
+        public boolean takeOff(List<Aircraft> takeOffQueue,List<Runway> runways,List<Aircraft> postProcessing){
             if (takeOffQueue.getSize() == 0){
                 return false;
             }
@@ -95,8 +96,10 @@ public class RunwayHandling{
                 ptr.getValue().getMode().compareTo("takeoff") == 0 &&
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     departure = takeOffQueue.pop(0);
+                    departure.getValue().setStatus("departed");
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
+                    
                     return true;
                 }
             }
@@ -106,6 +109,7 @@ public class RunwayHandling{
                 ptr.getValue().getMode().compareTo("mixed") == 0 &&
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     departure = takeOffQueue.pop(0);
+                    departure.getValue().setStatus("departed");
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
                     return true;
@@ -113,6 +117,31 @@ public class RunwayHandling{
             }
             return false;
 
+        }
+
+        public void fuelConsumption(HoldingPattern<Aircraft> holdingPattern, double realDeltaSeconds, double speedMultiplier,List<Aircraft> postProcessing){
+            LinkedListElement<Aircraft> ptr = holdingPattern.getEmergency().getHead();
+            int i = 0;
+            while (ptr != null){
+                ptr.getValue().setFuel(ptr.getValue().getFuel() - realDeltaSeconds * speedMultiplier);
+                if (ptr.getValue().getFuel() < 600){
+                    holdingPattern.getEmergency().pop(i);
+                    ptr.getValue().setStatus("diverted");
+                    postProcessing.add(ptr);
+                }
+                i++; 
+            }
+            ptr = holdingPattern.getNonEmergency().getHead();
+            i = 0;
+            while (ptr != null){
+                ptr.getValue().setFuel(ptr.getValue().getFuel() - realDeltaSeconds * speedMultiplier);
+                if (ptr.getValue().getFuel() < 1200){
+                    holdingPattern.getNonEmergency().pop(i);
+                    ptr.setPriority(1);
+                    holdingPattern.add(ptr);
+                }
+                i++; 
+            }
         }
 }   
                         
