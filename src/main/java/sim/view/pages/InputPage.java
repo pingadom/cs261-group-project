@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class InputPage extends JPanel {
-    private App app;
+    private final App app;
 
     // Global parameters
     int numRunways = 1;
@@ -26,7 +26,6 @@ public class InputPage extends JPanel {
     private List<Runway> runways = new ArrayList<>();
 
     // User input fields
-    JTextField flightsField;
     JTextField inboundRateField;
     JTextField outboundRateField;
     JTextField durationField;
@@ -172,14 +171,12 @@ public class InputPage extends JPanel {
     // RUNWAY CONFIG PANEL
     private JPanel createRunwayConfigPanel() {
         JPanel panel = new JPanel();
-        // panel.setBackground(new Color(0xBDBDBD));
         panel.setBackground(new Color(70, 130, 180));
         panel.setPreferredSize(new Dimension(640, 270));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         // TITLE PANEL
         JPanel titlePanel = new JPanel();
-        // titlePanel.setBackground(new Color(0xBDBDBD));
         titlePanel.setBackground(new Color(100, 150, 200));
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         titlePanel.setPreferredSize(new Dimension(640, 30));
@@ -332,7 +329,6 @@ public class InputPage extends JPanel {
     // START SIM PANEL
     private JPanel createStartSimPanel()  {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        //panel.setBackground(new Color(0xBDBDBD));
         panel.setBackground(new Color(100, 150, 200));
         panel.setMinimumSize(new Dimension(640, 30));
 
@@ -366,6 +362,17 @@ public class InputPage extends JPanel {
             int inboundRate = Integer.parseInt(inboundRateField.getText());
             int outboundRate = Integer.parseInt(outboundRateField.getText());
             int duration = Integer.parseInt(durationField.getText());
+
+            // Check if negative value
+            if (inboundRate < 1 || outboundRate < 1 || duration < 1) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Each field should be at least 1",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
 
             // Debugging by printing
             System.out.println("Duration: " + duration);

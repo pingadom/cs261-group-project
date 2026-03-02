@@ -104,7 +104,9 @@ public class RunwayPanel extends JPanel {
         if (selectedStatus.equals("Available")) {
             runway.setStatus("available");
         } else if (selectedStatus.equals("Maintenance")) {
-            runway.setStatus(selectedStatus);
+            runway.setStatus("maintenance");
+        } else if (selectedStatus.equals("None")) {
+            runway.setStatus("none");
         }
     }
 }
