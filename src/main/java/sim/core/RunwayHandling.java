@@ -1,122 +1,102 @@
 package sim.core;
 
-import sim.model.stores.*;
+import sim.config.SimConfig;
+import sim.core.metrics.Metrics;
+import sim.model.stores.HoldingPattern;
+import sim.model.stores.LinkedListElement;
+import sim.model.stores.List;
+import sim.model.stores.Aircraft;
+import sim.model.stores.Runway;
 
-import java.time.LocalTime;
+public final class RunwayHandling {
 
-public class RunwayHandling{
-
-    public void runwayHandling(List<Aircraft> arrivals, 
-                            List<Aircraft> departures, 
-                            List<Aircraft> takeOffQueue, 
-                            HoldingPattern<Aircraft> holdingPattern,
-                            List<Runway> runways,
-                            List<Aircraft> postProcessing,
-                            Clock clock){
-        boolean flag = true;
-        while (flag)  {
-            flag = moveToHoldingPattern(arrivals,holdingPattern,clock);
-        }               
-        flag = true;
-        while (flag){
-            flag = moveToTakeOff(departures,takeOffQueue,clock);
+  // Assign planes from holding pattern to runways (landing first, then mixed). //
+  public void handleInbound(
+      HoldingPattern<Aircraft> holdingPattern,
+      List<Runway> runways,
+      List<Aircraft> postProcessing,
+      SimClock clock,
+      Metrics metrics
+      
+  ) {
+    // Keep trying to assign while we can (multiple runways may be free)
+    if (holdingPattern.getSize() > 0) {
+        System.out.printf("[t=%.0fs] DEBUG RUNWAYS (holding=%d)%n", clock.now(), holdingPattern.getSize());
+        LinkedListElement<Runway> p = runways.getHead();
+        while (p != null) {
+            Runway r = p.getValue();
+            if (r != null) {
+            System.out.printf("  rw#%d mode=%s status=%s occ='%s' rem=%d avail=%s%n",
+                r.getID(), r.getMode(), r.getStatus(),
+                r.getOccupied(), r.getTimeRemaining(),
+                r.isAvailableNow());
+            } else {
+            System.out.println("  rw=<null node>");
+            }
+            p = p.getNext();
         }
-        boolean takeOffFlag = true;
-        boolean landingFlag = true;
-        while (takeOffFlag || landingFlag){
-            if (landingFlag){
-                landingFlag = landPlane(holdingPattern,runways,postProcessing,clock);
-            }
-            if (takeOffFlag) {
-                takeOffFlag = takeOff(takeOffQueue,runways,postProcessing,clock);
-            }
+    }
+
+    boolean assignedAny = false;
+    boolean assigned = true;
+
+    while (assigned) {
+        assigned = landOne(holdingPattern, runways, postProcessing, clock, metrics);
+        if (assigned) assignedAny = true;
+    }
+
+    if (!assignedAny && holdingPattern.getSize() > 0) {
+    // Debug why nothing landed this tick
+        System.out.printf("[t=%.0fs] NO LANDING POSSIBLE: holding=%d (no available LANDING/MIXED runway?)%n",
+            clock.now(), holdingPattern.getSize());
         }
-                            }
+  }
 
-        public boolean moveToHoldingPattern(List<Aircraft> arrivals, HoldingPattern<Aircraft> holdingPattern, Clock clock){
-            if (arrivals.getSize() == 0) return false;
+  private boolean landOne(
+      HoldingPattern<Aircraft> holdingPattern,
+      List<Runway> runways,
+      List<Aircraft> postProcessing,
+      SimClock clock,
+      Metrics metrics
+  ) {
+    if (holdingPattern.getSize() == 0) return false;
 
-            if (arrivals.get(0).getValue().getTime().compareTo(clock.simulationTime) <= 0){
-                LinkedListElement<Aircraft> arrival = arrivals.pop(0);
-                holdingPattern.add(arrival);
-                return true;
-            }
-            return false;
+    // 1) Prefer dedicated LANDING runways
+    Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.LANDING);
+    if (rw == null) {
+      // 2) Then allow MIXED
+      rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
+    }
+    if (rw == null) return false;
+
+    LinkedListElement<Aircraft> arrival = holdingPattern.pop();
+    postProcessing.add(arrival);
+
+    rw.occupy(arrival.getValue().getCallsign());
+    metrics.arrivalsProcessed++;
+    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d%n",
+    clock.now(), arrival.getValue().getCallsign(), rw.getID());
+
+    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d (service=%ds)%n",
+        clock.now(),
+        arrival.getValue().getCallsign(),
+        rw.getID(),
+        rw.getServiceTimeSeconds()
+    );
+
+    return true;
+  }
+
+    private Runway findAvailableRunway(List<Runway> runways, SimConfig.RunwayMode mode) {
+        LinkedListElement<Runway> ptr = runways.getHead();
+        while (ptr != null) {
+            Runway rw = ptr.getValue();
+
+            // ✅ Skip sentinel / empty nodes
+            if (rw != null && rw.getMode() == mode && rw.isAvailableNow()) return rw;
+
+            ptr = ptr.getNext();
         }
-
-        public boolean moveToTakeOff(List<Aircraft> departures, List<Aircraft> takeOffQueue, Clock clock){
-            if (departures.getSize() == 0) return false;
-
-            if (departures.get(0).getValue().getTime().compareTo(clock.simulationTime) <= 0){
-                LinkedListElement<Aircraft> departure = departures.pop(0);
-                takeOffQueue.add(departure);
-                return true;
-            }
-            return false;
+        return null;
         }
-
-        public boolean landPlane(HoldingPattern<Aircraft> holdingPattern,List<Runway> runways,List<Aircraft> postProcessing,Clock clock){
-            if (holdingPattern.getSize() == 0){
-                return false;
-            }
-            LinkedListElement<Aircraft> arrival = new LinkedListElement<>();
-            LinkedListElement<Runway> ptr = runways.getHead();
-            while (ptr != null){
-                if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("landing") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
-                    arrival = holdingPattern.pop();
-                    postProcessing.add(arrival);
-                    ptr.getValue().setOccupied(arrival.getValue().getCallsign());
-                    return true;
-                }
-                ptr.getNext();
-            }
-
-            while (ptr != null){
-                if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("mixed") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
-                    arrival = holdingPattern.pop();
-                    postProcessing.add(arrival);
-                    ptr.getValue().setOccupied(arrival.getValue().getCallsign());
-                    return true;
-                }
-                ptr.getNext();
-            }
-            return false;
-
-        }
-
-        public boolean takeOff(List<Aircraft> takeOffQueue,List<Runway> runways,List<Aircraft> postProcessing,Clock clock){
-            if (takeOffQueue.getSize() == 0){
-                return false;
-            }
-            LinkedListElement<Aircraft> departure = new LinkedListElement<>();
-            LinkedListElement<Runway> ptr = runways.getHead();
-            while (ptr != null){
-                if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("takeoff") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
-                    departure = takeOffQueue.pop(0);
-                    postProcessing.add(departure);
-                    ptr.getValue().setOccupied(departure.getValue().getCallsign());
-                    return true;
-                }
-            }
-
-            while (ptr != null){
-                if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("mixed") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
-                    departure = takeOffQueue.pop(0);
-                    postProcessing.add(departure);
-                    ptr.getValue().setOccupied(departure.getValue().getCallsign());
-                    return true;
-                }
-            }
-            return false;
-
-        }
-}   
-                        
+}

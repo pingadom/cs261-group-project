@@ -17,7 +17,6 @@ sim\view\pages\SimulationPage.class
 sim\core\SimClock.class
 sim\config\SimConfig$RunwayMode.class
 sim\core\EngineOptions.class
-sim\model\stores\Clock.class
 sim\model\stores\LinkedListElement.class
 sim\core\ArrivalSchedule.class
 sim\core\metrics\Metrics.class
