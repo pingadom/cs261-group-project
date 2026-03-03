@@ -28,7 +28,7 @@ public final class ArrivalSchedule {
         for (int i = 0; i < n; i++) {
             double target = i * spacing;
             double actual = target + rng.nextGaussian() * SD_SECONDS;
-            actual = clamp(actual, 0.0, durationSeconds);
+            actual = wrap(actual, durationSeconds);
 
             String callsign = "BA" + (100 + i);
             String operator = "BA";
@@ -50,7 +50,7 @@ public final class ArrivalSchedule {
         return events;
     }
 
-    private static double clamp(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
+    private static double wrap(double value, double duration) {
+        return ((value % duration) + duration) % duration;
     }
 }

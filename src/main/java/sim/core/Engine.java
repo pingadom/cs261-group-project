@@ -32,9 +32,10 @@ public final class Engine {
     this.cfg = cfg;
     this.opts = opts;
     this.clock = clock;
-    this.rng = new Random(opts.seed());
+    this.rng = (opts.seed() == null)
+        ? new Random()
+        : new Random(opts.seed());
   }
-
   public void run() {
     System.out.println("Loaded config: runways=" + cfg.runways.size()
         + ", arrivals/hr=" + cfg.arrivalRatePerHour
