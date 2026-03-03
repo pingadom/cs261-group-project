@@ -82,4 +82,10 @@ public class List<E> {
         return 1;
     }
 
+    public int addValue(E value) {
+    LinkedListElement<E> element = new LinkedListElement<>();
+    element.setValue(value);
+    return add(element);
+    }
+
 }
