@@ -381,6 +381,7 @@ public class SimulationPage extends JPanel {
     }
 
 
+    // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
         // Show the page
         System.out.println("Flights soon arriving");

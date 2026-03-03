@@ -22,7 +22,7 @@ public class InputPage extends JPanel {
     StyledButton addRunwayButton;
     StyledButton removeRunwayButton;
 
-    private Map<Integer, RunwayPanel> runwayPanels = new HashMap<>();
+    private Map<Integer, RunwayIinputPanel> runwayPanels = new HashMap<>();
     private List<Runway> runways = new ArrayList<>();
 
     // User input fields
@@ -212,12 +212,12 @@ public class InputPage extends JPanel {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
-        Runway runway = new Runway(newId, "None", "None", 0);
+        Runway runway = new Runway(newId, "none", "none", 0);
         runways.add(runway);    // Add Runway object into list
 
-        RunwayPanel runwayPanel = new RunwayPanel(runway);
-        runwayPanels.put(newId, runwayPanel);
-        runwaysContainer.add(runwayPanel);
+        RunwayIinputPanel runwayIinputPanel = new RunwayIinputPanel(runway);
+        runwayPanels.put(newId, runwayIinputPanel);
+        runwaysContainer.add(runwayIinputPanel);
 
         JScrollPane scrollPaneRunways = new JScrollPane(runwaysContainer);
         scrollPaneRunways.setPreferredSize(new Dimension(640, 255));
@@ -235,12 +235,12 @@ public class InputPage extends JPanel {
             numRunways++;
 
             int newId = getNextAvailableId();   // Get the nextId
-            Runway runway = new Runway(newId, "None", "None", 0 );   // Create a new runway object
+            Runway runway = new Runway(newId, "none", "none", 0 );   // Create a new runway object
             runways.add(runway);    // Add the runway object into the list
             // printRunwayObjects();   // Debugging
 
             // Creating the RunwayPanel for that runway
-            RunwayPanel panel = new RunwayPanel(runway);
+            RunwayIinputPanel panel = new RunwayIinputPanel(runway);
             runwayPanels.put(newId, panel);
 
             // JPanel newRunway = createRunwayPanel(numRunways);
@@ -262,7 +262,7 @@ public class InputPage extends JPanel {
     private void deleteRunway(int id) {
         if (numRunways > 1) {
             // Get the highest ID RunwayPanel
-            RunwayPanel runwayRemoved = runwayPanels.get(id);
+            RunwayIinputPanel runwayRemoved = runwayPanels.get(id);
 
             // Remove from the runwaysContainer
             if (runwayRemoved != null) {
@@ -395,7 +395,7 @@ public class InputPage extends JPanel {
 
     private boolean allRunwaysConfigured() {
         for (Runway runway: runways) {
-            if (runway.getMode().equals("None") || runway.getStatus().equals("None")) {
+            if (runway.getMode().equals("none") || runway.getStatus().equals("none")) {
                 return false;
             }
         }

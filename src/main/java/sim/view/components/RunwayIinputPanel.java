@@ -5,7 +5,7 @@ import sim.model.stores.Runway;
 import javax.swing.*;
 import java.awt.*;
 
-public class RunwayPanel extends JPanel {
+public class RunwayIinputPanel extends JPanel {
     private Runway runway;
     private int runwayId;
 
@@ -13,7 +13,7 @@ public class RunwayPanel extends JPanel {
     private JComboBox<String> statusCombo;
 
 
-    public RunwayPanel(Runway runway) {
+    public RunwayIinputPanel(Runway runway) {
         this.runway = runway;
         this.runwayId = runway.getID();
 
@@ -84,29 +84,28 @@ public class RunwayPanel extends JPanel {
     }
 
     private void updateMode() {
-        // Get the selected mode
         String selectedMode = (String) modeCombo.getSelectedItem();
-        // System.out.println(selectedMode);
 
-        if (selectedMode.equals("Landing Only")) {
-            runway.setMode("landing");
-        } else if (selectedMode.equals("Takeoff Only")) {
-            runway.setMode("takeoff");
-        } else if (selectedMode.equals("Mixed Mode")) {
-            runway.setMode("mixed");
+        if (selectedMode != null) {
+            switch (selectedMode) {
+                case "Landing Only" -> runway.setMode("landing");
+                case "Takeoff Only" -> runway.setMode("takeoff");
+                case "Mixed Mode" -> runway.setMode("mixed");
+                case "None" -> runway.setMode("none");
+            }
         }
+
     }
 
     private void updateStatus() {
         String selectedStatus = (String) statusCombo.getSelectedItem();
-        // System.out.println(selectedStatus);
 
-        if (selectedStatus.equals("Available")) {
-            runway.setStatus("available");
-        } else if (selectedStatus.equals("Maintenance")) {
-            runway.setStatus("maintenance");
-        } else if (selectedStatus.equals("None")) {
-            runway.setStatus("none");
+        if (selectedStatus != null) {
+            switch (selectedStatus) {
+                case "Available" -> runway.setStatus("available");
+                case "Maintenance" -> runway.setStatus("maintenance");
+                case "None" -> runway.setStatus("none");
+            }
         }
     }
 }
