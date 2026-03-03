@@ -10,6 +10,7 @@ import java.util.Random;
 public final class ArrivalSchedule {
 
     private static final double SD_SECONDS = 5 * 60.0; // 5 minutes
+    private static final double EMERGENCY_PROB = 0.02; // 2% of inbound flights
 
     private ArrivalSchedule() {}
 
@@ -40,7 +41,7 @@ public final class ArrivalSchedule {
             int altitude = 10000;      // placeholder
             int groundSpeed = 250;     // placeholder
             int fuel = 40;             // placeholder (minutes)
-            String emergency = "None"; // placeholder
+            String emergency = (rng.nextDouble() < EMERGENCY_PROB) ? randomEmergencyType(rng) : "None";
 
             Aircraft ac = new Aircraft(callsign, operator, origin, time, altitude, groundSpeed, fuel, emergency);
             events.add(new ArrivalEvent(ac, actual));
@@ -52,5 +53,14 @@ public final class ArrivalSchedule {
 
     private static double wrap(double value, double duration) {
         return ((value % duration) + duration) % duration;
+    }
+
+    private static String randomEmergencyType(Random rng) {
+        // Weighted example: most are medical, fewer engine/fuel/etc.
+        double x = rng.nextDouble();
+        if (x < 0.55) return "Medical";
+        if (x < 0.75) return "Fuel";
+        if (x < 0.90) return "Engine";
+        return "Other";
     }
 }
