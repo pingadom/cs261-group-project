@@ -2,6 +2,8 @@ C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-gr
 C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\config\SimConfigLoader.java
 C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\ArrivalEvent.java
 C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\ArrivalSchedule.java
+C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\DepartureEvent.java
+C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\DepartureSchedule.java
 C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\Engine.java
 C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\EngineOptions.java
 C:\Users\pingz\OneDrive - University of Warwick\Documents\@YEAR 2\CS261\cs261-group-project\src\main\java\sim\core\metrics\Metrics.java

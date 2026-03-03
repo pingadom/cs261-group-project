@@ -2,71 +2,45 @@ package sim.core;
 
 import sim.config.SimConfig;
 import sim.core.metrics.Metrics;
-import sim.model.stores.HoldingPattern;
-import sim.model.stores.LinkedListElement;
-import sim.model.stores.List;
-import sim.model.stores.Aircraft;
-import sim.model.stores.Runway;
+import sim.model.stores.*;
 
 public final class RunwayHandling {
 
-  // Assign planes from holding pattern to runways (landing first, then mixed). //
-  public void handleInbound(
+  /** One tick of assignment: keep assigning while there are free runways and waiting planes. */
+  public void handle(
       HoldingPattern<Aircraft> holdingPattern,
+      List<Aircraft> takeOffQueue,
       List<Runway> runways,
       List<Aircraft> postProcessing,
       SimClock clock,
       Metrics metrics
-      
   ) {
-    // Keep trying to assign while we can (multiple runways may be free)
-    if (holdingPattern.getSize() > 0) {
-        System.out.printf("[t=%.0fs] DEBUG RUNWAYS (holding=%d)%n", clock.now(), holdingPattern.getSize());
-        LinkedListElement<Runway> p = runways.getHead();
-        while (p != null) {
-            Runway r = p.getValue();
-            if (r != null) {
-            System.out.printf("  rw#%d mode=%s status=%s occ='%s' rem=%d avail=%s%n",
-                r.getID(), r.getMode(), r.getStatus(),
-                r.getOccupied(), r.getTimeRemaining(),
-                r.isAvailableNow());
-            } else {
-            System.out.println("  rw=<null node>");
-            }
-            p = p.getNext();
-        }
+    boolean didSomething = true;
+    while (didSomething) {
+      didSomething = false;
+
+      // 1) LANDING runways
+      didSomething |= assignLandingToMode(holdingPattern, runways, postProcessing, clock, metrics, SimConfig.RunwayMode.LANDING);
+
+      // 2) TAKEOFF runways
+      didSomething |= assignTakeoffToMode(takeOffQueue, runways, postProcessing, clock, metrics, SimConfig.RunwayMode.TAKEOFF);
+
+      // 3) MIXED runways (policy: prefer landings, else takeoffs)
+      didSomething |= assignMixed(holdingPattern, takeOffQueue, runways, postProcessing, clock, metrics);
     }
-
-    boolean assignedAny = false;
-    boolean assigned = true;
-
-    while (assigned) {
-        assigned = landOne(holdingPattern, runways, postProcessing, clock, metrics);
-        if (assigned) assignedAny = true;
-    }
-
-    if (!assignedAny && holdingPattern.getSize() > 0) {
-    // Debug why nothing landed this tick
-        System.out.printf("[t=%.0fs] NO LANDING POSSIBLE: holding=%d (no available LANDING/MIXED runway?)%n",
-            clock.now(), holdingPattern.getSize());
-        }
   }
 
-  private boolean landOne(
+  private boolean assignLandingToMode(
       HoldingPattern<Aircraft> holdingPattern,
       List<Runway> runways,
       List<Aircraft> postProcessing,
       SimClock clock,
-      Metrics metrics
+      Metrics metrics,
+      SimConfig.RunwayMode mode
   ) {
     if (holdingPattern.getSize() == 0) return false;
 
-    // 1) Prefer dedicated LANDING runways
-    Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.LANDING);
-    if (rw == null) {
-      // 2) Then allow MIXED
-      rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
-    }
+    Runway rw = findAvailableRunway(runways, mode);
     if (rw == null) return false;
 
     LinkedListElement<Aircraft> arrival = holdingPattern.pop();
@@ -74,29 +48,84 @@ public final class RunwayHandling {
 
     rw.occupy(arrival.getValue().getCallsign());
     metrics.arrivalsProcessed++;
-    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d%n",
-    clock.now(), arrival.getValue().getCallsign(), rw.getID());
 
-    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d (service=%ds)%n",
-        clock.now(),
-        arrival.getValue().getCallsign(),
-        rw.getID(),
-        rw.getServiceTimeSeconds()
-    );
+    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d%n",
+        clock.now(), arrival.getValue().getCallsign(), rw.getID());
 
     return true;
   }
 
-    private Runway findAvailableRunway(List<Runway> runways, SimConfig.RunwayMode mode) {
-        LinkedListElement<Runway> ptr = runways.getHead();
-        while (ptr != null) {
-            Runway rw = ptr.getValue();
+  private boolean assignTakeoffToMode(
+      List<Aircraft> takeOffQueue,
+      List<Runway> runways,
+      List<Aircraft> postProcessing,
+      SimClock clock,
+      Metrics metrics,
+      SimConfig.RunwayMode mode
+  ) {
+    if (takeOffQueue.getSize() == 0) return false;
 
-            // ✅ Skip sentinel / empty nodes
-            if (rw != null && rw.getMode() == mode && rw.isAvailableNow()) return rw;
+    Runway rw = findAvailableRunway(runways, mode);
+    if (rw == null) return false;
 
-            ptr = ptr.getNext();
-        }
-        return null;
-        }
+    LinkedListElement<Aircraft> dep = takeOffQueue.pop(0);
+    postProcessing.add(dep);
+
+    rw.occupy(dep.getValue().getCallsign());
+    metrics.departuresProcessed++;
+
+    System.out.printf("[t=%.0fs] TOFF start: %s on runway #%d%n",
+        clock.now(), dep.getValue().getCallsign(), rw.getID());
+
+    return true;
+  }
+
+  private boolean assignMixed(
+      HoldingPattern<Aircraft> holdingPattern,
+      List<Aircraft> takeOffQueue,
+      List<Runway> runways,
+      List<Aircraft> postProcessing,
+      SimClock clock,
+      Metrics metrics
+  ) {
+    Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
+    if (rw == null) return false;
+
+    // Policy: prefer landing first
+    if (holdingPattern.getSize() > 0) {
+      LinkedListElement<Aircraft> arrival = holdingPattern.pop();
+      postProcessing.add(arrival);
+
+      rw.occupy(arrival.getValue().getCallsign());
+      metrics.arrivalsProcessed++;
+
+      System.out.printf("[t=%.0fs] LAND start: %s on mixed runway #%d%n",
+          clock.now(), arrival.getValue().getCallsign(), rw.getID());
+      return true;
+    }
+
+    if (takeOffQueue.getSize() > 0) {
+      LinkedListElement<Aircraft> dep = takeOffQueue.pop(0);
+      postProcessing.add(dep);
+
+      rw.occupy(dep.getValue().getCallsign());
+      metrics.departuresProcessed++;
+
+      System.out.printf("[t=%.0fs] TOFF start: %s on mixed runway #%d%n",
+          clock.now(), dep.getValue().getCallsign(), rw.getID());
+      return true;
+    }
+
+    return false;
+  }
+
+  private Runway findAvailableRunway(List<Runway> runways, SimConfig.RunwayMode mode) {
+    LinkedListElement<Runway> ptr = runways.getHead();
+    while (ptr != null) {
+      Runway rw = ptr.getValue();
+      if (rw != null && rw.getMode() == mode && rw.isAvailableNow()) return rw;
+      ptr = ptr.getNext();
+    }
+    return null;
+  }
 }
