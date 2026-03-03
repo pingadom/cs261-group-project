@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class InputPage extends JPanel {
-    private App app;
+    private final App app;
 
     // Global parameters
     int numRunways = 1;
@@ -22,11 +22,10 @@ public class InputPage extends JPanel {
     StyledButton addRunwayButton;
     StyledButton removeRunwayButton;
 
-    private Map<Integer, RunwayPanel> runwayPanels = new HashMap<>();
+    private Map<Integer, RunwayIinputPanel> runwayPanels = new HashMap<>();
     private List<Runway> runways = new ArrayList<>();
 
     // User input fields
-    JTextField flightsField;
     JTextField inboundRateField;
     JTextField outboundRateField;
     JTextField durationField;
@@ -57,7 +56,8 @@ public class InputPage extends JPanel {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setPreferredSize(new Dimension(700, 500));
-        formPanel.setBackground(new Color(0xBDBDBD));
+        //formPanel.setBackground(new Color(0xBDBDBD));
+        formPanel.setBackground(new Color(100, 150, 200));
         formPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.black),
                 BorderFactory.createEmptyBorder(10, 30, 10, 30)
@@ -104,7 +104,8 @@ public class InputPage extends JPanel {
     // SIMULATION CONFIG PANEL
     private JPanel createSimConfigPanel() {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(0xBDBDBD));
+        // panel.setBackground(new Color(0xBDBDBD));
+        panel.setBackground(new Color(100, 150, 200));
         panel.setLayout(new GridBagLayout());
 
         Font labelFont = new Font("Arial", Font.PLAIN, 18);
@@ -117,6 +118,7 @@ public class InputPage extends JPanel {
         gbc.gridx = 0; gbc.gridy = 0;
         JLabel simConfigTitle = new JLabel("Simulation Configuration");
         simConfigTitle.setFont(new Font("Arial", Font.ITALIC + Font.BOLD, 20));
+        simConfigTitle.setForeground(Color.black);
         panel.add(simConfigTitle, gbc);
 
         // Row 2: Inbound rate
@@ -124,6 +126,7 @@ public class InputPage extends JPanel {
         gbc.gridx = 0; gbc.gridy = 1;
         JLabel inboundRateLabel = new JLabel("Inbound Rate (aircraft/hour)");
         inboundRateLabel.setFont(labelFont);
+        inboundRateLabel.setForeground(Color.black);
         panel.add(inboundRateLabel, gbc);
 
         gbc.gridx = 1;
@@ -137,6 +140,7 @@ public class InputPage extends JPanel {
         gbc.weightx = 0.3;
         JLabel outboundRateLabel = new JLabel("Outbound Rate (aircraft/hour)");
         outboundRateLabel.setFont(labelFont);
+        outboundRateLabel.setForeground(Color.black);
         panel.add(outboundRateLabel, gbc);
 
         gbc.gridx = 1;
@@ -151,6 +155,7 @@ public class InputPage extends JPanel {
         gbc.weightx = 0.3;
         JLabel durationLabel = new JLabel("Duration (hour)");
         durationLabel.setFont(labelFont);
+        durationLabel.setForeground(Color.black);
         panel.add(durationLabel, gbc);
 
         gbc.gridx = 1;
@@ -166,29 +171,30 @@ public class InputPage extends JPanel {
     // RUNWAY CONFIG PANEL
     private JPanel createRunwayConfigPanel() {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(0xBDBDBD));
+        panel.setBackground(new Color(70, 130, 180));
         panel.setPreferredSize(new Dimension(640, 270));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         // TITLE PANEL
         JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(new Color(0xBDBDBD));
+        titlePanel.setBackground(new Color(100, 150, 200));
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         titlePanel.setPreferredSize(new Dimension(640, 30));
 
         JLabel titleLabel = new JLabel("Runway Configuration");
         titleLabel.setFont(new Font("Arial", Font.ITALIC + Font.BOLD, 20));
+        titleLabel.setForeground(Color.black);
 
         addRunwayButton = new StyledButton("+ Add Runways", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
         addRunwayButton.setFont(new Font("Arial", Font.BOLD, 14));
-        addRunwayButton.setButtonsize(150, 20);
+        addRunwayButton.setButtonsize(150, 25);
         addRunwayButton.addActionListener(e -> {
             addNewRunway();
         });
 
         removeRunwayButton = new StyledButton("Remove Runway", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
         removeRunwayButton.setFont(new Font("Arial", Font.BOLD, 14));
-        removeRunwayButton.setButtonsize(150, 20);
+        removeRunwayButton.setButtonsize(150, 25);
         removeRunwayButton.setEnabled(false);
         removeRunwayButton.addActionListener(e -> {
             deleteRunway(numRunways);
@@ -206,12 +212,12 @@ public class InputPage extends JPanel {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
-        Runway runway = new Runway(newId, "None", "None", 0);
+        Runway runway = new Runway(newId, "none", "none", 0);
         runways.add(runway);    // Add Runway object into list
 
-        RunwayPanel runwayPanel = new RunwayPanel(runway);
-        runwayPanels.put(newId, runwayPanel);
-        runwaysContainer.add(runwayPanel);
+        RunwayIinputPanel runwayIinputPanel = new RunwayIinputPanel(runway);
+        runwayPanels.put(newId, runwayIinputPanel);
+        runwaysContainer.add(runwayIinputPanel);
 
         JScrollPane scrollPaneRunways = new JScrollPane(runwaysContainer);
         scrollPaneRunways.setPreferredSize(new Dimension(640, 255));
@@ -229,12 +235,12 @@ public class InputPage extends JPanel {
             numRunways++;
 
             int newId = getNextAvailableId();   // Get the nextId
-            Runway runway = new Runway(newId, "None", "None", 0 );   // Create a new runway object
+            Runway runway = new Runway(newId, "none", "none", 0 );   // Create a new runway object
             runways.add(runway);    // Add the runway object into the list
             // printRunwayObjects();   // Debugging
 
             // Creating the RunwayPanel for that runway
-            RunwayPanel panel = new RunwayPanel(runway);
+            RunwayIinputPanel panel = new RunwayIinputPanel(runway);
             runwayPanels.put(newId, panel);
 
             // JPanel newRunway = createRunwayPanel(numRunways);
@@ -256,7 +262,7 @@ public class InputPage extends JPanel {
     private void deleteRunway(int id) {
         if (numRunways > 1) {
             // Get the highest ID RunwayPanel
-            RunwayPanel runwayRemoved = runwayPanels.get(id);
+            RunwayIinputPanel runwayRemoved = runwayPanels.get(id);
 
             // Remove from the runwaysContainer
             if (runwayRemoved != null) {
@@ -323,7 +329,7 @@ public class InputPage extends JPanel {
     // START SIM PANEL
     private JPanel createStartSimPanel()  {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panel.setBackground(new Color(0xBDBDBD));
+        panel.setBackground(new Color(100, 150, 200));
         panel.setMinimumSize(new Dimension(640, 30));
 
         StyledButton button = new StyledButton("Start Simulation", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
@@ -357,6 +363,17 @@ public class InputPage extends JPanel {
             int outboundRate = Integer.parseInt(outboundRateField.getText());
             int duration = Integer.parseInt(durationField.getText());
 
+            // Check if negative value
+            if (inboundRate < 1 || outboundRate < 1 || duration < 1) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Each field should be at least 1",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
             // Debugging by printing
             System.out.println("Duration: " + duration);
             System.out.println("Inbound rate: " + inboundRate);
@@ -378,7 +395,7 @@ public class InputPage extends JPanel {
 
     private boolean allRunwaysConfigured() {
         for (Runway runway: runways) {
-            if (runway.getMode().equals("None") || runway.getStatus().equals("None")) {
+            if (runway.getMode().equals("none") || runway.getStatus().equals("none")) {
                 return false;
             }
         }
