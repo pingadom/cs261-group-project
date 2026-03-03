@@ -33,20 +33,22 @@ public class RunwayHandling{
         }
                             }
 
-        public boolean moveToHoldingPattern(List<Aircraft> arrivals,HoldingPattern<Aircraft> holdingPattern,Clock clock){
+        public boolean moveToHoldingPattern(List<Aircraft> arrivals, HoldingPattern<Aircraft> holdingPattern, Clock clock){
+            if (arrivals.getSize() == 0) return false;
+
             if (arrivals.get(0).getValue().getTime().compareTo(clock.simulationTime) <= 0){
-                LinkedListElement<Aircraft> arrival = new LinkedListElement<>();
-                arrival = arrivals.pop(0);
+                LinkedListElement<Aircraft> arrival = arrivals.pop(0);
                 holdingPattern.add(arrival);
                 return true;
             }
             return false;
         }
 
-        public boolean moveToTakeOff(List<Aircraft> departures,List<Aircraft> takeOffQueue,Clock clock){
+        public boolean moveToTakeOff(List<Aircraft> departures, List<Aircraft> takeOffQueue, Clock clock){
+            if (departures.getSize() == 0) return false;
+
             if (departures.get(0).getValue().getTime().compareTo(clock.simulationTime) <= 0){
-                LinkedListElement<Aircraft> departure = new LinkedListElement<>();
-                departure = departures.pop(0);
+                LinkedListElement<Aircraft> departure = departures.pop(0);
                 takeOffQueue.add(departure);
                 return true;
             }
@@ -68,6 +70,7 @@ public class RunwayHandling{
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
                     return true;
                 }
+                ptr.getNext();
             }
 
             while (ptr != null){
@@ -79,6 +82,7 @@ public class RunwayHandling{
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
                     return true;
                 }
+                ptr.getNext();
             }
             return false;
 
