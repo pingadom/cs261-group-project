@@ -39,7 +39,7 @@ public class Runway {
             return status;
         }
 
-    public int getTimeRemaining(){
+    public double getTimeRemaining(){
         return timeRemaining;
     }
     
@@ -65,7 +65,7 @@ public class Runway {
         return 1;
     }
 
-    public int setTimeRemaining(int newTimeRemaining){
+    public int setTimeRemaining(double newTimeRemaining){
         if (newTimeRemaining > 0){
         timeRemaining = newTimeRemaining;
         return 1;}
