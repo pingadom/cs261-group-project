@@ -2,6 +2,8 @@ package sim.model.stores;
 
 import java.time.LocalTime; 
 
+
+
 /** aircaft store */
 
 public class Aircraft {
@@ -12,10 +14,13 @@ public class Aircraft {
     private int altitude;
     private int groundSpeed;
     private double fuel;
-    private String emergency;
-    private String status;
+    private EmergencyStatus emergency;
+    private AircraftStatus status;
 
-    public Aircraft(String _callsign,String _operator,String _origin,double _time,int _altitude,int _groundSpeed,double _fuel,String _emergency){
+    public enum AircraftStatus {ARRIVING,DEPARTING,ARRIVED,DEPARTED,CANCELLED,DIVERTED}
+    public enum EmergencyStatus {NONE,ILLNESS,EQUIPMENT,FUEL,MECHANICAL}
+
+    public Aircraft(String _callsign,String _operator,String _origin,double _time,int _altitude,int _groundSpeed,double _fuel,EmergencyStatus _emergency,AircraftStatus _status){
         callsign = _callsign;
         operator = _operator;
         origin = _origin;
@@ -24,10 +29,10 @@ public class Aircraft {
         groundSpeed = _groundSpeed;
         fuel = _fuel;
         emergency = _emergency;
-        status = "unprocessed";
+        status = _status;
     }
 
-    public String getStatus(){
+    public AircraftStatus getStatus(){
         return status;
     }
     
@@ -59,7 +64,7 @@ public class Aircraft {
         return fuel;
     }
 
-    public String getEmergency(){
+    public EmergencyStatus getEmergency(){
         return emergency;
     }
 
@@ -110,12 +115,12 @@ public class Aircraft {
         return 0;
     }
 
-    public int setEmergency(String newEmergency){
+    public int setEmergency(EmergencyStatus newEmergency){
         emergency = newEmergency;
         return 1;
     }
 
-    public int setStatus(String newStatus){
+    public int setStatus(AircraftStatus newStatus){
         status = newStatus;
         return 1;
     }
