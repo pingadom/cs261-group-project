@@ -1,6 +1,7 @@
 sim\view\pages\InputPage.class
 sim\model\stores\Aircraft.class
 sim\core\Engine.class
+sim\view\components\RunwayIinputPanel.class
 sim\view\components\SidePanel.class
 sim\model\stores\Runway.class
 sim\core\RunwayHandling.class

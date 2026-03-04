@@ -5,7 +5,7 @@ import sim.model.stores.Runway;
 import javax.swing.*;
 import java.awt.*;
 
-public class RunwayPanel extends JPanel {
+public class RunwayIinputPanel extends JPanel {
     private Runway runway;
     private int runwayId;
 
@@ -13,7 +13,7 @@ public class RunwayPanel extends JPanel {
     private JComboBox<String> statusCombo;
 
 
-    public RunwayPanel(Runway runway) {
+    public RunwayIinputPanel(Runway runway) {
         this.runway = runway;
         this.runwayId = runway.getID();
 
@@ -32,7 +32,8 @@ public class RunwayPanel extends JPanel {
         setPreferredSize(new Dimension(610, 80));
 
         Font titleFont = new Font("Arial", Font.ITALIC, 16);
-        Font labelFont = new Font("Arial", Font.BOLD, 14);
+        Font labelFont = new Font("Arial", Font.BOLD, 15);
+        Font comboFont = new Font("Arial", Font.PLAIN, 14);
 
         // titlePanel : title with delete button
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -57,7 +58,7 @@ public class RunwayPanel extends JPanel {
         optionPanel.add(modeLabel, gbc);
         gbc.gridx = 1;
         modeCombo = new JComboBox<>(new String[]{"None", "Landing Only", "Takeoff Only", "Mixed Mode"});
-        modeCombo.setFont(labelFont);
+        modeCombo.setFont(comboFont);
         modeCombo.setPreferredSize(new Dimension(150, 25));
         modeCombo.addActionListener(e -> {
             updateMode();
@@ -71,7 +72,7 @@ public class RunwayPanel extends JPanel {
         optionPanel.add(statusLabel, gbc);
         gbc.gridx = 3;
         statusCombo = new JComboBox<>(new String[]{"None", "Available", "Maintenance"});
-        statusCombo.setFont(labelFont);
+        statusCombo.setFont(comboFont);
         statusCombo.setPreferredSize(new Dimension(150, 25));
         statusCombo.addActionListener(e-> {
             updateStatus();
@@ -83,27 +84,28 @@ public class RunwayPanel extends JPanel {
     }
 
     private void updateMode() {
-        // Get the selected mode
         String selectedMode = (String) modeCombo.getSelectedItem();
-        // System.out.println(selectedMode);
 
-        if (selectedMode.equals("Landing Only")) {
-            runway.setMode("landing");
-        } else if (selectedMode.equals("Takeoff Only")) {
-            runway.setMode("takeoff");
-        } else if (selectedMode.equals("Mixed Mode")) {
-            runway.setMode("mixed");
+        if (selectedMode != null) {
+            switch (selectedMode) {
+                case "Landing Only" -> runway.setMode("landing");
+                case "Takeoff Only" -> runway.setMode("takeoff");
+                case "Mixed Mode" -> runway.setMode("mixed");
+                case "None" -> runway.setMode("none");
+            }
         }
+
     }
 
     private void updateStatus() {
         String selectedStatus = (String) statusCombo.getSelectedItem();
-        // System.out.println(selectedStatus);
 
-        if (selectedStatus.equals("Available")) {
-            runway.setStatus("available");
-        } else if (selectedStatus.equals("Maintenance")) {
-            runway.setStatus(selectedStatus);
+        if (selectedStatus != null) {
+            switch (selectedStatus) {
+                case "Available" -> runway.setStatus("available");
+                case "Maintenance" -> runway.setStatus("maintenance");
+                case "None" -> runway.setStatus("none");
+            }
         }
     }
 }
