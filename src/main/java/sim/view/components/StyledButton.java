@@ -1,7 +1,5 @@
 package sim.view.components;
 
-import com.fasterxml.jackson.databind.cfg.CacheProvider;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -9,18 +7,8 @@ import java.awt.event.MouseEvent;
 
 public class StyledButton extends JButton {
 
-    private Color normalColor;
-    private Color hoverColor;
-    private Color pressColor;
-    private Color borderColor;
-
     public StyledButton(String text, Color normalColor, Color hoverColor, Color pressColor, Color borderColor) {
         super(text);
-
-        this.normalColor = normalColor;
-        this.hoverColor = hoverColor;
-        this.pressColor = pressColor;
-        this.borderColor = borderColor;
 
         // Basic setup
         setFont(new Font("SansSerif", Font.BOLD, 17));
@@ -31,10 +19,8 @@ public class StyledButton extends JButton {
         setContentAreaFilled(false);
         setOpaque(true);
 
-        // Size
         setPreferredSize(new Dimension(210, 70));
         setMinimumSize(new Dimension(210, 70));
-        // setMargin(new Insets(20, 20, 20, 20));  - no change
 
         // Hover and press effects
         addMouseListener(new MouseAdapter() {
@@ -53,18 +39,16 @@ public class StyledButton extends JButton {
             @Override
             public void mousePressed(MouseEvent e) {
                 setBackground(pressColor);
-                // setMargin(new Insets(22, 20, 18, 20));
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 setBackground(hoverColor);
-                // setMargin(new Insets(20, 20, 20, 20));
             }
         });
     }
 
-    public void setButtonsize(int width, int height) {
+    public void setButtonSize(int width, int height) {
         Dimension size = new Dimension(width, height);
         setPreferredSize(size);
         setMaximumSize(size);

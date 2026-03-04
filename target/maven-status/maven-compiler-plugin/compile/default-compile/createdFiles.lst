@@ -1,7 +1,6 @@
 sim\view\pages\InputPage.class
 sim\model\stores\Aircraft.class
 sim\core\Engine.class
-sim\view\components\RunwayIinputPanel.class
 sim\view\components\SidePanel.class
 sim\model\stores\Runway.class
 sim\core\RunwayHandling.class
@@ -19,6 +18,7 @@ sim\core\SimClock.class
 sim\config\SimConfig$RunwayMode.class
 sim\view\components\StatsPanel.class
 sim\core\EngineOptions.class
+sim\view\pages\BasicPage.class
 sim\model\stores\Clock.class
 sim\model\stores\LinkedListElement.class
 sim\core\metrics\Metrics.class

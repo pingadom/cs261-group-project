@@ -7,17 +7,16 @@ import javax.swing.*;
 import java.awt.*;
 
 public class App extends JFrame {
-    private CardLayout cardLayout;
-    private JPanel mainPanel;
+    private final CardLayout cardLayout;
+    private final JPanel mainPanel;
 
-    // Pages for reference
-    private InputPage inputPage;
-    private SimulationPage simulationPage;
+    // Dimension constants
+    private static final int APP_HEIGHT = 720;
+    private static final int APP_WIDTH = 1280;
 
     public App() {
-        //
         setTitle("Airport Simulator");
-        setSize(1280, 720);
+        setSize(APP_WIDTH, APP_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -27,8 +26,8 @@ public class App extends JFrame {
         mainPanel = new JPanel(cardLayout);
 
         // Create pages
-        inputPage = new InputPage(this);
-        simulationPage = new SimulationPage(this);
+        InputPage inputPage = new InputPage(this);
+        SimulationPage simulationPage = new SimulationPage(this);
 
         // Add pages to CardLayout
         mainPanel.add(inputPage, "INPUT");
