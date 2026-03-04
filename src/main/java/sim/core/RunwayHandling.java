@@ -35,8 +35,22 @@ public class RunwayHandling{
                 takeOffFlag = takeOff(takeOffQueue,runways,postProcessing,clock);
             }
         }
+        freeRunways(runways, clock);
         adjustAltitude(holdingPattern);
                             }
+
+        public void freeRunways(List<Runway> runways, SimClock clock){
+            ptr = runways.getHead();
+            while (ptr!= null){
+                if (ptr.getValue().getOccupied().compareTo("") != 0 && ptr.getValue().getTimeRemaining() < clock.now()){
+                    ptr.getValue.setOccupied("");
+                }
+                ptr = ptr.next()
+            }
+        }
+
+        
+                            
 
         public void adjustAltitude(HoldingPattern<Aircraft> holdingPattern){
             int i = 1;
@@ -97,28 +111,32 @@ public class RunwayHandling{
             LinkedListElement<Runway> ptr = runways.getHead();
             while (ptr != null){
                 if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("landing") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
+                ptr.getValue().getMode() == Runway.RunwayMode.LANDING &&
+                ptr.getValue().getStatus()== Runway.RunwayStatus.AVAILABLE){
                     arrival = holdingPattern.pop();
-                    arrival.getValue().setStatus("arrived");
                     arrival.getValue().setRealTime(clock.now());
+                    arrival.getValue().setStatus(Aircraft.AircraftStatus.ARRIVED);
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     return true;
                 }
+                ptr = ptr.getNext();
             }
 
             while (ptr != null){
                 if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("mixed") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
+                ptr.getValue().getMode() == Runway.RunwayMode.MIXED &&
+                ptr.getValue().getStatus() == Runway.RunwayStatus.AVAILABLE){
                     arrival = holdingPattern.pop();
-                    arrival.getValue().setStatus("arrived");
-                     arrival.getValue().setRealTime(clock.now());
+                    arrival.getValue().setRealTime(clock.now());
+                    arrival.getValue().setStatus(Aircraft.AircraftStatus.ARRIVED);
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     return true;
                 }
+                ptr = ptr.getNext();
             }
             return false;
 
@@ -138,29 +156,33 @@ public class RunwayHandling{
             LinkedListElement<Runway> ptr = runways.getHead();
             while (ptr != null){
                 if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("takeoff") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
+                ptr.getValue().getMode() == Runway.RunwayMode.TAKEOFF &&
+                ptr.getValue().getStatus() == Runway.RunwayStatus.AVAILABLE){
                     departure = takeOffQueue.pop(0);
-                    departure.getValue().setStatus("departed");
                     departure.getValue().setRealTime(clock.now());
+                    departure.getValue().setStatus(Aircraft.AircraftStatus.DEPARTED);
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     
                     return true;
                 }
+                ptr = ptr.getNext();
             }
 
             while (ptr != null){
                 if (ptr.getValue().getOccupied().compareTo("") == 0 &&
-                ptr.getValue().getMode().compareTo("mixed") == 0 &&
-                ptr.getValue().getStatus().compareTo("available") == 0){
+                ptr.getValue().getMode() == Runway.RunwayMode.MIXED &&
+                ptr.getValue().getStatus() == Runway.RunwayStatus.AVAILABLE){
                     departure = takeOffQueue.pop(0);
-                    departure.getValue().setStatus("departed");
                     departure.getValue().setRealTime(clock.now());
+                    departure.getValue().setStatus(Aircraft.AircraftStatus.DEPARTED);
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     return true;
                 }
+                ptr = ptr.getNext();
             }
             return false;
 
@@ -173,9 +195,10 @@ public class RunwayHandling{
                 ptr.getValue().setFuel(ptr.getValue().getFuel() - realDeltaSeconds * speedMultiplier);
                 if (ptr.getValue().getFuel() < 600){
                     holdingPattern.getEmergency().pop(i);
-                    ptr.getValue().setStatus("diverted");
+                    ptr.getValue().setStatus(Aircraft.AircraftStatus.DIVERTED);
                     postProcessing.add(ptr);
                 }
+                ptr = ptr.getNext()
                 i++; 
             }
             ptr = holdingPattern.getNonEmergency().getHead();
@@ -184,9 +207,11 @@ public class RunwayHandling{
                 ptr.getValue().setFuel(ptr.getValue().getFuel() - realDeltaSeconds * speedMultiplier);
                 if (ptr.getValue().getFuel() < 1200){
                     holdingPattern.getNonEmergency().pop(i);
+                    ptr.getValue().setEmergency(Aircraft.EmergencyStatus.FUEL);
                     ptr.setPriority(1);
                     holdingPattern.add(ptr);
                 }
+                ptr = ptr.GetNext()
                 i++; 
             }
         }
