@@ -2,7 +2,6 @@ package sim.model.stores;
 
 import java.time.LocalTime; 
 
-/** aircaft storeLinked list element */
 
 public class LinkedListElement<E> {
 

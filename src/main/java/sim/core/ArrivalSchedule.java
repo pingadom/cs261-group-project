@@ -56,7 +56,7 @@ public final class ArrivalSchedule {
     }
 
     private static String randomEmergencyType(Random rng) {
-        // Weighted example: most are medical, fewer engine/fuel/etc.
+        // most are medical, fewer engine/fuel/etc.
         double x = rng.nextDouble();
         if (x < 0.55) return "Medical";
         if (x < 0.75) return "Fuel";

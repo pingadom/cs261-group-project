@@ -57,7 +57,6 @@ public class Aircraft {
         return emergency;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////
 
     public int setCallsign(String newCallsign){
         if (newCallsign.length() > 0 && newCallsign.length() < 10){

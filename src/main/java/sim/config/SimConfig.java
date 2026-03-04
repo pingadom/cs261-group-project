@@ -7,7 +7,7 @@ public final class SimConfig {
   public int arrivalRatePerHour;
   public int departureRatePerHour;
 
-  // Optional: capacity constraint
+  //capacity constraint
   public int maxRunways = 10;
 
   public static final class RunwayConfig {

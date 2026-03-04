@@ -24,12 +24,10 @@ public final class Engine {
   // Runtime runway list built from config:
   private final List<Runway> runways = new List<>();
 
-  // keeps record of landed aircraft if you want
+  // keeps record of landed aircraft 
   private final List<Aircraft> postProcessing = new List<>();
 
-  private final ArrayList<Aircraft> generatedDepartures = new ArrayList<>();
   private final List<Aircraft> takeOffQueue = new List<>();
-  private int depSeq = 0;
 
   private ArrayList<ArrivalEvent> inboundEvents;
   private int inboundPtr = 0;
@@ -271,17 +269,5 @@ public final class Engine {
     }
   }
 
-  private Aircraft makeDeparture(double nowSeconds, int seq) {
-    // Simple placeholder departure creation (like arrivals did)
-    String callsign = "DEP" + (100 + seq);
-    String operator = "ZZ";
-    String origin = "HOME";
-    java.time.LocalTime time = java.time.LocalTime.MIDNIGHT.plusSeconds((long) nowSeconds);
-    int altitude = 0;
-    int groundSpeed = 0;
-    int fuel = 0;
-    String emergency = "None";
-    return new Aircraft(callsign, operator, origin, time, altitude, groundSpeed, fuel, emergency);
-  }
 }
 

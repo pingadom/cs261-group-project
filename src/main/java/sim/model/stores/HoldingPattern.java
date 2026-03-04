@@ -2,7 +2,6 @@ package sim.model.stores;
 
 import java.time.LocalTime; 
 
-/** Linked list implmentation*/
 
 public class HoldingPattern<E> {
     private List<E> emergency;

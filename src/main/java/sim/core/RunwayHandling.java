@@ -6,7 +6,7 @@ import sim.model.stores.*;
 
 public final class RunwayHandling {
 
-  /** One tick of assignment: keep assigning while there are free runways and waiting planes. */
+  /** keep assigning while there are free runways and waiting planes. */
   public void handle(
       HoldingPattern<Aircraft> holdingPattern,
       List<Aircraft> takeOffQueue,
@@ -91,7 +91,7 @@ public final class RunwayHandling {
     Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
     if (rw == null) return false;
 
-    // Policy: prefer landing first
+    // prefer landing first
     if (holdingPattern.getSize() > 0) {
       LinkedListElement<Aircraft> arrival = holdingPattern.pop();
       postProcessing.add(arrival);
