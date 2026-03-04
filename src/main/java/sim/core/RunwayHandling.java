@@ -29,10 +29,10 @@ public class RunwayHandling{
          // Loops as long as one of the stores is being emptied
         while (takeOffFlag || landingFlag){
             if (landingFlag){
-                landingFlag = landPlane(holdingPattern,runways,postProcessing);
+                landingFlag = landPlane(holdingPattern,runways,postProcessing,clock);
             }
             if (takeOffFlag) {
-                takeOffFlag = takeOff(takeOffQueue,runways,postProcessing);
+                takeOffFlag = takeOff(takeOffQueue,runways,postProcessing,clock);
             }
         }
         adjustAltitude(holdingPattern);
@@ -89,7 +89,7 @@ public class RunwayHandling{
         // Once a runway is found, land the plane and return true
         // Returning false indicates either there is no plane to land or there are no runways to land on
  
-        public boolean landPlane(HoldingPattern<Aircraft> holdingPattern,List<Runway> runways,List<Aircraft> postProcessing){
+        public boolean landPlane(HoldingPattern<Aircraft> holdingPattern,List<Runway> runways,List<Aircraft> postProcessing,SimClock clock){
             if (holdingPattern.getSize() == 0){
                 return false;
             }
@@ -101,6 +101,7 @@ public class RunwayHandling{
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     arrival = holdingPattern.pop();
                     arrival.getValue().setStatus("arrived");
+                    arrival.getValue().setRealTime(clock.now());
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
                     return true;
@@ -113,6 +114,7 @@ public class RunwayHandling{
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     arrival = holdingPattern.pop();
                     arrival.getValue().setStatus("arrived");
+                     arrival.getValue().setRealTime(clock.now());
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
                     return true;
@@ -128,7 +130,7 @@ public class RunwayHandling{
         // Once a runway is found, depart the plane and return true
         // Returning false indicates either there is no plane to depart or there are no runways to take off on
       
-        public boolean takeOff(List<Aircraft> takeOffQueue,List<Runway> runways,List<Aircraft> postProcessing){
+        public boolean takeOff(List<Aircraft> takeOffQueue,List<Runway> runways,List<Aircraft> postProcessing,SimClock clock){
             if (takeOffQueue.getSize() == 0){
                 return false;
             }
@@ -140,6 +142,7 @@ public class RunwayHandling{
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     departure = takeOffQueue.pop(0);
                     departure.getValue().setStatus("departed");
+                    departure.getValue().setRealTime(clock.now());
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
                     
@@ -153,6 +156,7 @@ public class RunwayHandling{
                 ptr.getValue().getStatus().compareTo("available") == 0){
                     departure = takeOffQueue.pop(0);
                     departure.getValue().setStatus("departed");
+                    departure.getValue().setRealTime(clock.now());
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
                     return true;

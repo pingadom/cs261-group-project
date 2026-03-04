@@ -14,6 +14,7 @@ public class Aircraft {
     private double fuel;
     private String emergency;
     private String status;
+    private double realTime;
 
     public Aircraft(String _callsign,String _operator,String _origin,double _time,int _altitude,int _groundSpeed,double _fuel,String _emergency){
         callsign = _callsign;
@@ -61,6 +62,10 @@ public class Aircraft {
 
     public String getEmergency(){
         return emergency;
+    }
+
+    public double getRealTime(){
+        return realTime;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +122,11 @@ public class Aircraft {
 
     public int setStatus(String newStatus){
         status = newStatus;
+        return 1;
+    }
+
+    public int setRealTime(double newRealTime){
+        realTime = newRealTime;
         return 1;
     }
 

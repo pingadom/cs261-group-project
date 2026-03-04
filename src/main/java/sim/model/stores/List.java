@@ -75,4 +75,18 @@ public class List<E> {
         return 1;
     }
 
+    public double getAverageWait(List<Aircraft> list){
+        double total = 0;
+        int num = list.getSize();
+        LinkedListElement<Aircraft> ptr = list.getHead();
+        while (ptr != null){
+            total += ptr.getValue().getRealTime();
+            ptr = ptr.getNext();
+        }
+        if (total > 0){
+            return (total / num);
+        }
+        return 0;
+    }
+
 }
