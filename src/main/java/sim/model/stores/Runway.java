@@ -7,9 +7,9 @@ public class Runway {
     private String occupied;
     private String mode;
     private String status;
-    private int timeRemaining;
+    private double timeRemaining;
 
-    public Runway(int _ID,String _mode,String _status,int _timeRemaining){
+    public Runway(int _ID,String _mode,String _status,double _timeRemaining){
         ID = _ID;
         occupied = "";
         mode = _mode;
@@ -33,7 +33,7 @@ public class Runway {
             return status;
         }
 
-    public int getTimeRemaining(){
+    public double getTimeRemaining(){
         return timeRemaining;
     }
     
@@ -64,7 +64,7 @@ public class Runway {
         return 0;
     }
 
-    public int setTimeRemaining(int newTimeRemaining){
+    public int setTimeRemaining(double newTimeRemaining){
         if (newTimeRemaining > 0){
         timeRemaining = newTimeRemaining;
         return 1;}

@@ -35,8 +35,22 @@ public class RunwayHandling{
                 takeOffFlag = takeOff(takeOffQueue,runways,postProcessing);
             }
         }
+        freeRunways(runways, clock);
         adjustAltitude(holdingPattern);
                             }
+
+        public void freeRunways(List<Runway> runways, SimClock clock){
+            ptr = runways.getHead();
+            while (ptr!= null){
+                if (ptr.getValue().getOccupied().compareTo("") != 0 && ptr.getValue().getTimeRemaining() < clock.now()){
+                    ptr.getValue.setOccupied("");
+                }
+                ptr = ptr.next()
+            }
+        }
+
+        
+                            
 
         public void adjustAltitude(HoldingPattern<Aircraft> holdingPattern){
             int i = 1;
@@ -103,8 +117,10 @@ public class RunwayHandling{
                     arrival.getValue().setStatus("arrived");
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     return true;
                 }
+                ptr = ptr.getNext();
             }
 
             while (ptr != null){
@@ -115,8 +131,10 @@ public class RunwayHandling{
                     arrival.getValue().setStatus("arrived");
                     postProcessing.add(arrival);
                     ptr.getValue().setOccupied(arrival.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     return true;
                 }
+                ptr = ptr.getNext();
             }
             return false;
 
@@ -142,9 +160,11 @@ public class RunwayHandling{
                     departure.getValue().setStatus("departed");
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     
                     return true;
                 }
+                ptr = ptr.getNext();
             }
 
             while (ptr != null){
@@ -155,8 +175,10 @@ public class RunwayHandling{
                     departure.getValue().setStatus("departed");
                     postProcessing.add(departure);
                     ptr.getValue().setOccupied(departure.getValue().getCallsign());
+                    ptr.getValue().setTimeRemaining(clock.now + 45);
                     return true;
                 }
+                ptr = ptr.getNext();
             }
             return false;
 
@@ -172,6 +194,7 @@ public class RunwayHandling{
                     ptr.getValue().setStatus("diverted");
                     postProcessing.add(ptr);
                 }
+                ptr = ptr.getNext()
                 i++; 
             }
             ptr = holdingPattern.getNonEmergency().getHead();
@@ -183,6 +206,7 @@ public class RunwayHandling{
                     ptr.setPriority(1);
                     holdingPattern.add(ptr);
                 }
+                ptr = ptr.GetNext()
                 i++; 
             }
         }
