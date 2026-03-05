@@ -12,7 +12,6 @@ public class RunwayInputPanel extends JPanel {
     private JComboBox<String> modeCombo;
     private JComboBox<String> statusCombo;
 
-
     public RunwayInputPanel(Runway runway) {
         this.runway = runway;
         this.runwayId = runway.getID();
@@ -68,7 +67,7 @@ public class RunwayInputPanel extends JPanel {
         statusLabel.setFont(labelFont);
         optionPanel.add(statusLabel, gbc);
         gbc.gridx = 3;
-        statusCombo = new JComboBox<>(new String[]{"None", "Available", "Maintenance"});
+        statusCombo = new JComboBox<>(new String[]{"None", "Available", "Runway Inspection", "Snow Clearance", "Failure"});
         statusCombo.setFont(comboFont);
         statusCombo.setPreferredSize(new Dimension(150, 25));
         statusCombo.addActionListener(e-> updateStatus());
@@ -83,13 +82,12 @@ public class RunwayInputPanel extends JPanel {
 
         if (selectedMode != null) {
             switch (selectedMode) {
-                case "Landing Only" -> runway.setMode("landing");
-                case "Takeoff Only" -> runway.setMode("takeoff");
-                case "Mixed Mode" -> runway.setMode("mixed");
-                case "None" -> runway.setMode("none");
+                case "Landing Only" -> runway.setMode(Runway.RunwayMode.LANDING);
+                case "Takeoff Only" -> runway.setMode(Runway.RunwayMode.TAKEOFF);
+                case "Mixed Mode" -> runway.setMode(Runway.RunwayMode.MIXED);
+                case "None" -> runway.setMode(Runway.RunwayMode.NONE);
             }
         }
-
     }
 
     private void updateStatus() {
@@ -97,9 +95,11 @@ public class RunwayInputPanel extends JPanel {
 
         if (selectedStatus != null) {
             switch (selectedStatus) {
-                case "Available" -> runway.setStatus("available");
-                case "Maintenance" -> runway.setStatus("maintenance");
-                case "None" -> runway.setStatus("none");
+                case "Available" -> runway.setStatus(Runway.RunwayStatus.AVAILABLE);
+                case "Runway Inspection" -> runway.setStatus(Runway.RunwayStatus.INSPECTION);
+                case "Snow Clearance" -> runway.setStatus(Runway.RunwayStatus.SNOW);
+                case "Failure" -> runway.setStatus(Runway.RunwayStatus.FAILURE);
+                case "None" -> runway.setStatus(Runway.RunwayStatus.NONE);
             }
         }
     }

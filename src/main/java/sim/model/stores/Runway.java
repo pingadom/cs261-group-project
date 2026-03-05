@@ -10,12 +10,12 @@ public class Runway {
     private String occupied;
     private RunwayMode mode;
     private RunwayStatus status;
-    private int timeRemaining;
+    private double timeRemaining;
 
-    public enum RunwayMode { LANDING, TAKEOFF, MIXED }
-    public enum RunwayStatus { AVAILABLE, INSPECTION, SNOW, FAILURE }
+    public enum RunwayMode { NONE, LANDING, TAKEOFF, MIXED }
+    public enum RunwayStatus { NONE, AVAILABLE, INSPECTION, SNOW, FAILURE }
 
-    public Runway(int _ID,RunwayMode _mode,RunwayStatus _status,int _timeRemaining){
+    public Runway(int _ID,RunwayMode _mode,RunwayStatus _status,double _timeRemaining){
         ID = _ID;
         occupied = "";
         mode = _mode;
@@ -57,6 +57,7 @@ public class Runway {
     }
 
     public int setMode(RunwayMode newMode){
+        mode = newMode;
         return 1;
     }
 

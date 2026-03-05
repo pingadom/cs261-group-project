@@ -1,10 +1,15 @@
 package sim.view.pages;
 
+import sim.model.stores.Runway;
 import sim.view.App;
 import sim.view.components.*;
+import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,20 +34,34 @@ public class SimulationPage extends BasicPage {
 
     // Instance variables
     private final App app;
+    private final PageDataController dataController;
+    private final List<Runway> runways;
 
     // UI Components
     StyledButton startPauseButton;
     StyledButton resetButton;
     JLabel startPauseLabel;
+    JPanel runwaysContainer;
 
     // Static variables
     int toggleStartPause = 0;
     int simulationSpeed = 1;
 
     // Constructor
-    public SimulationPage(App app) {
+    public SimulationPage(App app, PageDataController dataController) {
         this.app = app;
+        this.dataController = dataController;
+        this.runways = dataController.getAllRunways();
         buildPage(createContentPanel());
+        customizeFooter();
+
+        // When page becomes visible
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                refreshRunwayDisplay();
+            }
+        });
     }
 
     // Content Panel
@@ -270,16 +289,8 @@ public class SimulationPage extends BasicPage {
         runwayPanel.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 475));
 
         // Main container for all the runways
-        JPanel runwaysContainer = new JPanel();
+        runwaysContainer = new JPanel();
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
-
-        // Add runway card for each runway
-        runwaysContainer.add(new RunwayCard(1, "Available", "Landing", "AA100", true, this));
-        runwaysContainer.add(new RunwayCard(2, "Available", "Take-off", "AA104", true, this));
-        runwaysContainer.add(new RunwayCard(3, "Available", "Landing", "AA140", false, this));
-        runwaysContainer.add(new RunwayCard(4, "Available", "Take-off", "AA141", false, this));
-        runwaysContainer.add(new RunwayCard(5, "Available", "Landing", "AA120", false, this));
-        runwaysContainer.add(new RunwayCard(6, "Available", "Mixed", "BB140", true, this));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
         scrollPaneRunwaysContainer.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 470));
@@ -288,6 +299,21 @@ public class SimulationPage extends BasicPage {
         runwayPanel.add(scrollPaneRunwaysContainer);
 
         return runwayPanel;
+    }
+
+    private void refreshRunwayDisplay() {
+        runwaysContainer.removeAll();
+
+        System.out.println("Refreshing display with " + runways.size() + " runways");
+
+        for (Runway runway : runways) {
+            RunwayCard card = new RunwayCard(runway, this);
+            runwaysContainer.add(card);
+        }
+
+        // Refresh UI
+        runwaysContainer.revalidate();
+        runwaysContainer.repaint();
     }
 
     // RIGHT Column - Clock + Buttons

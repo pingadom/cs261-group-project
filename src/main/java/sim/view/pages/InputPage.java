@@ -4,6 +4,7 @@ package sim.view.pages;
 import sim.model.stores.Runway;
 import sim.view.components.*;
 import sim.view.App;
+import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,8 +26,10 @@ public class InputPage extends BasicPage {
 
     // Instance variables
     private final App app;
+    private final PageDataController dataController;
     private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
     private final List<Runway> runways = new ArrayList<>();
+    private final sim.model.stores.List<Runway> runwaysList = new sim.model.stores.List<>();
 
     // UI Components
     JPanel runwaysContainer;
@@ -40,8 +43,9 @@ public class InputPage extends BasicPage {
     int numRunways = 1;
 
     // Constructor
-    public InputPage(App app) {
+    public InputPage(App app, PageDataController dataController) {
         this.app = app;
+        this.dataController = dataController;
         buildPage(createContentPanel());
     }
 
@@ -94,6 +98,7 @@ public class InputPage extends BasicPage {
         panel.add(titleLabel, BorderLayout.CENTER);
         return panel;
     }
+
 
     // SIMULATION CONFIG Panel
     private JPanel createSimConfigPanel() {
@@ -185,7 +190,7 @@ public class InputPage extends BasicPage {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
-        Runway runway = new Runway(newId, "none", "none", 0);
+        Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0);
         runways.add(runway);    // Add Runway object into list
 
         RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runway);
@@ -208,7 +213,7 @@ public class InputPage extends BasicPage {
             numRunways++;
 
             int newId = getNextAvailableId();   // Get the nextId
-            Runway runway = new Runway(newId, "none", "none", 0 );   // Create a new runway object
+            Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0 );   // Create a new runway object
             runways.add(runway);    // Add the runway object into the list
 
             // Creating the RunwayPanel for that runway
@@ -282,18 +287,22 @@ public class InputPage extends BasicPage {
         return -1;  // no id found
     }
 
+
     // Debug - Function to print entry of Runway
     private void printRunwayObjects() {
-        StringBuilder runwayList = new StringBuilder("[");
+        System.out.println("=== Runway List Contents ===");
         for (Runway runway : runways) {
-            runwayList.append("Runway ID: ").append(runway.getID()).append("\n");
-            runwayList.append("Mode: ").append(runway.getMode()).append("\n");
-            runwayList.append("Status: ").append(runway.getStatus()).append(",").append("\n");
+            System.out.println("  - Runway ID: " + runway.getID());
+            System.out.println("  - Mode: " + runway.getMode());
+            System.out.println("  - Status: " + runway.getStatus());
+            System.out.println("  - Time Remaining: " + runway.getTimeRemaining());
+            System.out.println();
         }
-        runwayList.append("]");
 
-        System.out.println(runwayList);
+        System.out.println("Total elements: " + numRunways);
+        System.out.println("============================");
     }
+
 
     // START SIM Panel
     private JPanel createStartSimPanel()  {
@@ -344,7 +353,12 @@ public class InputPage extends BasicPage {
             System.out.println("Duration: " + duration);
             System.out.println("Inbound rate: " + inboundRate);
             System.out.println("Outbound rate: " + outboundRate);
+            System.out.println();
             printRunwayObjects();
+
+            // Passing information into PageDataController
+            dataController.setSimulationParams(inboundRate, outboundRate, duration, numRunways);
+            dataController.addAllRunways(runways);
 
             app.showSimulationPage();   // move to SimulationPage
 
@@ -361,7 +375,7 @@ public class InputPage extends BasicPage {
 
     private boolean allRunwaysConfigured() {
         for (Runway runway: runways) {
-            if (runway.getMode().equals("none") || runway.getStatus().equals("none")) {
+            if (runway.getMode() == Runway.RunwayMode.NONE || runway.getStatus() == Runway.RunwayStatus.NONE) {
                 return false;
             }
         }

@@ -1,12 +1,15 @@
 sim\view\pages\InputPage.class
 sim\model\stores\Aircraft.class
+sim\model\stores\Runway$RunwayStatus.class
 sim\core\Engine.class
 sim\view\components\SidePanel.class
 sim\model\stores\Runway.class
 sim\core\RunwayHandling.class
 sim\config\SimConfig.class
 sim\model\stores\List.class
+sim\model\stores\Runway$RunwayMode.class
 sim\view\components\StyledButton$1.class
+sim\model\stores\Aircraft$AircraftStatus.class
 sim\view\App.class
 sim\view\components\RunwayCard.class
 sim\config\SimConfigLoader.class
@@ -24,7 +27,10 @@ sim\model\stores\LinkedListElement.class
 sim\core\metrics\Metrics.class
 sim\Main.class
 sim\view\components\FooterPanel.class
+sim\view\controllers\PageDataController.class
 sim\SimCommand.class
 sim\view\components\StyledButton.class
+sim\model\stores\Aircraft$EmergencyStatus.class
+sim\view\pages\SimulationPage$1.class
 sim\core\metrics\MetricsCsvWriter.class
 sim\config\SimConfig$RunwayStatus.class
