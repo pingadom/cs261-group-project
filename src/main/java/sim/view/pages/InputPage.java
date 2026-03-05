@@ -185,7 +185,7 @@ public class InputPage extends BasicPage {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
-        Runway runway = new Runway(newId, "none", "none", 0);
+        Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0);
         runways.add(runway);    // Add Runway object into list
 
         RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runway);
@@ -208,7 +208,7 @@ public class InputPage extends BasicPage {
             numRunways++;
 
             int newId = getNextAvailableId();   // Get the nextId
-            Runway runway = new Runway(newId, "none", "none", 0 );   // Create a new runway object
+            Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0 );   // Create a new runway object
             runways.add(runway);    // Add the runway object into the list
 
             // Creating the RunwayPanel for that runway

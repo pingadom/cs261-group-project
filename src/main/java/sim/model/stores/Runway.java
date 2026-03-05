@@ -12,8 +12,8 @@ public class Runway {
     private RunwayStatus status;
     private int timeRemaining;
 
-    public enum RunwayMode { LANDING, TAKEOFF, MIXED }
-    public enum RunwayStatus { AVAILABLE, INSPECTION, SNOW, FAILURE }
+    public enum RunwayMode { NONE, LANDING, TAKEOFF, MIXED }
+    public enum RunwayStatus { NONE, AVAILABLE, INSPECTION, SNOW, FAILURE }
 
     public Runway(int _ID,RunwayMode _mode,RunwayStatus _status,int _timeRemaining){
         ID = _ID;

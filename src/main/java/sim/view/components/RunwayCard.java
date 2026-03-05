@@ -38,7 +38,6 @@ public class RunwayCard extends JPanel {
         Font labelFont = new Font("Arial", Font.BOLD, 14);
 
         JPanel modePanel = new JPanel();
-        //modePanel.setBackground(Color.cyan);
         modePanel.setPreferredSize(new Dimension(110, 80));
         modePanel.setLayout(new BorderLayout());
         modeLabel = new JLabel("Mode: " + mode);
@@ -47,7 +46,6 @@ public class RunwayCard extends JPanel {
         modePanel.add(modeLabel, BorderLayout.CENTER);
 
         JPanel statusPanel = new JPanel();
-        //statusPanel.setBackground(Color.pink);
         statusPanel.setPreferredSize(new Dimension(140, 80));
         statusPanel.setLayout(new BorderLayout());
         statusLabel = new JLabel("Status: " + status);
@@ -56,7 +54,6 @@ public class RunwayCard extends JPanel {
         statusPanel.add(statusLabel, BorderLayout.CENTER);
 
         JPanel aircraftPanel = new JPanel();
-        //aircraftPanel.setBackground(Color.orange);
         aircraftPanel.setPreferredSize(new Dimension(110, 80));
         aircraftPanel.setLayout(new BorderLayout());
         aircraftLabel = new JLabel("Aircraft: " + aircraft);
@@ -65,7 +62,6 @@ public class RunwayCard extends JPanel {
         aircraftPanel.add(aircraftLabel, BorderLayout.CENTER);
 
         JPanel occupiedPanel = new JPanel();
-        //occupiedPanel.setBackground(Color.red);
         occupiedPanel.setPreferredSize(new Dimension(80, 80));
         occupiedPanel.setLayout(new BorderLayout());
         if (occupied) {
@@ -153,7 +149,7 @@ public class RunwayCard extends JPanel {
         JLabel statusLabel = new JLabel("Status: ");
         statusLabel.setFont(labelFontBold);
         JComboBox<String> statusCombo = new JComboBox<>(
-          new String[]{"Available", "Maintenance"}
+          new String[]{"Available", "Runway Inspection", "Snow Clearance", "Failure"}
         );
         statusCombo.setFont(labelFontPlain);
 
