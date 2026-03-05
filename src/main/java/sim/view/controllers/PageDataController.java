@@ -11,7 +11,7 @@ public class PageDataController {
     private int duration;
     private int numRunways;
 
-    private List<Runway> runways;
+    private final List<Runway> runways;
 
     // Constructor
     public PageDataController() {
@@ -37,10 +37,6 @@ public class PageDataController {
     public int getNumRunways() { return numRunways; }
 
     public List<Runway> getAllRunways() {
-        if (runways == null) {
-            System.out.println("Runway empty");
-            return new ArrayList<>();
-        }
         System.out.println("Runway not empty");
         return runways;
     }

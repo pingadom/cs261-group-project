@@ -13,17 +13,17 @@ public class RunwayCard extends JPanel {
     private final JLabel statusLabel;
     private final JLabel modeLabel;
     private final JLabel aircraftLabel;
-    private final JLabel occupiedLabel;
 
     private final Runway runway;
+    private Runway.RunwayMode mode;
+    private Runway.RunwayStatus status;
 
     // Constructor
     public RunwayCard(Runway runway, JPanel parent) {
         this.runway = runway;
         this.parentPanel = parent;
-
-        String mode = setMode();
-        String status = setStatus();
+        this.mode = runway.getMode();
+        this.status = runway.getStatus();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
@@ -45,15 +45,17 @@ public class RunwayCard extends JPanel {
         JPanel modePanel = new JPanel();
         modePanel.setPreferredSize(new Dimension(110, 80));
         modePanel.setLayout(new BorderLayout());
-        modeLabel = new JLabel("Mode: " + mode);
+        modeLabel = new JLabel();
+        updateModeLabel();
         modeLabel.setFont(labelFont);
         modeLabel.setHorizontalAlignment(JLabel.CENTER);
         modePanel.add(modeLabel, BorderLayout.CENTER);
 
         JPanel statusPanel = new JPanel();
-        statusPanel.setPreferredSize(new Dimension(140, 80));
+        statusPanel.setPreferredSize(new Dimension(220, 80));
         statusPanel.setLayout(new BorderLayout());
-        statusLabel = new JLabel("Status: " + status);
+        statusLabel = new JLabel();
+        updateStatusLabel();
         statusLabel.setFont(labelFont);
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         statusPanel.add(statusLabel, BorderLayout.CENTER);
@@ -61,31 +63,17 @@ public class RunwayCard extends JPanel {
         JPanel aircraftPanel = new JPanel();
         aircraftPanel.setPreferredSize(new Dimension(110, 80));
         aircraftPanel.setLayout(new BorderLayout());
-        aircraftLabel = new JLabel("Aircraft: " + "");
+        aircraftLabel = new JLabel();
+        updateOccupiedLabel();
         aircraftLabel.setFont(labelFont);
         aircraftLabel.setHorizontalAlignment(JLabel.CENTER);
         aircraftPanel.add(aircraftLabel, BorderLayout.CENTER);
-
-        JPanel occupiedPanel = new JPanel();
-        occupiedPanel.setPreferredSize(new Dimension(80, 80));
-        occupiedPanel.setLayout(new BorderLayout());
-//        if (occupied) {
-//            occupiedLabel = new JLabel("Occupied");
-//        } else {
-//            occupiedLabel = new JLabel("Free");
-//        }
-        occupiedLabel = new JLabel(runway.getOccupied());
-        occupiedLabel.setFont(labelFont);
-        occupiedLabel.setHorizontalAlignment(JLabel.CENTER);
-        occupiedPanel.add(occupiedLabel, BorderLayout.CENTER);
 
         // Button to change the runway's configuration
         StyledButton runwayConfigButton = new StyledButton("Configure", new Color(70, 130, 180), new Color(100, 150, 200), new Color(70, 130, 180), new Color(70, 130, 180));
         runwayConfigButton.setButtonSize(90, 30);
         runwayConfigButton.setFont(new Font("Arial", Font.BOLD, 14));
-        runwayConfigButton.addActionListener(e -> {
-            createRunwayConfigPanel();
-        });
+        runwayConfigButton.addActionListener(e -> createRunwayConfigPanel());
 
         // Add labels and buttons
         add(modePanel);
@@ -94,53 +82,7 @@ public class RunwayCard extends JPanel {
         add(Box.createRigidArea(new Dimension(10, 0)));
         add(aircraftPanel);
         add(Box.createRigidArea(new Dimension(10, 0)));
-        add(occupiedPanel);
-        add(Box.createRigidArea(new Dimension(10, 0)));
         add(runwayConfigButton);
-    }
-
-    // Setter for runway attributes
-    private String setMode() {
-        String modeString = "";
-        Runway.RunwayMode mode = runway.getMode();
-
-        if (mode == Runway.RunwayMode.LANDING) {
-            modeString = "Landing";
-        } else if (mode == Runway.RunwayMode.TAKEOFF) {
-            modeString = "Take-off";
-        } else if (mode == Runway.RunwayMode.MIXED) {
-            modeString = "Mixed";
-        }
-        return modeString;
-    }
-
-    private String setStatus() {
-        String statusString = "";
-        Runway.RunwayStatus status = runway.getStatus();
-
-        if (status == Runway.RunwayStatus.AVAILABLE) {
-            statusString = "Available";
-        } else if (status == Runway.RunwayStatus.INSPECTION) {
-            statusString = "Runway Inspection";
-        } else if (status == Runway.RunwayStatus.SNOW) {
-            statusString = "Snow Clearance";
-        } else if (status == Runway.RunwayStatus.FAILURE) {
-            statusString = "Failure";
-        }
-        return statusString;
-    }
-
-
-    private void setModeLabel(String mode) {
-        modeLabel.setText("Mode: " + mode);
-    }
-
-    private void setStatusLabel(String status) {
-        statusLabel.setText("Status: " + status);
-    }
-
-    private void setOccupiedLabel(Boolean occupied) {
-
     }
 
 
@@ -152,15 +94,7 @@ public class RunwayCard extends JPanel {
         panel.setPreferredSize(new Dimension(400, 180));
 
         // Title
-        JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Color.white);
-        titlePanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        titlePanel.setPreferredSize(new Dimension(380, 50));
-
-        JLabel titleLabel = new JLabel("Configuring for Runway " + runway.getID());
-        titleLabel.setFont(new Font("Arial", Font.BOLD + Font.ITALIC, 22));
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-        titlePanel.add(titleLabel, BorderLayout.CENTER);
+        JPanel titlePanel = createTitlePopupPanel();
         panel.add(titlePanel);
 
         // Mode and Status
@@ -177,18 +111,36 @@ public class RunwayCard extends JPanel {
 
         JLabel modeLabel = new JLabel("Mode: ");
         modeLabel.setFont(labelFontBold);
-        JComboBox<String> modeCombo = new JComboBox<>(
-          new String[]{"Landing Only", "Takeoff Only", "Mixed Mode"}
-        );
+
+        String[] modesList = {"Landing Only", "Takeoff Only", "Mixed Mode"};
+        JComboBox<String> modeCombo = new JComboBox<>(modesList);
         modeCombo.setFont(labelFontPlain);
+
+        if (mode == Runway.RunwayMode.LANDING) {
+            modeCombo.setSelectedIndex(0);
+        } else if (mode == Runway.RunwayMode.TAKEOFF) {
+            modeCombo.setSelectedIndex(1);
+        } else if (mode == Runway.RunwayMode.MIXED) {
+            modeCombo.setSelectedIndex(2);
+        }
 
         // Status Selection
         JLabel statusLabel = new JLabel("Status: ");
         statusLabel.setFont(labelFontBold);
-        JComboBox<String> statusCombo = new JComboBox<>(
-          new String[]{"Available", "Runway Inspection", "Snow Clearance", "Failure"}
-        );
+
+        String[] statusList = {"Available", "Runway Inspection", "Snow Clearance", "Failure"};
+        JComboBox<String> statusCombo = new JComboBox<>(statusList);
         statusCombo.setFont(labelFontPlain);
+
+        if (status == Runway.RunwayStatus.AVAILABLE) {
+            statusCombo.setSelectedIndex(0);
+        } else if (status == Runway.RunwayStatus.INSPECTION) {
+            statusCombo.setSelectedIndex(1);
+        } else if (status == Runway.RunwayStatus.SNOW) {
+            statusCombo.setSelectedIndex(2);
+        } else if (status == Runway.RunwayStatus.FAILURE) {
+            statusCombo.setSelectedIndex(3);
+        }
 
         gbc.gridx = 0; gbc.gridy = 0;
         comboPanel.add(modeLabel, gbc);
@@ -216,23 +168,26 @@ public class RunwayCard extends JPanel {
             // Get the mode selected and update UI
             String modeSelected = (String) modeCombo.getSelectedItem();
             if (modeSelected != null) {
-                if (modeSelected.equals("Landing Only")) {
-                    setModeLabel("Landing");
-                } else if (modeSelected.equals("Takeoff Only")) {
-                    setModeLabel("Take-off");
-                } else {
-                    setModeLabel("Mixed");
+                switch (modeSelected) {
+                    case "Landing Only" -> runway.setMode(Runway.RunwayMode.LANDING);
+                    case "Takeoff Only" -> runway.setMode(Runway.RunwayMode.TAKEOFF);
+                    case "Mixed Mode" -> runway.setMode(Runway.RunwayMode.MIXED);
                 }
+                mode = runway.getMode();
+                updateModeLabel();
             }
 
             // Get the status selected and update UI
             String statusSelected = (String) statusCombo.getSelectedItem();
             if (statusSelected != null) {
-                if (statusSelected.equals("Available")) {
-                    setStatusLabel("Available");
-                } else if (statusSelected.equals("Maintenance")) {
-                    setStatusLabel("Maintenance");
+                switch (statusSelected) {
+                    case "Available" -> runway.setStatus(Runway.RunwayStatus.AVAILABLE);
+                    case "Runway Inspection" -> runway.setStatus(Runway.RunwayStatus.INSPECTION);
+                    case "Snow Clearance" -> runway.setStatus(Runway.RunwayStatus.SNOW);
+                    case "Failure" -> runway.setStatus(Runway.RunwayStatus.FAILURE);
                 }
+                status = runway.getStatus();
+                updateStatusLabel();
             }
         }
 
@@ -241,4 +196,50 @@ public class RunwayCard extends JPanel {
         this.repaint();
     }
 
+    private JPanel createTitlePopupPanel() {
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(Color.white);
+        titlePanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        titlePanel.setPreferredSize(new Dimension(380, 50));
+
+        JLabel titleLabel = new JLabel("Configuring for Runway " + runway.getID());
+        titleLabel.setFont(new Font("Arial", Font.BOLD + Font.ITALIC, 22));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+        titlePanel.add(titleLabel, BorderLayout.CENTER);
+
+        return titlePanel;
+    }
+
+
+    // Setter for runway attributes
+    private void updateModeLabel() {
+        if (mode == Runway.RunwayMode.LANDING) {
+            modeLabel.setText("Mode: Landing");
+        } else if (mode == Runway.RunwayMode.TAKEOFF) {
+            modeLabel.setText("Mode: Take-off");
+        } else if (mode == Runway.RunwayMode.MIXED) {
+            modeLabel.setText("Mode: Mixed");
+        }
+    }
+
+    private void updateStatusLabel() {
+        if (status == Runway.RunwayStatus.AVAILABLE) {
+            statusLabel.setText("Status: Available");
+        } else if (status == Runway.RunwayStatus.INSPECTION) {
+            statusLabel.setText("Status: Runway Inspection");
+        } else if (status == Runway.RunwayStatus.SNOW) {
+            statusLabel.setText("Status: Snow Clearance");
+        } else if (status == Runway.RunwayStatus.FAILURE) {
+            statusLabel.setText("Status: Failure");
+        }
+    }
+
+    private void updateOccupiedLabel() {
+        String aircraft = runway.getOccupied();
+        if (aircraft.isEmpty()) {
+            aircraftLabel.setText("Not Occupied");
+        } else {
+            aircraftLabel.setText("Aircraft: " + aircraft);
+        }
+    }
 }
