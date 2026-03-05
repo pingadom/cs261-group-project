@@ -5,196 +5,190 @@ import sim.view.components.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimulationPage extends JPanel {
-    private App app;
+public class SimulationPage extends BasicPage {
+    // Constants
+    private static final int SPACER_SIZE_10 = 10;
+    private static final int SPACER_SIZE_5 = 5;
+    private static final int CONTROL_BUTTON_HEIGHT = 40;
+    private static final int CONTROL_BUTTON_WIDTH = 120;
 
-    int toggleStartPause = 0;
+    private static final int CONTENT_PANEL_HEIGHT = 520;
+    private static final int STATS_PANEL_WIDTH = 200;
+    private static final int CENTER_COLUMN_WIDTH = 670;
+    private static final int BUTTONS_PANEL_WIDTH = 200;
+
+    private static final Color COLOR_RED = new Color(0xE00A0A);
+    private static final Color COLOR_ORANGE = new Color(0xFF8C0A);
+    private static final Color COLOR_GREEN = new Color(0x0AE04E);
+
+    private static final Font ARIAL_BOLD_14 = new Font("Arial", Font.BOLD, 14);
+    private static final Font ARIAL_BOLD_16 = new Font("Arial", Font.BOLD, 16);
+
+    // Instance variables
+    private final App app;
+
+    // UI Components
     StyledButton startPauseButton;
     StyledButton resetButton;
     JLabel startPauseLabel;
 
+    // Static variables
+    int toggleStartPause = 0;
     int simulationSpeed = 1;
 
     // Constructor
     public SimulationPage(App app) {
         this.app = app;
-        setupUI();
+        buildPage(createContentPanel());
     }
 
-    // Setting up the UI
-    private void setupUI() {
-        // set LayoutManager
-        setLayout(new BorderLayout(0, 10));
-        setBackground(Color.white);
-
-        // Creating subpanels inside this page
-        JPanel headerPanel = new HeaderPanel();
-        JPanel leftPanel = new SidePanel();
-        JPanel rightPanel = new SidePanel();
-        JPanel footerPanel = new FooterPanel();
-
-        // CONTENT PANEL ----------------------------------------
+    // Content Panel
+    @Override
+    protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
         contentPanel.setBackground(Color.white);
-        contentPanel.setPreferredSize(new Dimension());
 
-        // LEFT Column - Stats
-        JPanel leftContentColumn = createStatsPanel();
+        JPanel leftContentColumn = createStatsPanel();  // LEFT Column - Stats
+        JPanel centerContentColumn = createCenterColumnPanel(); // CENTER Column - Control + Runways
+        JPanel rightContentColumn = createRightColumnPanel();   // RIGHT Column - Clock + Buttons
 
-        // CENTER Column - Control + Runways
-        JPanel centerContentColumn = createCenterColumnPanel();
-
-        // RIGHT Column - Clock + Buttons
-        JPanel rightContentColumn = createRightColumnPanel();
-
-        // Adding leftColumn and rightColumn into contentPanel
-        contentPanel.add(leftContentColumn);
-        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));    // Gap in between
-        contentPanel.add(centerContentColumn);
-        contentPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        // Adding each columns into contentPanel
+        addPanelXAxis(contentPanel, leftContentColumn);
+        addPanelXAxis(contentPanel, centerContentColumn);
         contentPanel.add(rightContentColumn);
 
-        // FOOTER PANEL ----------------------------------------
+        return contentPanel;
+    }
+
+    // Footer Panel
+    protected void customizeFooter() {
         StyledButton buttonBack = new StyledButton("Back", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         buttonBack.setPreferredSize(new Dimension(100, 30));
         buttonBack.setMaximumSize(new Dimension(100, 30));
-        buttonBack.setFont(new Font("Arial", Font.BOLD, 14));
-        buttonBack.addActionListener(e -> {
-            app.showInputPage();
-        });
+        buttonBack.setFont(ARIAL_BOLD_14);
+        buttonBack.addActionListener(e -> app.showInputPage());
 
         footerPanel.add(buttonBack);
-
-
-        // Add main panels and set positions
-        add(headerPanel, BorderLayout.NORTH);
-        add(leftPanel, BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
-        add(rightPanel, BorderLayout.EAST);
-        add(footerPanel, BorderLayout.SOUTH);
     }
 
+    // LEFT Column - Stats
     private JPanel createStatsPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(Color.white);
-        // leftContentColumn.setBorder(BorderFactory.createLineBorder(Color.black));
-        panel.setMinimumSize(new Dimension(200, 520));
-        panel.setMaximumSize(new Dimension(200, 520));
+        panel.setMinimumSize(new Dimension(STATS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
+        panel.setMaximumSize(new Dimension(STATS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Panels for all stats
-        JPanel cancelledStats = new StatsPanel(new Color(0xE00A0A), "Cancelled", 0);
-        JPanel divertedStats = new StatsPanel(new Color(0xE00A0A), "Diverted", 0);
-        JPanel avgQueueStats = new StatsPanel(new Color(0xFF8C0A), "Avg Queue Delay", 0);
-        JPanel avgHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Avg Holding Delay", 0);
-        JPanel maxQueueStats = new StatsPanel(new Color(0xFF8C0A), "Max Queue Delay", 0);
-        JPanel maxHoldingStats = new StatsPanel(new Color(0xFF8C0A), "Max Holding Delay", 0);
-        JPanel departedStats = new StatsPanel(new Color(0x0AE04E), "Departed", 0);
-        JPanel arrivedStats = new StatsPanel(new Color(0x0AE04E), "Arrived", 0);
+        JPanel cancelledStats = new StatsPanel(COLOR_RED, "Cancelled", 0);
+        JPanel divertedStats = new StatsPanel(COLOR_RED, "Diverted", 0);
+        JPanel avgQueueStats = new StatsPanel(COLOR_ORANGE, "Avg Queue Delay", 0);
+        JPanel avgHoldingStats = new StatsPanel(COLOR_ORANGE, "Avg Holding Delay", 0);
+        JPanel maxQueueStats = new StatsPanel(COLOR_ORANGE, "Max Queue Delay", 0);
+        JPanel maxHoldingStats = new StatsPanel(COLOR_ORANGE, "Max Holding Delay", 0);
+        JPanel departedStats = new StatsPanel(COLOR_GREEN, "Departed", 0);
+        JPanel arrivedStats = new StatsPanel(COLOR_GREEN, "Arrived", 0);
 
         panel.add(Box.createVerticalGlue());
-        panel.add(cancelledStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(divertedStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(avgQueueStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(avgHoldingStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(maxQueueStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(maxHoldingStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(departedStats);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        addPanelYAxis(panel, cancelledStats);
+        addPanelYAxis(panel, divertedStats);
+        addPanelYAxis(panel, avgQueueStats);
+        addPanelYAxis(panel, avgHoldingStats);
+        addPanelYAxis(panel, maxQueueStats);
+        addPanelYAxis(panel, maxHoldingStats);
+        addPanelYAxis(panel, departedStats);
         panel.add(arrivedStats);
 
         return panel;
     }
 
+    // CENTER Column - Control + Runways
     private JPanel createCenterColumnPanel() {
-        // CENTER Column - Control + Runways
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(Color.white);
-        panel.setPreferredSize(new Dimension(670, 520));
+        panel.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, CONTENT_PANEL_HEIGHT));
 
-        // Control panel
         JPanel controlPanel = createControlPanel();
-
-        // Runway panel
         JPanel runwayPanel = createRunwayPanel();
 
         // Adding into topCenterColumn
         panel.add(Box.createVerticalGlue());
         panel.add(controlPanel);
-        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_5)));
         panel.add(runwayPanel);
 
         return panel;
     }
 
+    // Control panel
     private JPanel createControlPanel() {
-        // Control panel
         JPanel controlPanel = new JPanel();
         controlPanel.setBackground(Color.white);
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.X_AXIS));
-        // controlPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        controlPanel.setPreferredSize(new Dimension(670, 40));
-        controlPanel.setMaximumSize(new Dimension(670, 40));
-        controlPanel.setMinimumSize(new Dimension(670, 40));
+        controlPanel.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 40));
+        controlPanel.setMaximumSize(new Dimension(CENTER_COLUMN_WIDTH, 40));
+        controlPanel.setMinimumSize(new Dimension(CENTER_COLUMN_WIDTH, 40));
 
         // Start button
         startPauseButton = new StyledButton("", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         startPauseButton.setLayout(new BorderLayout());
         startPauseButton.setFocusPainted(false);
         startPauseButton.setBackground(Color.black);
-        startPauseButton.setButtonsize(120, 40);
-        startPauseButton.addActionListener(e -> {
-            toggleStartButton();
-        });
+        startPauseButton.setButtonSize(CONTROL_BUTTON_WIDTH, CONTROL_BUTTON_HEIGHT);
+        startPauseButton.addActionListener(e -> toggleStartButton());
 
         // Add an icon
         startPauseLabel = new JLabel("Pause", JLabel.CENTER);
-        startPauseLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        startPauseLabel.setFont(ARIAL_BOLD_16);
         startPauseLabel.setForeground(Color.white);
         startPauseButton.add(startPauseLabel, BorderLayout.CENTER);
 
         // Reset button
         resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
-        resetButton.setButtonsize(120, 40);
-        resetButton.setFont(new Font("SansSerif", Font.BOLD, 16));
-        resetButton.addActionListener(e -> {
-            resetSimulation();
-        });
+        resetButton.setButtonSize(CONTROL_BUTTON_WIDTH, CONTROL_BUTTON_HEIGHT);
+        resetButton.setFont(ARIAL_BOLD_16);
+        resetButton.addActionListener(e -> resetSimulation());
 
-        // SPEEDUP PANEL
         JPanel speedupPanel = createSpeedPanel();
 
         // Adding components into controlPanel
-        controlPanel.add(startPauseButton);
-        controlPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        controlPanel.add(resetButton);
-        controlPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        addPanelXAxis(controlPanel, startPauseButton);
+        addPanelXAxis(controlPanel, resetButton);
         controlPanel.add(speedupPanel);
 
         return controlPanel;
     }
 
+    // Functions
+    private void toggleStartButton() {
+        if (toggleStartPause == 0) {
+            startPauseLabel.setText("Start");
+            System.out.println("System paused!");
+            toggleStartPause = 1;
+        } else if (toggleStartPause == 1) {
+            startPauseLabel.setText("Pause");
+            System.out.println("System resumed!");
+            toggleStartPause = 0;
+        }
+    }
+
+    private void resetSimulation() {
+        System.out.println("System reset");
+    }
+
+    // Speedup Panel
     private JPanel createSpeedPanel() {
-        // SPEEDUP CONTROL PANEL
         JPanel speedupPanel = new JPanel(new GridBagLayout());
         speedupPanel.setBackground(Color.white);
 
         JLabel speedupLabel = new JLabel("Speed: ");
         speedupLabel.setForeground(Color.black);
-        speedupLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        speedupLabel.setFont(ARIAL_BOLD_16);
 
         // Create radio buttons
         JToggleButton x1Button = new JToggleButton("x1");
@@ -214,13 +208,12 @@ public class SimulationPage extends JPanel {
         for (JToggleButton btn : speedButtons) {
             speedGroup.add(btn);
 
-            btn.setFont(new Font("Arial", Font.BOLD, 14));
+            btn.setFont(ARIAL_BOLD_14);
             btn.setPreferredSize(new Dimension(50, 35));
             btn.setBackground(Color.white);
             btn.setForeground(Color.black);
             btn.setBorder(BorderFactory.createLineBorder(Color.gray));
             btn.setFocusPainted(false);
-
             btn.setContentAreaFilled(false);
             btn.setOpaque(true);
 
@@ -270,12 +263,11 @@ public class SimulationPage extends JPanel {
         System.out.println("Simulation speed is: " + simulationSpeed);
     }
 
+    // Runway Panel
     private JPanel createRunwayPanel() {
-        // Runway panel
         JPanel runwayPanel = new JPanel();
         runwayPanel.setBackground(Color.white);
-        // runwayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        runwayPanel.setPreferredSize(new Dimension(670, 475));
+        runwayPanel.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 475));
 
         // Main container for all the runways
         JPanel runwaysContainer = new JPanel();
@@ -290,7 +282,7 @@ public class SimulationPage extends JPanel {
         runwaysContainer.add(new RunwayCard(6, "Available", "Mixed", "BB140", true, this));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
-        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(670, 470));
+        scrollPaneRunwaysContainer.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 470));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
         runwayPanel.add(scrollPaneRunwaysContainer);
@@ -298,86 +290,58 @@ public class SimulationPage extends JPanel {
         return runwayPanel;
     }
 
+    // RIGHT Column - Clock + Buttons
     private JPanel createRightColumnPanel() {
-        // RIGHT Column - Clock + Buttons
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(Color.white);
-        panel.setPreferredSize(new Dimension(200, 520));
+        panel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Clock panel
         JPanel clockPanel = new JPanel();
-        // clockPanel.setBackground(Color.yellow);
         clockPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        clockPanel.setPreferredSize(new Dimension(200, 80));
+        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
 
         // Buttons panel
         JPanel buttonsPanel = new JPanel(new GridBagLayout());
         buttonsPanel.setBackground(Color.white);
-        buttonsPanel.setPreferredSize(new Dimension(200, 430));
+        buttonsPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 430));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0; gbc.gridy = 0;
         gbc.insets = new Insets(7, 5, 7, 5);
 
         JButton flightsSoonArrivingButton = new StyledButton("Flights Soon Arriving", new Color(0x1B30A6), new Color(0x2A45C9), new Color(0x0F1F73), new Color(0x8799E0));
-        flightsSoonArrivingButton.addActionListener(e -> {
-            showFlightsSoonArrivingPage();
-        });
+        flightsSoonArrivingButton.addActionListener(e -> showFlightsSoonArrivingPage());
         buttonsPanel.add(flightsSoonArrivingButton, gbc);
 
         gbc.gridy = 1;
         JButton flightsSoonDepartingButton = new StyledButton("Flights Soon Departing", new Color(0x1B30A6), new Color(0x2A45C9), new Color(0x0F1F73), new Color(0x8799E0));
-        flightsSoonDepartingButton.addActionListener(e -> {
-            showFlightsSoonDepartingPage();
-        });
+        flightsSoonDepartingButton.addActionListener(e -> showFlightsSoonDepartingPage());
         buttonsPanel.add(flightsSoonDepartingButton, gbc);
 
         gbc.gridy = 2;
         JButton holdingPatternButton = new StyledButton("Holding Pattern", new Color(0x4A1073), new Color(0x621A96), new Color(0x320A4F), new Color(0x9B6BCE));
-        holdingPatternButton.addActionListener(e -> {
-            showHoldingPatternPage();
-        });
+        holdingPatternButton.addActionListener(e -> showHoldingPatternPage());
         buttonsPanel.add(holdingPatternButton, gbc);
 
         gbc.gridy = 3;
         JButton takeoffQueueButton = new StyledButton("Takeoff Queue", new Color(0x4A1073), new Color(0x621A96), new Color(0x320A4F), new Color(0x9B6BCE));
-        takeoffQueueButton.addActionListener(e -> {
-            showTakeoffQueuePage();
-        });
+        takeoffQueueButton.addActionListener(e -> showTakeoffQueuePage());
         buttonsPanel.add(takeoffQueueButton, gbc);
 
         gbc.gridy = 4;
         JButton processedFlightsButton = new StyledButton("Processed Flights", new Color(0x141E54), new Color(0x1E2D7A), new Color(0x0B1238), new Color(0x5A6AB0));
-        processedFlightsButton.addActionListener(e -> {
-            showProcessedFlightsPage();
-        });
+        processedFlightsButton.addActionListener(e -> showProcessedFlightsPage());
         buttonsPanel.add(processedFlightsButton, gbc);
 
         // Adding control panel and buttons panel into panel
         panel.add(Box.createVerticalGlue());
         panel.add(clockPanel);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));    // Gap in between
+        panel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));    // Gap in between
         panel.add(buttonsPanel);
 
         return panel;
-    }
-
-    // Functions
-    private void toggleStartButton() {
-        if (toggleStartPause == 0) {
-            startPauseLabel.setText("Start");
-            System.out.println("System paused!");
-            toggleStartPause = 1;
-        } else if (toggleStartPause == 1) {
-            startPauseLabel.setText("Pause");
-            System.out.println("System resumed!");
-            toggleStartPause = 0;
-        }
-    }
-
-    private void resetSimulation() {
-        System.out.println("System reset");
     }
 
 
@@ -407,4 +371,15 @@ public class SimulationPage extends JPanel {
         System.out.println("Processed Flights");
     }
 
+
+    // Helper methods
+    private void addPanelYAxis(JPanel container, Component comp) {
+        container.add(comp);
+        container.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
+    }
+
+    private void addPanelXAxis(JPanel container, Component comp) {
+        container.add(comp);
+        container.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
+    }
 }

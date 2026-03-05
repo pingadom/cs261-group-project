@@ -79,7 +79,7 @@ public class RunwayCard extends JPanel {
 
         // Button to change the runway's configuration
         StyledButton runwayConfigButton = new StyledButton("Configure", new Color(70, 130, 180), new Color(100, 150, 200), new Color(70, 130, 180), new Color(70, 130, 180));
-        runwayConfigButton.setButtonsize(90, 30);
+        runwayConfigButton.setButtonSize(90, 30);
         runwayConfigButton.setFont(new Font("Arial", Font.BOLD, 14));
         runwayConfigButton.addActionListener(e -> {
             createRunwayConfigPanel();

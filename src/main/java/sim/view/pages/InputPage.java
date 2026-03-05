@@ -12,43 +12,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InputPage extends JPanel {
-    private final App app;
-
-    // Global parameters
-    int numRunways = 1;
+public class InputPage extends BasicPage {
+    // Constants
+    private static final int SPACER_SIZE_10 = 10;
+    private static final int FORM_CONTENT_WIDTH = 640;
     private final int MAX_RUNWAYS = 10;
+
+    private static final Color BACKGROUND_FORM_COLOR = new Color(100, 150, 200);
+    private static final Font ARIAL_BOLD_14 = new Font("Arial", Font.BOLD, 14);
+    private static final Font ARIAL_BOLD_18 = new Font("Arial", Font.BOLD, 18);
+    private static final Font ARIAL_PLAIN_18 = new Font("Arial", Font.PLAIN, 18);
+
+    // Instance variables
+    private final App app;
+    private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
+    private final List<Runway> runways = new ArrayList<>();
+
+    // UI Components
     JPanel runwaysContainer;
     StyledButton addRunwayButton;
     StyledButton removeRunwayButton;
-
-    private Map<Integer, RunwayIinputPanel> runwayPanels = new HashMap<>();
-    private List<Runway> runways = new ArrayList<>();
-
-    // User input fields
     JTextField inboundRateField;
     JTextField outboundRateField;
     JTextField durationField;
 
+    // Static variables
+    int numRunways = 1;
+
     // Constructor
     public InputPage(App app) {
         this.app = app;
-        setupUI();
+        buildPage(createContentPanel());
     }
 
-    // Setting up the UI
-    private void setupUI() {
-        // set LayoutManager
-        setLayout(new BorderLayout(0, 10));
-        setBackground(Color.white);
-
-        // Creating subpanels inside this page
-        JPanel headerPanel = new HeaderPanel();
-        JPanel leftPanel = new SidePanel();
-        JPanel rightPanel = new SidePanel();
-        JPanel footerPanel = new FooterPanel();
-
-        // CONTENT PANEL ----------------------------------------
+    // Content Panel
+    @Override
+    protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel();
         contentPanel.setBackground(Color.white);
 
@@ -56,59 +55,51 @@ public class InputPage extends JPanel {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setPreferredSize(new Dimension(700, 500));
-        //formPanel.setBackground(new Color(0xBDBDBD));
-        formPanel.setBackground(new Color(100, 150, 200));
+        formPanel.setBackground(BACKGROUND_FORM_COLOR);
         formPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.black),
                 BorderFactory.createEmptyBorder(10, 30, 10, 30)
         ));
 
-        // 1. TITLE PANEL
-        JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setMaximumSize(new Dimension(500, 70));
-        titlePanel.setPreferredSize(new Dimension(500, 70));
-        titlePanel.setBackground(Color.white);
-        titlePanel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-        JLabel titleLabel = new JLabel("Create a new Simulation");
-        titleLabel.setFont(new Font("Arial", Font.BOLD + Font.ITALIC, 30));
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
-        titlePanel.add(titleLabel, BorderLayout.CENTER);
+        JPanel titlePanel = createTitlePanel();     // 1. TITLE PANEL
+        JPanel simConfigPanel = createSimConfigPanel();     // 2. SIMULATION CONFIG PANEL
+        JPanel runwayConfigPanel = createRunwayConfigPanel();   // 3. RUNWAY CONFIG PANEL
+        JPanel startSimPanel = createStartSimPanel();   // 4. START SIMULATION BUTTON
+
         formPanel.add(titlePanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-        // 2. SIMULATION CONFIG PANEL
-        JPanel simConfigPanel = createSimConfigPanel();
+        formPanel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
         formPanel.add(simConfigPanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-        // 3. RUNWAY CONFIG PANEL
-        JPanel runwayConfigPanel = createRunwayConfigPanel();
+        formPanel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
         formPanel.add(runwayConfigPanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-        // 4. START SIMULATION BUTTON
-        JPanel startSimPanel = createStartSimPanel();
+        formPanel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
         formPanel.add(startSimPanel);
 
         // add formPanel into the contentPanel
         contentPanel.add(formPanel);
-
-        // Add main panels
-        add(headerPanel, BorderLayout.NORTH);
-        add(leftPanel, BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
-        add(rightPanel, BorderLayout.EAST);
-        add(footerPanel, BorderLayout.SOUTH);
+        return contentPanel;
     }
 
-    // SIMULATION CONFIG PANEL
+    // TITLE Panel
+    private JPanel createTitlePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setMaximumSize(new Dimension(500, 70));
+        panel.setPreferredSize(new Dimension(500, 70));
+        panel.setBackground(Color.white);
+        panel.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+
+        JLabel titleLabel = new JLabel("Create a new Simulation");
+        titleLabel.setFont(new Font("Arial", Font.BOLD + Font.ITALIC, 30));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        panel.add(titleLabel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    // SIMULATION CONFIG Panel
     private JPanel createSimConfigPanel() {
         JPanel panel = new JPanel();
-        // panel.setBackground(new Color(0xBDBDBD));
-        panel.setBackground(new Color(100, 150, 200));
+        panel.setBackground(BACKGROUND_FORM_COLOR);
         panel.setLayout(new GridBagLayout());
-
-        Font labelFont = new Font("Arial", Font.PLAIN, 18);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
@@ -121,89 +112,71 @@ public class InputPage extends JPanel {
         simConfigTitle.setForeground(Color.black);
         panel.add(simConfigTitle, gbc);
 
-        // Row 2: Inbound rate
         gbc.insets = new Insets(5, 13, 2, 0);
-        gbc.gridx = 0; gbc.gridy = 1;
-        JLabel inboundRateLabel = new JLabel("Inbound Rate (aircraft/hour)");
-        inboundRateLabel.setFont(labelFont);
-        inboundRateLabel.setForeground(Color.black);
-        panel.add(inboundRateLabel, gbc);
 
-        gbc.gridx = 1;
+        // Row 2: Inbound rate
         inboundRateField = new JTextField("8");
-        inboundRateField.setColumns(15);
-        inboundRateField.setFont(labelFont);
-        panel.add(inboundRateField, gbc);
-
+        addFormField(panel, gbc, "Inbound Rate (aircraft/hour)", inboundRateField, 1);
         // Row 3: Outbound rate
-        gbc.gridx = 0; gbc.gridy = 2;
-        gbc.weightx = 0.3;
-        JLabel outboundRateLabel = new JLabel("Outbound Rate (aircraft/hour)");
-        outboundRateLabel.setFont(labelFont);
-        outboundRateLabel.setForeground(Color.black);
-        panel.add(outboundRateLabel, gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.7;
         outboundRateField = new JTextField("8");
-        outboundRateField.setColumns(15);
-        outboundRateField.setFont(labelFont);
-        panel.add(outboundRateField, gbc);
-
+        addFormField(panel, gbc, "Outbound Rate (aircraft/hour)", outboundRateField, 2);
         // Row 4: Duration
-        gbc.gridx = 0; gbc.gridy = 3;
-        gbc.weightx = 0.3;
-        JLabel durationLabel = new JLabel("Duration (hour)");
-        durationLabel.setFont(labelFont);
-        durationLabel.setForeground(Color.black);
-        panel.add(durationLabel, gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.7;
         durationField = new JTextField("8");
-        durationField.setColumns(15);
-        durationField.setFont(labelFont);
-        panel.add(durationField, gbc);
+        addFormField(panel, gbc, "Duration (hour)", durationField, 3);
 
         return panel;
     }
 
-    // RUNWAY CONFIG PANEL
+    private void addFormField(JPanel container, GridBagConstraints gbc, String labelText, JTextField field, int y) {
+        // Label
+        gbc.gridx = 0; gbc.gridy = y;
+        gbc.weightx = 0.3;
+        JLabel label = new JLabel(labelText);
+        label.setFont(ARIAL_PLAIN_18);
+        label.setForeground(Color.black);
+        container.add(label, gbc);
+
+        // Field
+        gbc.gridx = 1; gbc.gridy = y;
+        gbc.weightx = 0.7;
+        field.setColumns(15);
+        field.setFont(ARIAL_PLAIN_18);
+        container.add(field, gbc);
+    }
+
+
+    // RUNWAY CONFIG Panel
     private JPanel createRunwayConfigPanel() {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(70, 130, 180));
-        panel.setPreferredSize(new Dimension(640, 270));
+        panel.setBackground(BACKGROUND_FORM_COLOR);
+        panel.setPreferredSize(new Dimension(FORM_CONTENT_WIDTH, 270));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        // TITLE PANEL
+        // TITLE Panel
         JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(new Color(100, 150, 200));
+        titlePanel.setBackground(BACKGROUND_FORM_COLOR);
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
-        titlePanel.setPreferredSize(new Dimension(640, 30));
+        titlePanel.setPreferredSize(new Dimension(FORM_CONTENT_WIDTH, 30));
 
         JLabel titleLabel = new JLabel("Runway Configuration");
         titleLabel.setFont(new Font("Arial", Font.ITALIC + Font.BOLD, 20));
         titleLabel.setForeground(Color.black);
 
         addRunwayButton = new StyledButton("+ Add Runways", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
-        addRunwayButton.setFont(new Font("Arial", Font.BOLD, 14));
-        addRunwayButton.setButtonsize(150, 25);
-        addRunwayButton.addActionListener(e -> {
-            addNewRunway();
-        });
+        addRunwayButton.setFont(ARIAL_BOLD_14);
+        addRunwayButton.setButtonSize(150, 25);
+        addRunwayButton.addActionListener(e -> addNewRunway());
 
         removeRunwayButton = new StyledButton("Remove Runway", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
-        removeRunwayButton.setFont(new Font("Arial", Font.BOLD, 14));
-        removeRunwayButton.setButtonsize(150, 25);
+        removeRunwayButton.setFont(ARIAL_BOLD_14);
+        removeRunwayButton.setButtonSize(150, 25);
         removeRunwayButton.setEnabled(false);
-        removeRunwayButton.addActionListener(e -> {
-            deleteRunway(numRunways);
-        });
+        removeRunwayButton.addActionListener(e -> deleteRunway(numRunways));
 
         titlePanel.add(titleLabel);
         titlePanel.add(Box.createHorizontalGlue());
         titlePanel.add(addRunwayButton);
-        titlePanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        titlePanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
         titlePanel.add(removeRunwayButton);
 
         // RUNWAY PANEL
@@ -215,12 +188,12 @@ public class InputPage extends JPanel {
         Runway runway = new Runway(newId, "none", "none", 0);
         runways.add(runway);    // Add Runway object into list
 
-        RunwayIinputPanel runwayIinputPanel = new RunwayIinputPanel(runway);
-        runwayPanels.put(newId, runwayIinputPanel);
-        runwaysContainer.add(runwayIinputPanel);
+        RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runway);
+        runwayPanels.put(newId, runwayInputPanel);
+        runwaysContainer.add(runwayInputPanel);
 
         JScrollPane scrollPaneRunways = new JScrollPane(runwaysContainer);
-        scrollPaneRunways.setPreferredSize(new Dimension(640, 255));
+        scrollPaneRunways.setPreferredSize(new Dimension(FORM_CONTENT_WIDTH, 255));
         scrollPaneRunways.getVerticalScrollBar().setUnitIncrement(10);
 
         panel.add(titlePanel);
@@ -237,10 +210,9 @@ public class InputPage extends JPanel {
             int newId = getNextAvailableId();   // Get the nextId
             Runway runway = new Runway(newId, "none", "none", 0 );   // Create a new runway object
             runways.add(runway);    // Add the runway object into the list
-            // printRunwayObjects();   // Debugging
 
             // Creating the RunwayPanel for that runway
-            RunwayIinputPanel panel = new RunwayIinputPanel(runway);
+            RunwayInputPanel panel = new RunwayInputPanel(runway);
             runwayPanels.put(newId, panel);
 
             // JPanel newRunway = createRunwayPanel(numRunways);
@@ -261,16 +233,14 @@ public class InputPage extends JPanel {
     // Runway deletion
     private void deleteRunway(int id) {
         if (numRunways > 1) {
-            // Get the highest ID RunwayPanel
-            RunwayIinputPanel runwayRemoved = runwayPanels.get(id);
+            RunwayInputPanel runwayRemoved = runwayPanels.get(id); // Get the highest ID RunwayPanel
 
             // Remove from the runwaysContainer
             if (runwayRemoved != null) {
                 runwaysContainer.remove(runwayRemoved);
             }
 
-            // Remove from the runwayPanels hashmap
-            runwayPanels.remove(id);
+            runwayPanels.remove(id);    // Remove from the runwayPanels hashmap
 
             // Remove from the list
             for (Runway runway: runways) {
@@ -279,7 +249,6 @@ public class InputPage extends JPanel {
                     break;
                 }
             }
-            // printRunwayObjects();   // Debugging
 
             addRunwayButton.setEnabled(true);   // Enable the addRunwayButton
             numRunways--;   // Decrement number of runways
@@ -326,19 +295,16 @@ public class InputPage extends JPanel {
         System.out.println(runwayList);
     }
 
-    // START SIM PANEL
+    // START SIM Panel
     private JPanel createStartSimPanel()  {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panel.setBackground(new Color(100, 150, 200));
-        panel.setMinimumSize(new Dimension(640, 30));
+        panel.setBackground(BACKGROUND_FORM_COLOR);
+        panel.setMinimumSize(new Dimension(FORM_CONTENT_WIDTH, 30));
 
         StyledButton button = new StyledButton("Start Simulation", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
-        button.setFont(new Font("Arial", Font.BOLD, 18));
-        button.setButtonsize(200, 30);
-
-        button.addActionListener(e -> {
-            startSimulation();
-        });
+        button.setFont(ARIAL_BOLD_18);
+        button.setButtonSize(200, 30);
+        button.addActionListener(e -> startSimulation());
 
         panel.add(button);
         return panel;

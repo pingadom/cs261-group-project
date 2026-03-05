@@ -5,19 +5,18 @@ import sim.model.stores.Runway;
 import javax.swing.*;
 import java.awt.*;
 
-public class RunwayIinputPanel extends JPanel {
-    private Runway runway;
-    private int runwayId;
+public class RunwayInputPanel extends JPanel {
+    private final Runway runway;
+    private final int runwayId;
 
     private JComboBox<String> modeCombo;
     private JComboBox<String> statusCombo;
 
 
-    public RunwayIinputPanel(Runway runway) {
+    public RunwayInputPanel(Runway runway) {
         this.runway = runway;
         this.runwayId = runway.getID();
 
-        // Build the UI
         setupUI();
     }
 
@@ -60,9 +59,7 @@ public class RunwayIinputPanel extends JPanel {
         modeCombo = new JComboBox<>(new String[]{"None", "Landing Only", "Takeoff Only", "Mixed Mode"});
         modeCombo.setFont(comboFont);
         modeCombo.setPreferredSize(new Dimension(150, 25));
-        modeCombo.addActionListener(e -> {
-            updateMode();
-        });
+        modeCombo.addActionListener(e -> updateMode());
         optionPanel.add(modeCombo, gbc);
 
         // Status
@@ -74,9 +71,7 @@ public class RunwayIinputPanel extends JPanel {
         statusCombo = new JComboBox<>(new String[]{"None", "Available", "Maintenance"});
         statusCombo.setFont(comboFont);
         statusCombo.setPreferredSize(new Dimension(150, 25));
-        statusCombo.addActionListener(e-> {
-            updateStatus();
-        });
+        statusCombo.addActionListener(e-> updateStatus());
         optionPanel.add(statusCombo, gbc);
 
         add(titlePanel);
