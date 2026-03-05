@@ -14,6 +14,7 @@ public class Aircraft {
     private int altitude;
     private int groundSpeed;
     private double fuel;
+    private double realTime;
     private EmergencyStatus emergency;
     private AircraftStatus status;
 
@@ -66,6 +67,10 @@ public class Aircraft {
 
     public EmergencyStatus getEmergency(){
         return emergency;
+    }
+
+    public double getRealTime(){
+        return realTime;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -122,6 +127,11 @@ public class Aircraft {
 
     public int setStatus(AircraftStatus newStatus){
         status = newStatus;
+        return 1;
+    }
+
+    public int setRealTime(double newRealTime){
+        realTime = newRealTime;
         return 1;
     }
 
