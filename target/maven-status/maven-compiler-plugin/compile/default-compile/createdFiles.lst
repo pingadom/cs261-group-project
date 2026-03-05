@@ -27,8 +27,10 @@ sim\model\stores\LinkedListElement.class
 sim\core\metrics\Metrics.class
 sim\Main.class
 sim\view\components\FooterPanel.class
+sim\view\controllers\PageDataController.class
 sim\SimCommand.class
 sim\view\components\StyledButton.class
 sim\model\stores\Aircraft$EmergencyStatus.class
+sim\view\pages\SimulationPage$1.class
 sim\core\metrics\MetricsCsvWriter.class
 sim\config\SimConfig$RunwayStatus.class

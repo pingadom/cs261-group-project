@@ -1,28 +1,33 @@
 package sim.view.components;
 
+import sim.model.stores.Runway;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.util.Map;
 
 public class RunwayCard extends JPanel {
-    private int runwayId;
-    private JPanel parentPanel;
+    private final JPanel parentPanel;
 
-    private JLabel statusLabel;
-    private JLabel modeLabel;
-    private JLabel aircraftLabel;
-    private JLabel occupiedLabel;
+    private final JLabel statusLabel;
+    private final JLabel modeLabel;
+    private final JLabel aircraftLabel;
+    private final JLabel occupiedLabel;
+
+    private final Runway runway;
 
     // Constructor
-    public RunwayCard(int id, String status, String mode, String aircraft, Boolean occupied, JPanel parent) {
-        this.runwayId = id;
+    public RunwayCard(Runway runway, JPanel parent) {
+        this.runway = runway;
         this.parentPanel = parent;
+
+        String mode = setMode();
+        String status = setStatus();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        TitledBorder titleBorder = BorderFactory.createTitledBorder("Runway " + runwayId);
+        TitledBorder titleBorder = BorderFactory.createTitledBorder("Runway " + runway.getID());
         titleBorder.setTitleFont(new Font("Arial", Font.ITALIC, 16));
         titleBorder.setTitleColor(Color.black);
         titleBorder.setTitleJustification(TitledBorder.LEFT);
@@ -56,7 +61,7 @@ public class RunwayCard extends JPanel {
         JPanel aircraftPanel = new JPanel();
         aircraftPanel.setPreferredSize(new Dimension(110, 80));
         aircraftPanel.setLayout(new BorderLayout());
-        aircraftLabel = new JLabel("Aircraft: " + aircraft);
+        aircraftLabel = new JLabel("Aircraft: " + "");
         aircraftLabel.setFont(labelFont);
         aircraftLabel.setHorizontalAlignment(JLabel.CENTER);
         aircraftPanel.add(aircraftLabel, BorderLayout.CENTER);
@@ -64,11 +69,12 @@ public class RunwayCard extends JPanel {
         JPanel occupiedPanel = new JPanel();
         occupiedPanel.setPreferredSize(new Dimension(80, 80));
         occupiedPanel.setLayout(new BorderLayout());
-        if (occupied) {
-            occupiedLabel = new JLabel("Occupied");
-        } else {
-            occupiedLabel = new JLabel("Free");
-        }
+//        if (occupied) {
+//            occupiedLabel = new JLabel("Occupied");
+//        } else {
+//            occupiedLabel = new JLabel("Free");
+//        }
+        occupiedLabel = new JLabel(runway.getOccupied());
         occupiedLabel.setFont(labelFont);
         occupiedLabel.setHorizontalAlignment(JLabel.CENTER);
         occupiedPanel.add(occupiedLabel, BorderLayout.CENTER);
@@ -94,6 +100,37 @@ public class RunwayCard extends JPanel {
     }
 
     // Setter for runway attributes
+    private String setMode() {
+        String modeString = "";
+        Runway.RunwayMode mode = runway.getMode();
+
+        if (mode == Runway.RunwayMode.LANDING) {
+            modeString = "Landing";
+        } else if (mode == Runway.RunwayMode.TAKEOFF) {
+            modeString = "Take-off";
+        } else if (mode == Runway.RunwayMode.MIXED) {
+            modeString = "Mixed";
+        }
+        return modeString;
+    }
+
+    private String setStatus() {
+        String statusString = "";
+        Runway.RunwayStatus status = runway.getStatus();
+
+        if (status == Runway.RunwayStatus.AVAILABLE) {
+            statusString = "Available";
+        } else if (status == Runway.RunwayStatus.INSPECTION) {
+            statusString = "Runway Inspection";
+        } else if (status == Runway.RunwayStatus.SNOW) {
+            statusString = "Snow Clearance";
+        } else if (status == Runway.RunwayStatus.FAILURE) {
+            statusString = "Failure";
+        }
+        return statusString;
+    }
+
+
     private void setModeLabel(String mode) {
         modeLabel.setText("Mode: " + mode);
     }
@@ -120,7 +157,7 @@ public class RunwayCard extends JPanel {
         titlePanel.setBorder(BorderFactory.createLineBorder(Color.black));
         titlePanel.setPreferredSize(new Dimension(380, 50));
 
-        JLabel titleLabel = new JLabel("Configuring for Runway " + runwayId);
+        JLabel titleLabel = new JLabel("Configuring for Runway " + runway.getID());
         titleLabel.setFont(new Font("Arial", Font.BOLD + Font.ITALIC, 22));
         titleLabel.setHorizontalAlignment(JLabel.CENTER);
         titlePanel.add(titleLabel, BorderLayout.CENTER);
@@ -168,7 +205,7 @@ public class RunwayCard extends JPanel {
         int result = JOptionPane.showConfirmDialog(
           parentPanel,
           panel,
-          "Configure Runway " + runwayId,
+          "Configure Runway " + runway.getID(),
           JOptionPane.OK_CANCEL_OPTION,
           JOptionPane.PLAIN_MESSAGE
         );

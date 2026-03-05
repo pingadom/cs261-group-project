@@ -28,7 +28,7 @@ public class List<E> {
         }
 
     public LinkedListElement<E> get(int index){
-        if (size <= index && index >= 0){
+        if (size <= index || index < 0){
             return null;
         }
         LinkedListElement<E> ptr = head;
@@ -39,8 +39,13 @@ public class List<E> {
     }
 
     public int add(LinkedListElement<E> element){
-        tail.setNext(element);
-        tail = element;
+        if (head == null) {
+            head = element;
+            tail = element;
+        } else {
+            tail.setNext(element);
+            tail = element;
+        }
         size++;
         return 1;
     }
@@ -63,6 +68,12 @@ public class List<E> {
         LinkedListElement<E> element = get(index);
         LinkedListElement<E> prev = get(index - 1);
         prev.setNext(element.getNext());
+
+        // Update the tail if removing last element
+        if (index == size - 1) {
+            tail = prev;
+        }
+
         size--;
         return element;
         

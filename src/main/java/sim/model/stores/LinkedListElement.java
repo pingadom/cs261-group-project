@@ -28,12 +28,12 @@ public class LinkedListElement<E>{
     }
 
     public int setValue(E _value){
-        value = value;
+        value = _value;
         return 1;
     }
 
     public int setNext(LinkedListElement<E> _next){
-        next = next;
+        next = _next;
         return 1;
     }
 

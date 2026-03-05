@@ -1,5 +1,6 @@
 package sim.view;
 
+import sim.view.controllers.PageDataController;
 import sim.view.pages.InputPage;
 import sim.view.pages.SimulationPage;
 
@@ -21,13 +22,16 @@ public class App extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
+        // Controller
+        PageDataController dataController = new PageDataController();
+
         // Setup CardLayout
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
         // Create pages
-        InputPage inputPage = new InputPage(this);
-        SimulationPage simulationPage = new SimulationPage(this);
+        InputPage inputPage = new InputPage(this, dataController);
+        SimulationPage simulationPage = new SimulationPage(this, dataController);
 
         // Add pages to CardLayout
         mainPanel.add(inputPage, "INPUT");
