@@ -195,8 +195,7 @@ public final class Engine {
       inboundPtr++;
     }
 
-    // 3) Generate departures BEFORE assigning runways
-    // Release outbound aircraft into takeoff queue when their release time is reached
+    // 3) Release outbound aircraft into takeoff queue when their release time is reached
     while (outboundPtr < outboundEvents.size()
         && outboundEvents.get(outboundPtr).releaseTimeSeconds <= clock.now()) {
 
@@ -216,6 +215,9 @@ public final class Engine {
     // 4) Update queue metrics after enqueues
     metrics.arrivalQueue = holdingPattern.getSize();
     metrics.departureQueue = takeOffQueue.getSize();
+
+    fuelConsumption(holdingPattern, dt, postProcessing);
+    adjustAltitude(holdingPattern);
 
     // 5) Assign BOTH inbound + outbound to runways
     runwayHandling.handle(
@@ -269,5 +271,79 @@ public final class Engine {
     }
   }
 
+private void adjustAltitude(HoldingPattern<Aircraft> holdingPattern) {
+  int i = 1;
+
+  LinkedListElement<Aircraft> ptr = holdingPattern.getEmergency().getHead();
+  while (ptr != null) {
+    Aircraft ac = ptr.getValue();
+    if (ac != null) ac.setAltitude(i * 1000);
+    i++;
+    ptr = ptr.getNext();
+  }
+
+  ptr = holdingPattern.getNonEmergency().getHead();
+  while (ptr != null) {
+    Aircraft ac = ptr.getValue();
+    if (ac != null) ac.setAltitude(i * 1000);
+    i++;
+    ptr = ptr.getNext();
+  }
+}
+
+private void fuelConsumption(
+    HoldingPattern<Aircraft> holdingPattern,
+    double dtSeconds,
+    List<Aircraft> postProcessing
+) {
+  // Tune these numbers to your meaning of "fuel"
+  final int burnPerSecond = 1;        // fuel units per sim-second
+  final int divertThreshold = 10;    // emergency planes below this divert
+  final int promoteThreshold = 20;  // non-emergency below this become fuel emergency
+
+  int burn = (int) Math.max(1, Math.round(dtSeconds * burnPerSecond));
+
+  // --- Emergency: divert if too low ---
+  int i = 0;
+  while (i < holdingPattern.getEmergency().getSize()) {
+    LinkedListElement<Aircraft> node = holdingPattern.getEmergency().get(i);
+    if (node == null || node.getValue() == null) { i++; continue; }
+
+    Aircraft ac = node.getValue();
+    ac.setFuel(ac.getFuel() - burn);
+
+    if (ac.getFuel() < divertThreshold) {
+      // Pop returns the removed node
+      LinkedListElement<Aircraft> removed = holdingPattern.getEmergency().pop(i);
+      System.out.printf("[t=%.0fs] DIVERT: %s fuel=%d%n", clock.now(), ac.getCallsign(), ac.getFuel());
+      removed.getValue().setEmergency("Diverted");
+      postProcessing.add(removed);
+      // don't i++ because list shifted
+    } else {
+      i++;
+    }
+  }
+
+  // --- Non-emergency: promote to emergency if low fuel ---
+  i = 0;
+  while (i < holdingPattern.getNonEmergency().getSize()) {
+    LinkedListElement<Aircraft> node = holdingPattern.getNonEmergency().get(i);
+    if (node == null || node.getValue() == null) { i++; continue; }
+
+    Aircraft ac = node.getValue();
+    ac.setFuel(ac.getFuel() - burn);
+
+    if (ac.getFuel() < promoteThreshold) {
+      LinkedListElement<Aircraft> removed = holdingPattern.getNonEmergency().pop(i);
+      System.out.printf("[t=%.0fs] PROMOTE fuel emergency: %s fuel=%d%n", clock.now(), ac.getCallsign(), ac.getFuel());
+      removed.getValue().setEmergency("Fuel");
+      removed.setPriority(1);          // promote
+      holdingPattern.add(removed);     // reinsert into emergency list
+      // don't i++ because list shifted
+    } else {
+      i++;
+    }
+  }
+}
 }
 

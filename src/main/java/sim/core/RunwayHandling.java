@@ -30,6 +30,16 @@ public final class RunwayHandling {
     }
   }
 
+  public void freeRunways(List<Runway> runways, SimClock clock){
+      LinkedListElement<Runway> ptr = runways.getHead();
+      while (ptr!= null){
+          if (ptr.getValue().getOccupied().compareTo("") != 0 && ptr.getValue().getTimeRemaining() < clock.now()){
+              ptr.getValue().occupy("");
+          }
+          ptr = ptr.getNext();
+      }
+  }
+
   private boolean assignLandingToMode(
       HoldingPattern<Aircraft> holdingPattern,
       List<Runway> runways,

@@ -40,7 +40,7 @@ public final class ArrivalSchedule {
 
             int altitude = 10000;      // placeholder
             int groundSpeed = 250;     // placeholder
-            int fuel = 40;             // placeholder (minutes)
+            int fuel = 1800;             // placeholder (seconds)
             String emergency = (rng.nextDouble() < EMERGENCY_PROB) ? randomEmergencyType(rng) : "None";
 
             Aircraft ac = new Aircraft(callsign, operator, origin, time, altitude, groundSpeed, fuel, emergency);
