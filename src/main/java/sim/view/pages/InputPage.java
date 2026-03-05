@@ -12,16 +12,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InputPage extends JPanel {
+public class InputPage extends BasicPage {
     // Constants
     private static final int SPACER_SIZE_10 = 10;
-    private static final int SPACER_SIZE_5 = 5;
     private static final int FORM_CONTENT_WIDTH = 640;
     private final int MAX_RUNWAYS = 10;
 
     private static final Color BACKGROUND_FORM_COLOR = new Color(100, 150, 200);
     private static final Font ARIAL_BOLD_14 = new Font("Arial", Font.BOLD, 14);
     private static final Font ARIAL_BOLD_18 = new Font("Arial", Font.BOLD, 18);
+    private static final Font ARIAL_PLAIN_18 = new Font("Arial", Font.PLAIN, 18);
 
     // Instance variables
     private final App app;
@@ -42,21 +42,12 @@ public class InputPage extends JPanel {
     // Constructor
     public InputPage(App app) {
         this.app = app;
-        setupUI();
+        buildPage(createContentPanel());
     }
 
-    // Setting up the UI
-    private void setupUI() {
-        setLayout(new BorderLayout(0, SPACER_SIZE_10));
-        setBackground(Color.white);
-
-        // Creating subpanels inside this page
-        JPanel headerPanel = new HeaderPanel();
-        JPanel leftPanel = new SidePanel();
-        JPanel rightPanel = new SidePanel();
-        JPanel footerPanel = new FooterPanel();
-
-        // CONTENT PANEL ----------------------------------------
+    // Content Panel
+    @Override
+    protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel();
         contentPanel.setBackground(Color.white);
 
@@ -85,13 +76,7 @@ public class InputPage extends JPanel {
 
         // add formPanel into the contentPanel
         contentPanel.add(formPanel);
-
-        // Add main panels
-        add(headerPanel, BorderLayout.NORTH);
-        add(leftPanel, BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
-        add(rightPanel, BorderLayout.EAST);
-        add(footerPanel, BorderLayout.SOUTH);
+        return contentPanel;
     }
 
     // TITLE Panel
@@ -116,8 +101,6 @@ public class InputPage extends JPanel {
         panel.setBackground(BACKGROUND_FORM_COLOR);
         panel.setLayout(new GridBagLayout());
 
-        Font labelFont = new Font("Arial", Font.PLAIN, 18);
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(5, 0, 2, 0);
@@ -129,52 +112,38 @@ public class InputPage extends JPanel {
         simConfigTitle.setForeground(Color.black);
         panel.add(simConfigTitle, gbc);
 
-        // Row 2: Inbound rate
         gbc.insets = new Insets(5, 13, 2, 0);
-        gbc.gridx = 0; gbc.gridy = 1;
-        JLabel inboundRateLabel = new JLabel("Inbound Rate (aircraft/hour)");
-        inboundRateLabel.setFont(labelFont);
-        inboundRateLabel.setForeground(Color.black);
-        panel.add(inboundRateLabel, gbc);
 
-        gbc.gridx = 1;
+        // Row 2: Inbound rate
         inboundRateField = new JTextField("8");
-        inboundRateField.setColumns(15);
-        inboundRateField.setFont(labelFont);
-        panel.add(inboundRateField, gbc);
-
+        addFormField(panel, gbc, "Inbound Rate (aircraft/hour)", inboundRateField, 1);
         // Row 3: Outbound rate
-        gbc.gridx = 0; gbc.gridy = 2;
-        gbc.weightx = 0.3;
-        JLabel outboundRateLabel = new JLabel("Outbound Rate (aircraft/hour)");
-        outboundRateLabel.setFont(labelFont);
-        outboundRateLabel.setForeground(Color.black);
-        panel.add(outboundRateLabel, gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.7;
         outboundRateField = new JTextField("8");
-        outboundRateField.setColumns(15);
-        outboundRateField.setFont(labelFont);
-        panel.add(outboundRateField, gbc);
-
+        addFormField(panel, gbc, "Outbound Rate (aircraft/hour)", outboundRateField, 2);
         // Row 4: Duration
-        gbc.gridx = 0; gbc.gridy = 3;
-        gbc.weightx = 0.3;
-        JLabel durationLabel = new JLabel("Duration (hour)");
-        durationLabel.setFont(labelFont);
-        durationLabel.setForeground(Color.black);
-        panel.add(durationLabel, gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.7;
         durationField = new JTextField("8");
-        durationField.setColumns(15);
-        durationField.setFont(labelFont);
-        panel.add(durationField, gbc);
+        addFormField(panel, gbc, "Duration (hour)", durationField, 3);
 
         return panel;
     }
+
+    private void addFormField(JPanel container, GridBagConstraints gbc, String labelText, JTextField field, int y) {
+        // Label
+        gbc.gridx = 0; gbc.gridy = y;
+        gbc.weightx = 0.3;
+        JLabel label = new JLabel(labelText);
+        label.setFont(ARIAL_PLAIN_18);
+        label.setForeground(Color.black);
+        container.add(label, gbc);
+
+        // Field
+        gbc.gridx = 1; gbc.gridy = y;
+        gbc.weightx = 0.7;
+        field.setColumns(15);
+        field.setFont(ARIAL_PLAIN_18);
+        container.add(field, gbc);
+    }
+
 
     // RUNWAY CONFIG Panel
     private JPanel createRunwayConfigPanel() {
@@ -196,17 +165,13 @@ public class InputPage extends JPanel {
         addRunwayButton = new StyledButton("+ Add Runways", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
         addRunwayButton.setFont(ARIAL_BOLD_14);
         addRunwayButton.setButtonSize(150, 25);
-        addRunwayButton.addActionListener(e -> {
-            addNewRunway();
-        });
+        addRunwayButton.addActionListener(e -> addNewRunway());
 
         removeRunwayButton = new StyledButton("Remove Runway", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
         removeRunwayButton.setFont(ARIAL_BOLD_14);
         removeRunwayButton.setButtonSize(150, 25);
         removeRunwayButton.setEnabled(false);
-        removeRunwayButton.addActionListener(e -> {
-            deleteRunway(numRunways);
-        });
+        removeRunwayButton.addActionListener(e -> deleteRunway(numRunways));
 
         titlePanel.add(titleLabel);
         titlePanel.add(Box.createHorizontalGlue());
@@ -339,10 +304,7 @@ public class InputPage extends JPanel {
         StyledButton button = new StyledButton("Start Simulation", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
         button.setFont(ARIAL_BOLD_18);
         button.setButtonSize(200, 30);
-
-        button.addActionListener(e -> {
-            startSimulation();
-        });
+        button.addActionListener(e -> startSimulation());
 
         panel.add(button);
         return panel;

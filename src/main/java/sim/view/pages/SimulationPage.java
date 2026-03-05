@@ -8,7 +8,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimulationPage extends JPanel {
+public class SimulationPage extends BasicPage {
     // Constants
     private static final int SPACER_SIZE_10 = 10;
     private static final int SPACER_SIZE_5 = 5;
@@ -42,21 +42,12 @@ public class SimulationPage extends JPanel {
     // Constructor
     public SimulationPage(App app) {
         this.app = app;
-        setupUI();
+        buildPage(createContentPanel());
     }
 
-    // Setting up the UI
-    private void setupUI() {
-        setLayout(new BorderLayout(0, SPACER_SIZE_10));
-        setBackground(Color.white);
-
-        // Creating subpanels inside this page
-        JPanel headerPanel = new HeaderPanel();
-        JPanel leftPanel = new SidePanel();
-        JPanel rightPanel = new SidePanel();
-        JPanel footerPanel = new FooterPanel();
-
-        // CONTENT PANEL ----------------------------------------
+    // Content Panel
+    @Override
+    protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
         contentPanel.setBackground(Color.white);
@@ -66,13 +57,15 @@ public class SimulationPage extends JPanel {
         JPanel rightContentColumn = createRightColumnPanel();   // RIGHT Column - Clock + Buttons
 
         // Adding each columns into contentPanel
-        contentPanel.add(leftContentColumn);
-        contentPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));    // Gap in between
-        contentPanel.add(centerContentColumn);
-        contentPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
+        addPanelXAxis(contentPanel, leftContentColumn);
+        addPanelXAxis(contentPanel, centerContentColumn);
         contentPanel.add(rightContentColumn);
 
-        // FOOTER PANEL ----------------------------------------
+        return contentPanel;
+    }
+
+    // Footer Panel
+    protected void customizeFooter() {
         StyledButton buttonBack = new StyledButton("Back", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         buttonBack.setPreferredSize(new Dimension(100, 30));
         buttonBack.setMaximumSize(new Dimension(100, 30));
@@ -80,21 +73,9 @@ public class SimulationPage extends JPanel {
         buttonBack.addActionListener(e -> app.showInputPage());
 
         footerPanel.add(buttonBack);
-
-        // Add main panels and set positions
-        add(headerPanel, BorderLayout.NORTH);
-        add(leftPanel, BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
-        add(rightPanel, BorderLayout.EAST);
-        add(footerPanel, BorderLayout.SOUTH);
     }
 
     // LEFT Column - Stats
-    private void addStatsPanel(JPanel container, JPanel statsPanel) {
-        container.add(statsPanel);
-        container.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
-    }
-
     private JPanel createStatsPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -113,13 +94,13 @@ public class SimulationPage extends JPanel {
         JPanel arrivedStats = new StatsPanel(COLOR_GREEN, "Arrived", 0);
 
         panel.add(Box.createVerticalGlue());
-        addStatsPanel(panel, cancelledStats);
-        addStatsPanel(panel, divertedStats);
-        addStatsPanel(panel, avgQueueStats);
-        addStatsPanel(panel, avgHoldingStats);
-        addStatsPanel(panel, maxQueueStats);
-        addStatsPanel(panel, maxHoldingStats);
-        addStatsPanel(panel, departedStats);
+        addPanelYAxis(panel, cancelledStats);
+        addPanelYAxis(panel, divertedStats);
+        addPanelYAxis(panel, avgQueueStats);
+        addPanelYAxis(panel, avgHoldingStats);
+        addPanelYAxis(panel, maxQueueStats);
+        addPanelYAxis(panel, maxHoldingStats);
+        addPanelYAxis(panel, departedStats);
         panel.add(arrivedStats);
 
         return panel;
@@ -176,16 +157,31 @@ public class SimulationPage extends JPanel {
         JPanel speedupPanel = createSpeedPanel();
 
         // Adding components into controlPanel
-        controlPanel.add(startPauseButton);
-        controlPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
-        controlPanel.add(resetButton);
-        controlPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
+        addPanelXAxis(controlPanel, startPauseButton);
+        addPanelXAxis(controlPanel, resetButton);
         controlPanel.add(speedupPanel);
 
         return controlPanel;
     }
 
-    // SPEEDUP CONTROL PANEL
+    // Functions
+    private void toggleStartButton() {
+        if (toggleStartPause == 0) {
+            startPauseLabel.setText("Start");
+            System.out.println("System paused!");
+            toggleStartPause = 1;
+        } else if (toggleStartPause == 1) {
+            startPauseLabel.setText("Pause");
+            System.out.println("System resumed!");
+            toggleStartPause = 0;
+        }
+    }
+
+    private void resetSimulation() {
+        System.out.println("System reset");
+    }
+
+    // Speedup Panel
     private JPanel createSpeedPanel() {
         JPanel speedupPanel = new JPanel(new GridBagLayout());
         speedupPanel.setBackground(Color.white);
@@ -267,6 +263,7 @@ public class SimulationPage extends JPanel {
         System.out.println("Simulation speed is: " + simulationSpeed);
     }
 
+    // Runway Panel
     private JPanel createRunwayPanel() {
         JPanel runwayPanel = new JPanel();
         runwayPanel.setBackground(Color.white);
@@ -347,23 +344,6 @@ public class SimulationPage extends JPanel {
         return panel;
     }
 
-    // Functions
-    private void toggleStartButton() {
-        if (toggleStartPause == 0) {
-            startPauseLabel.setText("Start");
-            System.out.println("System paused!");
-            toggleStartPause = 1;
-        } else if (toggleStartPause == 1) {
-            startPauseLabel.setText("Pause");
-            System.out.println("System resumed!");
-            toggleStartPause = 0;
-        }
-    }
-
-    private void resetSimulation() {
-        System.out.println("System reset");
-    }
-
 
     // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
@@ -391,4 +371,15 @@ public class SimulationPage extends JPanel {
         System.out.println("Processed Flights");
     }
 
+
+    // Helper methods
+    private void addPanelYAxis(JPanel container, Component comp) {
+        container.add(comp);
+        container.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
+    }
+
+    private void addPanelXAxis(JPanel container, Component comp) {
+        container.add(comp);
+        container.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
+    }
 }
