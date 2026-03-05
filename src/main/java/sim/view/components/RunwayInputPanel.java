@@ -12,7 +12,6 @@ public class RunwayInputPanel extends JPanel {
     private JComboBox<String> modeCombo;
     private JComboBox<String> statusCombo;
 
-
     public RunwayInputPanel(Runway runway) {
         this.runway = runway;
         this.runwayId = runway.getID();
@@ -89,7 +88,6 @@ public class RunwayInputPanel extends JPanel {
                 case "None" -> runway.setMode(Runway.RunwayMode.NONE);
             }
         }
-
     }
 
     private void updateStatus() {

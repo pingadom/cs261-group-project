@@ -43,6 +43,7 @@ public class SimulationPage extends BasicPage {
     public SimulationPage(App app) {
         this.app = app;
         buildPage(createContentPanel());
+        customizeFooter();
     }
 
     // Content Panel

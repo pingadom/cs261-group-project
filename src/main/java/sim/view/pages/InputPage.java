@@ -361,7 +361,7 @@ public class InputPage extends BasicPage {
 
     private boolean allRunwaysConfigured() {
         for (Runway runway: runways) {
-            if (runway.getMode().equals("none") || runway.getStatus().equals("none")) {
+            if (runway.getMode() == Runway.RunwayMode.NONE || runway.getStatus() == Runway.RunwayStatus.NONE) {
                 return false;
             }
         }

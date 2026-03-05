@@ -57,6 +57,7 @@ public class Runway {
     }
 
     public int setMode(RunwayMode newMode){
+        mode = newMode;
         return 1;
     }
 
