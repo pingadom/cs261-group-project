@@ -1,5 +1,6 @@
 package sim.view.pages;
 
+import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import sim.view.components.FooterPanel;
 import sim.view.components.HeaderPanel;
 import sim.view.components.SidePanel;
@@ -45,5 +46,6 @@ public abstract class BasicPage extends JPanel {
     // Abstract method
     protected abstract JPanel createContentPanel();
 
+    protected void customizeHeader() {}
     protected void customizeFooter() {}
 }

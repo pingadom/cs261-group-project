@@ -304,7 +304,7 @@ public class SimulationPage extends BasicPage {
     private void refreshRunwayDisplay() {
         runwaysContainer.removeAll();
 
-        System.out.println("Refreshing display with " + runways.size() + " runways");
+        // System.out.println("Refreshing display with " + runways.size() + " runways");
 
         for (Runway runway : runways) {
             RunwayCard card = new RunwayCard(runway, this);
@@ -373,28 +373,27 @@ public class SimulationPage extends BasicPage {
 
     // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
-        // Show the page
-        System.out.println("Flights soon arriving");
+        app.showSoonArrivingPage();
+        // System.out.println("Flights soon arriving");
     }
 
     private void showFlightsSoonDepartingPage() {
-        // Show the page
-        System.out.println("Flights soon departing");
+        app.showSoonDepartingPage();
+        // System.out.println("Flights soon departing");
     }
 
     private void showHoldingPatternPage() {
-        // Show the page
-        System.out.println("Holding Pattern");
+        app.showResultsPage();
+        // System.out.println("Holding Pattern");
     }
 
     private void showTakeoffQueuePage() {
-        // Show the page
-        System.out.println("Takeoff Queue");
+        // System.out.println("Takeoff Queue");
     }
 
     private void showProcessedFlightsPage() {
-        // Show the page
-        System.out.println("Processed Flights");
+        app.showPostProcessingPage();
+        // System.out.println("Processed Flights");
     }
 
 

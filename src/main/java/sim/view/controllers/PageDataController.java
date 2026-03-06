@@ -37,7 +37,7 @@ public class PageDataController {
     public int getNumRunways() { return numRunways; }
 
     public List<Runway> getAllRunways() {
-        System.out.println("Runway not empty");
+        // System.out.println("Runway not empty");
         return runways;
     }
 
