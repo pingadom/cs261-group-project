@@ -4,7 +4,7 @@
     { "id": "RWY-02", "mode": "TAKEOFF", "status": "AVAILABLE" },
     { "id": "RWY-03", "mode": "MIXED", "status": "AVAILABLE" }
   ],
-  "arrivalRatePerHour": 600,
-  "departureRatePerHour": 30,
+  "arrivalRatePerHour": 45,
+  "departureRatePerHour": 45,
   "maxRunways": 10
 }

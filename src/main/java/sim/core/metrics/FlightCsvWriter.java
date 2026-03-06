@@ -15,7 +15,7 @@ public final class FlightCsvWriter implements AutoCloseable {
   public void writeHeader() throws IOException {
     out.write(
         "callsign,type,scheduled_time_s,actual_runway_time_s,delay_s," +
-        "completed,emergency,diverted,fuel\n"
+        "completed,outcome,emergency,diverted,cancelled,fuel\n"
     );
     out.flush();
   }
@@ -27,20 +27,24 @@ public final class FlightCsvWriter implements AutoCloseable {
       Double actualRunwayTime,
       Double delay,
       boolean completed,
+      String outcome,
       String emergency,
       boolean diverted,
+      boolean cancelled,
       int fuel
   ) throws IOException {
     out.write(String.format(
-        "%s,%s,%.0f,%s,%s,%s,%s,%s,%d%n",
+        "%s,%s,%.0f,%s,%s,%s,%s,%s,%s,%s,%d%n",
         callsign,
         type,
         scheduledTime,
         actualRunwayTime == null ? "" : String.format("%.0f", actualRunwayTime),
         delay == null ? "" : String.format("%.0f", delay),
         completed,
+        outcome,
         emergency,
         diverted,
+        cancelled,
         fuel
     ));
     out.flush();

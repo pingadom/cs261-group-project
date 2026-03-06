@@ -17,4 +17,5 @@ public final class Metrics {
   public double maxDepartureDelaySeconds = 0.0;
 
   public int arrivalsDiverted = 0;
+  public int departuresCancelled = 0;
 }

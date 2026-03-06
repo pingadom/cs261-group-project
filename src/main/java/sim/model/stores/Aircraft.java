@@ -97,10 +97,12 @@ public class Aircraft {
     }
 
     public int setFuel(int newFuel){
-        if (newFuel > 0){
-        fuel = newFuel;
-        return 1;}
-        return 0;
+        if (newFuel >= 0){
+            fuel = newFuel;
+            return 1;
+        }
+        fuel = 0;
+        return 1;
     }
 
     public int setEmergency(String newEmergency){

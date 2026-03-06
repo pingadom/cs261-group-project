@@ -8,7 +8,6 @@ import java.util.Map;
 
 public final class RunwayHandling {
 
-  /** keep assigning while there are free runways and waiting planes. */
   public void handle(
       HoldingPattern<Aircraft> holdingPattern,
       List<Aircraft> takeOffQueue,
@@ -23,19 +22,16 @@ public final class RunwayHandling {
     while (didSomething) {
       didSomething = false;
 
-      // 1) LANDING runways
       didSomething |= assignLandingToMode(
           holdingPattern, runways, postProcessing, clock, metrics,
           SimConfig.RunwayMode.LANDING, arrivalEventByCallsign
       );
 
-      // 2) TAKEOFF runways
       didSomething |= assignTakeoffToMode(
           takeOffQueue, runways, postProcessing, clock, metrics,
           SimConfig.RunwayMode.TAKEOFF, departureEventByCallsign
       );
 
-      // 3) MIXED runways (policy: prefer landings, else takeoffs)
       didSomething |= assignMixed(
           holdingPattern, takeOffQueue, runways, postProcessing, clock, metrics,
           arrivalEventByCallsign, departureEventByCallsign
@@ -66,6 +62,7 @@ public final class RunwayHandling {
     ArrivalEvent ev = arrivalEventByCallsign.get(arrival.getValue().getCallsign());
     if (ev != null && !ev.completed) {
       ev.markRunwayTime(clock.now());
+      ev.fuelOnRunway = arrival.getValue().getFuel();
       metrics.totalArrivalDelaySeconds += ev.delaySeconds;
       metrics.maxArrivalDelaySeconds = Math.max(metrics.maxArrivalDelaySeconds, ev.delaySeconds);
     }
@@ -102,6 +99,7 @@ public final class RunwayHandling {
     DepartureEvent ev = departureEventByCallsign.get(dep.getValue().getCallsign());
     if (ev != null && !ev.completed) {
       ev.markRunwayTime(clock.now());
+      ev.fuelOnRunway = dep.getValue().getFuel();
       metrics.totalDepartureDelaySeconds += ev.delaySeconds;
       metrics.maxDepartureDelaySeconds = Math.max(metrics.maxDepartureDelaySeconds, ev.delaySeconds);
     }
@@ -128,7 +126,6 @@ public final class RunwayHandling {
     Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
     if (rw == null) return false;
 
-    // prefer landing first
     if (holdingPattern.getSize() > 0) {
       LinkedListElement<Aircraft> arrival = holdingPattern.pop();
       postProcessing.add(arrival);
@@ -139,6 +136,7 @@ public final class RunwayHandling {
       ArrivalEvent ev = arrivalEventByCallsign.get(arrival.getValue().getCallsign());
       if (ev != null && !ev.completed) {
         ev.markRunwayTime(clock.now());
+        ev.fuelOnRunway = arrival.getValue().getFuel();
         metrics.totalArrivalDelaySeconds += ev.delaySeconds;
         metrics.maxArrivalDelaySeconds = Math.max(metrics.maxArrivalDelaySeconds, ev.delaySeconds);
       }
@@ -162,6 +160,7 @@ public final class RunwayHandling {
       DepartureEvent ev = departureEventByCallsign.get(dep.getValue().getCallsign());
       if (ev != null && !ev.completed) {
         ev.markRunwayTime(clock.now());
+        ev.fuelOnRunway = dep.getValue().getFuel();
         metrics.totalDepartureDelaySeconds += ev.delaySeconds;
         metrics.maxDepartureDelaySeconds = Math.max(metrics.maxDepartureDelaySeconds, ev.delaySeconds);
       }

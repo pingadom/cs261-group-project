@@ -10,6 +10,8 @@ public final class DepartureEvent {
     public Double delaySeconds;
     public boolean completed;
     public boolean diverted;
+    public boolean cancelled;
+    public Double cancellationTimeSeconds;
     public int fuelOnRelease;
     public Integer fuelOnRunway;
 
@@ -20,6 +22,8 @@ public final class DepartureEvent {
         this.delaySeconds = null;
         this.completed = false;
         this.diverted = false;
+        this.cancelled = false;
+        this.cancellationTimeSeconds = null;
         this.fuelOnRelease = aircraft.getFuel();
         this.fuelOnRunway = null;
     }
@@ -28,5 +32,10 @@ public final class DepartureEvent {
         this.actualRunwayTimeSeconds = simTimeSeconds;
         this.delaySeconds = simTimeSeconds - releaseTimeSeconds;
         this.completed = true;
+    }
+
+    public void markCancelled(double simTimeSeconds) {
+        this.cancelled = true;
+        this.cancellationTimeSeconds = simTimeSeconds;
     }
 }

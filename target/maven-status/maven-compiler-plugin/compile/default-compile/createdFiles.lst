@@ -25,6 +25,7 @@ sim\core\metrics\Metrics.class
 sim\Main.class
 sim\view\components\FooterPanel.class
 sim\SimCommand.class
+sim\core\Engine$DelayTrendPoint.class
 sim\core\DepartureEvent.class
 sim\core\metrics\MetricsCsvWriter.class
 sim\config\SimConfig$RunwayStatus.class

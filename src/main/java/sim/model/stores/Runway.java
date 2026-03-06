@@ -4,25 +4,29 @@ import sim.config.SimConfig;
 
 public final class Runway {
     private final int id;
+    private final String code;
     private String occupied = "";
 
     private SimConfig.RunwayMode mode;
     private SimConfig.RunwayStatus status;
 
-    private final int serviceTimeSeconds;     // per landing
-    private int timeRemainingSeconds = 0;     // current operation remaining
+    private final int serviceTimeSeconds;
+    private int timeRemainingSeconds = 0;
 
     public Runway(int id,
+                  String code,
                   SimConfig.RunwayMode mode,
                   SimConfig.RunwayStatus status,
                   int serviceTimeSeconds) {
         this.id = id;
+        this.code = code;
         this.mode = mode;
         this.status = status;
         this.serviceTimeSeconds = Math.max(1, serviceTimeSeconds);
     }
 
     public int getID() { return id; }
+    public String getCode() { return code; }
     public String getOccupied() { return occupied; }
     public SimConfig.RunwayMode getMode() { return mode; }
     public SimConfig.RunwayStatus getStatus() { return status; }
@@ -45,7 +49,11 @@ public final class Runway {
         this.timeRemainingSeconds = serviceTimeSeconds;
     }
 
-    /** tick runway by dtSeconds; returns true if runway became free this tick. */
+    public void clearCurrentOperation() {
+        this.occupied = "";
+        this.timeRemainingSeconds = 0;
+    }
+
     public boolean tick(int dtSeconds) {
         if (occupied.isEmpty() || timeRemainingSeconds <= 0) return false;
 
@@ -57,5 +65,4 @@ public final class Runway {
         }
         return false;
     }
-    
 }
