@@ -30,6 +30,8 @@ public final class ArrivalSchedule {
             double target = i * spacing;
             double actual = target + rng.nextGaussian() * SD_SECONDS;
             actual = wrap(actual, durationSeconds);
+            actual = Math.ceil(actual);
+            if (actual >= durationSeconds) actual = durationSeconds - 1;
 
             String callsign = "BA" + (100 + i);
             String operator = "BA";

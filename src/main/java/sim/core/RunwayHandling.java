@@ -4,6 +4,8 @@ import sim.config.SimConfig;
 import sim.core.metrics.Metrics;
 import sim.model.stores.*;
 
+import java.util.Map;
+
 public final class RunwayHandling {
 
   /** keep assigning while there are free runways and waiting planes. */
@@ -13,31 +15,32 @@ public final class RunwayHandling {
       List<Runway> runways,
       List<Aircraft> postProcessing,
       SimClock clock,
-      Metrics metrics
+      Metrics metrics,
+      Map<String, ArrivalEvent> arrivalEventByCallsign,
+      Map<String, DepartureEvent> departureEventByCallsign
   ) {
     boolean didSomething = true;
     while (didSomething) {
       didSomething = false;
 
       // 1) LANDING runways
-      didSomething |= assignLandingToMode(holdingPattern, runways, postProcessing, clock, metrics, SimConfig.RunwayMode.LANDING);
+      didSomething |= assignLandingToMode(
+          holdingPattern, runways, postProcessing, clock, metrics,
+          SimConfig.RunwayMode.LANDING, arrivalEventByCallsign
+      );
 
       // 2) TAKEOFF runways
-      didSomething |= assignTakeoffToMode(takeOffQueue, runways, postProcessing, clock, metrics, SimConfig.RunwayMode.TAKEOFF);
+      didSomething |= assignTakeoffToMode(
+          takeOffQueue, runways, postProcessing, clock, metrics,
+          SimConfig.RunwayMode.TAKEOFF, departureEventByCallsign
+      );
 
       // 3) MIXED runways (policy: prefer landings, else takeoffs)
-      didSomething |= assignMixed(holdingPattern, takeOffQueue, runways, postProcessing, clock, metrics);
+      didSomething |= assignMixed(
+          holdingPattern, takeOffQueue, runways, postProcessing, clock, metrics,
+          arrivalEventByCallsign, departureEventByCallsign
+      );
     }
-  }
-
-  public void freeRunways(List<Runway> runways, SimClock clock){
-      LinkedListElement<Runway> ptr = runways.getHead();
-      while (ptr!= null){
-          if (ptr.getValue().getOccupied().compareTo("") != 0 && ptr.getValue().getTimeRemaining() < clock.now()){
-              ptr.getValue().occupy("");
-          }
-          ptr = ptr.getNext();
-      }
   }
 
   private boolean assignLandingToMode(
@@ -46,7 +49,8 @@ public final class RunwayHandling {
       List<Aircraft> postProcessing,
       SimClock clock,
       Metrics metrics,
-      SimConfig.RunwayMode mode
+      SimConfig.RunwayMode mode,
+      Map<String, ArrivalEvent> arrivalEventByCallsign
   ) {
     if (holdingPattern.getSize() == 0) return false;
 
@@ -59,9 +63,19 @@ public final class RunwayHandling {
     rw.occupy(arrival.getValue().getCallsign());
     metrics.arrivalsProcessed++;
 
-    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d%n",
-        clock.now(), arrival.getValue().getCallsign(), rw.getID());
+    ArrivalEvent ev = arrivalEventByCallsign.get(arrival.getValue().getCallsign());
+    if (ev != null && !ev.completed) {
+      ev.markRunwayTime(clock.now());
+      metrics.totalArrivalDelaySeconds += ev.delaySeconds;
+      metrics.maxArrivalDelaySeconds = Math.max(metrics.maxArrivalDelaySeconds, ev.delaySeconds);
+    }
 
+    System.out.printf("[t=%.0fs] LAND start: %s on runway #%d delay=%.0fs%n",
+        clock.now(),
+        arrival.getValue().getCallsign(),
+        rw.getID(),
+        (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+    );
     return true;
   }
 
@@ -71,7 +85,8 @@ public final class RunwayHandling {
       List<Aircraft> postProcessing,
       SimClock clock,
       Metrics metrics,
-      SimConfig.RunwayMode mode
+      SimConfig.RunwayMode mode,
+      Map<String, DepartureEvent> departureEventByCallsign
   ) {
     if (takeOffQueue.getSize() == 0) return false;
 
@@ -84,9 +99,19 @@ public final class RunwayHandling {
     rw.occupy(dep.getValue().getCallsign());
     metrics.departuresProcessed++;
 
-    System.out.printf("[t=%.0fs] TOFF start: %s on runway #%d%n",
-        clock.now(), dep.getValue().getCallsign(), rw.getID());
+    DepartureEvent ev = departureEventByCallsign.get(dep.getValue().getCallsign());
+    if (ev != null && !ev.completed) {
+      ev.markRunwayTime(clock.now());
+      metrics.totalDepartureDelaySeconds += ev.delaySeconds;
+      metrics.maxDepartureDelaySeconds = Math.max(metrics.maxDepartureDelaySeconds, ev.delaySeconds);
+    }
 
+    System.out.printf("[t=%.0fs] TOFF start: %s on runway #%d delay=%.0fs%n",
+        clock.now(),
+        dep.getValue().getCallsign(),
+        rw.getID(),
+        (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+    );
     return true;
   }
 
@@ -96,7 +121,9 @@ public final class RunwayHandling {
       List<Runway> runways,
       List<Aircraft> postProcessing,
       SimClock clock,
-      Metrics metrics
+      Metrics metrics,
+      Map<String, ArrivalEvent> arrivalEventByCallsign,
+      Map<String, DepartureEvent> departureEventByCallsign
   ) {
     Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
     if (rw == null) return false;
@@ -109,8 +136,19 @@ public final class RunwayHandling {
       rw.occupy(arrival.getValue().getCallsign());
       metrics.arrivalsProcessed++;
 
-      System.out.printf("[t=%.0fs] LAND start: %s on mixed runway #%d%n",
-          clock.now(), arrival.getValue().getCallsign(), rw.getID());
+      ArrivalEvent ev = arrivalEventByCallsign.get(arrival.getValue().getCallsign());
+      if (ev != null && !ev.completed) {
+        ev.markRunwayTime(clock.now());
+        metrics.totalArrivalDelaySeconds += ev.delaySeconds;
+        metrics.maxArrivalDelaySeconds = Math.max(metrics.maxArrivalDelaySeconds, ev.delaySeconds);
+      }
+
+      System.out.printf("[t=%.0fs] LAND start: %s on mixed runway #%d delay=%.0fs%n",
+          clock.now(),
+          arrival.getValue().getCallsign(),
+          rw.getID(),
+          (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+      );
       return true;
     }
 
@@ -121,8 +159,19 @@ public final class RunwayHandling {
       rw.occupy(dep.getValue().getCallsign());
       metrics.departuresProcessed++;
 
-      System.out.printf("[t=%.0fs] TOFF start: %s on mixed runway #%d%n",
-          clock.now(), dep.getValue().getCallsign(), rw.getID());
+      DepartureEvent ev = departureEventByCallsign.get(dep.getValue().getCallsign());
+      if (ev != null && !ev.completed) {
+        ev.markRunwayTime(clock.now());
+        metrics.totalDepartureDelaySeconds += ev.delaySeconds;
+        metrics.maxDepartureDelaySeconds = Math.max(metrics.maxDepartureDelaySeconds, ev.delaySeconds);
+      }
+
+      System.out.printf("[t=%.0fs] TOFF start: %s on mixed runway #%d delay=%.0fs%n",
+          clock.now(),
+          dep.getValue().getCallsign(),
+          rw.getID(),
+          (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+      );
       return true;
     }
 

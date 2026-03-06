@@ -3,6 +3,7 @@ package sim.core;
 import sim.config.SimConfig;
 import sim.core.metrics.Metrics;
 import sim.core.metrics.MetricsCsvWriter;
+import sim.core.metrics.FlightCsvWriter;
 import sim.model.stores.HoldingPattern;
 import sim.model.stores.LinkedListElement;
 import sim.model.stores.Aircraft;
@@ -13,9 +14,17 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Random;
+import java.nio.file.Path;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Engine {
 
+  private final Map<String, ArrivalEvent> arrivalEventByCallsign = new HashMap<>();
+  private final Map<String, DepartureEvent> departureEventByCallsign = new HashMap<>();
+
+  private FlightCsvWriter flightCsv;
 
   private ArrayList<DepartureEvent> outboundEvents;
   private int outboundPtr = 0;
@@ -87,6 +96,11 @@ public final class Engine {
         opts.durationSeconds(),
         rng
     );
+
+    arrivalEventByCallsign.clear();
+    for (ArrivalEvent e : inboundEvents) {
+      arrivalEventByCallsign.put(e.aircraft.getCallsign(), e);
+    }
     System.out.println("Pre-generated inbound flights: " + inboundEvents.size());
 
     System.out.println("=== ALL INBOUND EVENTS (sorted by releaseTimeSeconds) ===");
@@ -107,6 +121,11 @@ public final class Engine {
       opts.durationSeconds(),
       rng
     );
+
+    departureEventByCallsign.clear();
+    for (DepartureEvent e : outboundEvents) {
+      departureEventByCallsign.put(e.aircraft.getCallsign(), e);
+    }
     System.out.println("Pre-generated outbound flights: " + outboundEvents.size());
 
     System.out.println("=== ALL OUTBOUND EVENTS (sorted by releaseTimeSeconds) ===");
@@ -128,6 +147,16 @@ public final class Engine {
         csv.writeHeader();
       } catch (IOException e) {
         throw new RuntimeException("Failed to open CSV: " + opts.csvPath(), e);
+      }
+    }
+
+    if (opts.csvPath() != null) {
+      try {
+        Path flightPath = opts.csvPath().resolveSibling("flights.csv");
+        flightCsv = new FlightCsvWriter(flightPath);
+        flightCsv.writeHeader();
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to open flight CSV", e);
       }
     }
 
@@ -161,7 +190,13 @@ public final class Engine {
       try { csv.close(); } catch (IOException ignored) {}
       System.out.println("CSV written to: " + opts.csvPath());
     }
+    writeFlightCsvRows();
+    if (flightCsv != null) {
+      try { flightCsv.close(); } catch (IOException ignored) {}
+    }
     System.out.println("Finished at real time: " + Instant.now());
+
+    
   }
 
   private void step(double dt) {
@@ -226,8 +261,10 @@ public final class Engine {
         runways,
         postProcessing,
         clock,
-        metrics
-    );
+        metrics,
+        arrivalEventByCallsign,
+        departureEventByCallsign
+        );
   }
 
   private void tickRunways(double dt) {
@@ -250,14 +287,23 @@ public final class Engine {
   }
 
   private void printStatus() {
-    System.out.printf("[%s | t=%.0fs] Holding=%d TakeoffQ=%d ArrGen=%d ArrProc=%d DepGen=%d DepProc=%d%n",
+  double avgArrDelay = metrics.arrivalsProcessed == 0 ? 0.0
+      : metrics.totalArrivalDelaySeconds / metrics.arrivalsProcessed;
+  double avgDepDelay = metrics.departuresProcessed == 0 ? 0.0
+      : metrics.totalDepartureDelaySeconds / metrics.departuresProcessed;
+
+  System.out.printf(
+    "[ %s | t=%.0fs ] Holding=%d TakeoffQ=%d ArrGen=%d ArrProc=%d ArrDiv=%d DepGen=%d DepProc=%d%n",
     SimClock.formatHHMM(clock.now()), clock.now(),
     holdingPattern.getSize(),
     takeOffQueue.getSize(),
-    metrics.arrivalsGenerated, metrics.arrivalsProcessed,
-    metrics.departuresGenerated, metrics.departuresProcessed
-);
-  }
+    metrics.arrivalsGenerated,
+    metrics.arrivalsProcessed,
+    metrics.arrivalsDiverted,
+    metrics.departuresGenerated,
+    metrics.departuresProcessed
+    );
+}
 
   private void tryWriteCsvRow() {
     // keep queue sizes updated for csv rows too
@@ -291,59 +337,97 @@ private void adjustAltitude(HoldingPattern<Aircraft> holdingPattern) {
   }
 }
 
-private void fuelConsumption(
-    HoldingPattern<Aircraft> holdingPattern,
-    double dtSeconds,
-    List<Aircraft> postProcessing
-) {
-  // Tune these numbers to your meaning of "fuel"
-  final int burnPerSecond = 1;        // fuel units per sim-second
-  final int divertThreshold = 10;    // emergency planes below this divert
-  final int promoteThreshold = 20;  // non-emergency below this become fuel emergency
+  private void fuelConsumption(
+      HoldingPattern<Aircraft> holdingPattern,
+      double dtSeconds,
+      List<Aircraft> postProcessing
+  ) {
+    final int burnPerSecond = 1;
+    final int divertThreshold = 600;
+    final int promoteThreshold = 1200;
 
-  int burn = (int) Math.max(1, Math.round(dtSeconds * burnPerSecond));
+    int burn = (int)Math.max(1, Math.round(dtSeconds * burnPerSecond));
 
-  // --- Emergency: divert if too low ---
-  int i = 0;
-  while (i < holdingPattern.getEmergency().getSize()) {
-    LinkedListElement<Aircraft> node = holdingPattern.getEmergency().get(i);
-    if (node == null || node.getValue() == null) { i++; continue; }
+    // Emergency list
+    int i = 0;
+    while (i < holdingPattern.getEmergency().getSize()) {
+      LinkedListElement<Aircraft> node = holdingPattern.getEmergency().get(i);
+      if (node == null || node.getValue() == null) break;
 
-    Aircraft ac = node.getValue();
-    ac.setFuel(ac.getFuel() - burn);
+      Aircraft ac = node.getValue();
+      ac.setFuel(ac.getFuel() - burn);
 
-    if (ac.getFuel() < divertThreshold) {
-      // Pop returns the removed node
-      LinkedListElement<Aircraft> removed = holdingPattern.getEmergency().pop(i);
-      System.out.printf("[t=%.0fs] DIVERT: %s fuel=%d%n", clock.now(), ac.getCallsign(), ac.getFuel());
-      removed.getValue().setEmergency("Diverted");
-      postProcessing.add(removed);
-      // don't i++ because list shifted
-    } else {
-      i++;
+      if (ac.getFuel() < divertThreshold) {
+        LinkedListElement<Aircraft> removed = holdingPattern.getEmergency().pop(i);
+        removed.getValue().setEmergency("Diverted");
+        postProcessing.add(removed);
+        metrics.arrivalsDiverted++;
+
+        System.out.printf(
+            "[t=%.0fs] DIVERT: %s fuel=%d%n",
+            clock.now(),
+            removed.getValue().getCallsign(),
+            removed.getValue().getFuel()
+        );
+      } else {
+        i++;
+      }
+    }
+
+    // Non-emergency list
+    i = 0;
+    while (i < holdingPattern.getNonEmergency().getSize()) {
+      LinkedListElement<Aircraft> node = holdingPattern.getNonEmergency().get(i);
+      if (node == null || node.getValue() == null) break;
+
+      Aircraft ac = node.getValue();
+      ac.setFuel(ac.getFuel() - burn);
+
+      if (ac.getFuel() < promoteThreshold) {
+        LinkedListElement<Aircraft> removed = holdingPattern.getNonEmergency().pop(i);
+        removed.getValue().setEmergency("Fuel");
+        removed.setPriority(1);
+        holdingPattern.add(removed);
+      } else {
+        i++;
+      }
+    }
+  }
+  private void writeFlightCsvRows() {
+    if (flightCsv == null) return;
+
+    try {
+      for (ArrivalEvent e : inboundEvents) {
+        flightCsv.writeFlight(
+            e.aircraft.getCallsign(),
+            "ARRIVAL",
+            e.releaseTimeSeconds,
+            e.actualRunwayTimeSeconds,
+            e.delaySeconds,
+            e.completed,
+            e.aircraft.getEmergency(),
+            e.diverted,
+            e.completed && e.fuelOnRunway != null ? e.fuelOnRunway : e.aircraft.getFuel()
+        );
+      }
+
+      for (DepartureEvent e : outboundEvents) {
+        flightCsv.writeFlight(
+            e.aircraft.getCallsign(),
+            "DEPARTURE",
+            e.releaseTimeSeconds,
+            e.actualRunwayTimeSeconds,
+            e.delaySeconds,
+            e.completed,
+            e.aircraft.getEmergency(),
+            e.diverted,
+            e.completed && e.fuelOnRunway != null ? e.fuelOnRunway : e.aircraft.getFuel()
+        );
+      }
+    } catch (IOException e) {
+      System.err.println("Flight CSV write failed: " + e.getMessage());
     }
   }
 
-  // --- Non-emergency: promote to emergency if low fuel ---
-  i = 0;
-  while (i < holdingPattern.getNonEmergency().getSize()) {
-    LinkedListElement<Aircraft> node = holdingPattern.getNonEmergency().get(i);
-    if (node == null || node.getValue() == null) { i++; continue; }
-
-    Aircraft ac = node.getValue();
-    ac.setFuel(ac.getFuel() - burn);
-
-    if (ac.getFuel() < promoteThreshold) {
-      LinkedListElement<Aircraft> removed = holdingPattern.getNonEmergency().pop(i);
-      System.out.printf("[t=%.0fs] PROMOTE fuel emergency: %s fuel=%d%n", clock.now(), ac.getCallsign(), ac.getFuel());
-      removed.getValue().setEmergency("Fuel");
-      removed.setPriority(1);          // promote
-      holdingPattern.add(removed);     // reinsert into emergency list
-      // don't i++ because list shifted
-    } else {
-      i++;
-    }
-  }
-}
 }
 

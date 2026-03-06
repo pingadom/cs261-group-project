@@ -28,11 +28,12 @@ public class List<E> {
         }
 
     public LinkedListElement<E> get(int index){
-        if (size <= index && index >= 0){
+        if (index < 0 || index >= size){
             return null;
         }
         LinkedListElement<E> ptr = head;
-        for (int i = 0; i < index;i++){
+        for (int i = 0; i < index; i++){
+            if (ptr == null) return null;
             ptr = ptr.getNext();
         }
         return ptr;

@@ -9,5 +9,12 @@ public final class Metrics {
 
   public int arrivalsProcessed = 0;
   public int departuresProcessed = 0;
-}
 
+  public double totalArrivalDelaySeconds = 0.0;
+  public double totalDepartureDelaySeconds = 0.0;
+
+  public double maxArrivalDelaySeconds = 0.0;
+  public double maxDepartureDelaySeconds = 0.0;
+
+  public int arrivalsDiverted = 0;
+}
