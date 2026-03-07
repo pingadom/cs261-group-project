@@ -32,8 +32,8 @@ public class SimCommand implements Runnable {
   @Option(names = {"--speed"}, defaultValue = "1.0", description = "Speed multiplier (1,2,5,10...).")
   private double speed;
 
-  @Option(names = {"--seed"}, defaultValue = "42", description = "Random seed for deterministic runs.")
-  private long seed;
+  @Option(names = {"--seed"}, description = "Random seed for deterministic runs.")
+  private Long seed;
 
   @Option(names = {"--csv"}, description = "Optional path to write CSV metrics.")
   private Path csvPath;
@@ -54,10 +54,10 @@ public class SimCommand implements Runnable {
         durationSeconds,
         dtSeconds,
         speed,
-        seed,
+        seed,   // this is now Long
         csvPath,
         printEverySeconds
-    );
+);
 
     SimClock clock = new SimClock(dtSeconds);
     Engine engine = new Engine(config, opts, clock);

@@ -1,78 +1,70 @@
 package sim.model.stores;
 
+import sim.config.SimConfig;
 
+public final class Runway {
+    private final int id;
+    private final String code;
+    private String occupied = "";
 
+    private SimConfig.RunwayMode mode;
+    private SimConfig.RunwayStatus status;
 
-/** runway store */
+    private final int serviceTimeSeconds;
+    private int timeRemainingSeconds = 0;
 
-public class Runway {
-    private int ID;
-    private String occupied;
-    private RunwayMode mode;
-    private RunwayStatus status;
-    private double timeRemaining;
-
-    public enum RunwayMode { NONE, LANDING, TAKEOFF, MIXED }
-    public enum RunwayStatus { NONE, AVAILABLE, INSPECTION, SNOW, FAILURE }
-
-    public Runway(int _ID,RunwayMode _mode,RunwayStatus _status,double _timeRemaining){
-        ID = _ID;
-        occupied = "";
-        mode = _mode;
-        status = _status;
-        timeRemaining = _timeRemaining;
+    public Runway(int id,
+                  String code,
+                  SimConfig.RunwayMode mode,
+                  SimConfig.RunwayStatus status,
+                  int serviceTimeSeconds) {
+        this.id = id;
+        this.code = code;
+        this.mode = mode;
+        this.status = status;
+        this.serviceTimeSeconds = Math.max(1, serviceTimeSeconds);
     }
 
-    public int getID(){
-            return ID;
+    public int getID() { return id; }
+    public String getOccupied() { return occupied; }
+    public SimConfig.RunwayMode getMode() { return mode; }
+    public SimConfig.RunwayStatus getStatus() { return status; }
+    public int getTimeRemaining() { return timeRemainingSeconds; }
+    public int getServiceTimeSeconds() { return serviceTimeSeconds; }
+
+    public void setMode(SimConfig.RunwayMode mode) { this.mode = mode; }
+    public void setStatus(SimConfig.RunwayStatus status) { this.status = status; }
+
+    public boolean isIdle() {
+        return occupied.isEmpty() && timeRemainingSeconds == 0;
+    }
+
+    public boolean isAvailableNow() {
+        return isIdle() && status == SimConfig.RunwayStatus.AVAILABLE;
+    }
+
+    public void occupy(String callsign) {
+        this.occupied = callsign == null ? "" : callsign;
+        this.timeRemainingSeconds = serviceTimeSeconds;
+    }
+
+    public void clearCurrentOperation() {
+        this.occupied = "";
+        this.timeRemainingSeconds = 0;
+    }
+
+    public boolean tick(int dtSeconds) {
+        if (occupied.isEmpty() || timeRemainingSeconds <= 0) return false;
+
+        timeRemainingSeconds -= Math.max(1, dtSeconds);
+        if (timeRemainingSeconds <= 0) {
+            timeRemainingSeconds = 0;
+            occupied = "";
+            return true;
         }
-
-    public String getOccupied(){
-            return occupied;
-        }
-
-    public RunwayMode getMode(){
-            return mode;
-        }
-
-    public RunwayStatus getStatus(){
-            return status;
-        }
-
-    public double getTimeRemaining(){
-        return timeRemaining;
+        return false;
     }
-    
-
-    public int setID(int newID){
-        if (newID > 0 && newID < 11){
-        ID = newID;
-        return 1;}
-        return 0;
+    public String getCode() {
+        return String.format("RWY-%02d", id);
     }
-
-    public int setOccupied(String newOccupied){
-        occupied = newOccupied;
-        return 1;
-    }
-
-    public int setMode(RunwayMode newMode){
-        mode = newMode;
-        return 1;
-    }
-
-    public int setStatus(RunwayStatus newStatus){
-        status = newStatus;
-        return 1;
-    }
-
-    public int setTimeRemaining(double newTimeRemaining){
-        if (newTimeRemaining > 0){
-        timeRemaining = newTimeRemaining;
-        return 1;}
-        return 0;
-    }
-
-
-
 }

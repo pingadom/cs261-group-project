@@ -28,24 +28,27 @@ public class List<E> {
         }
 
     public LinkedListElement<E> get(int index){
-        if (size <= index || index < 0){
+        if (index < 0 || index >= size){
             return null;
         }
         LinkedListElement<E> ptr = head;
-        for (int i = 0; i < index;i++){
+        for (int i = 0; i < index; i++){
+            if (ptr == null) return null;
             ptr = ptr.getNext();
         }
         return ptr;
     }
 
     public int add(LinkedListElement<E> element){
-        if (head == null) {
+        // added check for empty
+        if (size == 0) {
             head = element;
             tail = element;
-        } else {
-            tail.setNext(element);
-            tail = element;
+            size = 1;
+            return 1;
         }
+        tail.setNext(element);
+        tail = element;
         size++;
         return 1;
     }
@@ -86,7 +89,11 @@ public class List<E> {
         return 1;
     }
 
-
+    public int addValue(E value) {
+      LinkedListElement<E> element = new LinkedListElement<>();
+      element.setValue(value);
+      return add(element);
+    }
     // Calculates the average wait time of all aircraft. Should only be run on a list where all aircraft have arrived/departed.
     // This will produce innacurate results if some aircraft in the list are canceled/diverted/not yet arrived/not yet departed
     public double getAverageWait(List<Aircraft> list){

@@ -69,11 +69,6 @@ public class Aircraft {
         return emergency;
     }
 
-    public double getRealTime(){
-        return realTime;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////
 
     public int setCallsign(String newCallsign){
         if (newCallsign.length() > 0 && newCallsign.length() < 10){
@@ -113,11 +108,13 @@ public class Aircraft {
         return 0;
     }
 
-    public int setFuel(double newFuel){
-        if (newFuel > 0){
-        fuel = newFuel;
-        return 1;}
-        return 0;
+    public int setFuel(int newFuel){
+        if (newFuel >= 0){
+            fuel = newFuel;
+            return 1;
+        }
+        fuel = 0;
+        return 1;
     }
 
     public int setEmergency(EmergencyStatus newEmergency){

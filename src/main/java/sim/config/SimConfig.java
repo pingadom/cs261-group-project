@@ -7,7 +7,7 @@ public final class SimConfig {
   public int arrivalRatePerHour;
   public int departureRatePerHour;
 
-  // Optional: capacity constraint
+  //capacity constraint
   public int maxRunways = 10;
 
   public static final class RunwayConfig {
@@ -17,5 +17,7 @@ public final class SimConfig {
   }
 
   public enum RunwayMode { LANDING, TAKEOFF, MIXED }
-  public enum RunwayStatus { AVAILABLE, INSPECTION, SNOW, FAILURE }
+  public enum RunwayStatus { AVAILABLE, INSPECTION, SNOW, FAILURE, UNAVAIALABLE }
 }
+
+// ADD RUNWAY STATUS FOR UNAVAILABLE, START WITH ALL 10 UNAVAIALABLE BY DEFAULT AND IF THEY WANT TO USE MORE THEY CAN
