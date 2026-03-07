@@ -53,11 +53,19 @@ public class SimulationPage extends BasicPage {
     StatsPanel departedStats;
     StatsPanel arrivedStats;
 
+    JLabel timeHourLabel;
+    JLabel timeMinuteLabel;
+    JLabel timeSecondLabel;
+
     // Static variables
     private final Timer updateTimer;
     int toggleStartPause = 0;
     int simulationSpeed = 1;
     int testCounter = 0;
+
+    String simHour;
+    String simMinute;
+    String simSecond;
 
     // Constructor
     public SimulationPage(App app, PageDataController dataController) {
@@ -103,8 +111,11 @@ public class SimulationPage extends BasicPage {
         System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
 
         // Testing
-        testCounter++;
-        divertedStats.setValue(testCounter);
+//        testCounter++;
+//        divertedStats.setValue(testCounter);
+//
+//        simSecond = testCounter + "s";
+//        timeSecondLabel.setText(simSecond);
 
         revalidate();
         repaint();
@@ -374,9 +385,7 @@ public class SimulationPage extends BasicPage {
         panel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Clock panel
-        JPanel clockPanel = new JPanel();
-        clockPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
+        JPanel clockPanel = createClockPanel();
 
         // Buttons panel
         JPanel buttonsPanel = new JPanel(new GridBagLayout());
@@ -418,6 +427,41 @@ public class SimulationPage extends BasicPage {
         panel.add(buttonsPanel);
 
         return panel;
+    }
+
+    private JPanel createClockPanel() {
+        JPanel clockPanel = new JPanel();
+        clockPanel.setLayout(new BoxLayout(clockPanel, BoxLayout.X_AXIS));
+        clockPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.black),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        // clockPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        clockPanel.setBackground(Color.white);
+        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
+
+        simHour = "00" + "h";
+        timeHourLabel = new JLabel(simHour);
+        timeHourLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeHourLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        simMinute = "00" + "m";
+        timeMinuteLabel = new JLabel(simMinute);
+        timeMinuteLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeMinuteLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        simSecond = "00" + "s";
+        timeSecondLabel = new JLabel(simSecond);
+        timeSecondLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeSecondLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        clockPanel.add(timeHourLabel);
+        clockPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_5, 0)));
+        clockPanel.add(timeMinuteLabel);
+        clockPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_5, 0)));
+        clockPanel.add(timeSecondLabel);
+
+        return clockPanel;
     }
 
 
