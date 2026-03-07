@@ -11,6 +11,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class SimulationPage extends BasicPage {
@@ -43,7 +44,17 @@ public class SimulationPage extends BasicPage {
     JLabel startPauseLabel;
     JPanel runwaysContainer;
 
+    JPanel cancelledStats;
+    JPanel divertedStats;
+    JPanel avgQueueStats;
+    JPanel avgHoldingStats;
+    JPanel maxQueueStats;
+    JPanel maxHoldingStats;
+    JPanel departedStats;
+    JPanel arrivedStats;
+
     // Static variables
+    private final Timer updateTimer;
     int toggleStartPause = 0;
     int simulationSpeed = 1;
 
@@ -55,15 +66,46 @@ public class SimulationPage extends BasicPage {
         buildPage(createContentPanel());
         customizeFooter();
 
-        // When page becomes visible
+        // Timer (for every second)
+        updateTimer = new Timer(1000, e -> refreshUI());
+
+        // Detects when page becomes visible
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
                 refreshRunwayDisplay();
+                startTimer();
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                stopTimer();
             }
         });
     }
 
+    // ================== REFRESH UI ==================
+    private void startTimer() {
+        if (!updateTimer.isRunning()) {
+            updateTimer.start();
+            refreshUI();
+        }
+    }
+
+    private void stopTimer() {
+        if (updateTimer.isRunning()) {
+            updateTimer.stop();
+        }
+    }
+
+    private void refreshUI() {
+        System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
+
+        revalidate();
+        repaint();
+    }
+
+    // ================== CONTENT ==================
     // Content Panel
     @Override
     protected JPanel createContentPanel() {
@@ -103,14 +145,14 @@ public class SimulationPage extends BasicPage {
         panel.setMaximumSize(new Dimension(STATS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Panels for all stats
-        JPanel cancelledStats = new StatsPanel(COLOR_RED, "Cancelled", 0);
-        JPanel divertedStats = new StatsPanel(COLOR_RED, "Diverted", 0);
-        JPanel avgQueueStats = new StatsPanel(COLOR_ORANGE, "Avg Queue Delay", 0);
-        JPanel avgHoldingStats = new StatsPanel(COLOR_ORANGE, "Avg Holding Delay", 0);
-        JPanel maxQueueStats = new StatsPanel(COLOR_ORANGE, "Max Queue Delay", 0);
-        JPanel maxHoldingStats = new StatsPanel(COLOR_ORANGE, "Max Holding Delay", 0);
-        JPanel departedStats = new StatsPanel(COLOR_GREEN, "Departed", 0);
-        JPanel arrivedStats = new StatsPanel(COLOR_GREEN, "Arrived", 0);
+        cancelledStats = new StatsPanel(COLOR_RED, "Cancelled", 0);
+        divertedStats = new StatsPanel(COLOR_RED, "Diverted", 0);
+        avgQueueStats = new StatsPanel(COLOR_ORANGE, "Avg Queue Delay", 0.0);
+        avgHoldingStats = new StatsPanel(COLOR_ORANGE, "Avg Holding Delay", 0.0);
+        maxQueueStats = new StatsPanel(COLOR_ORANGE, "Max Queue Delay", 0.0);
+        maxHoldingStats = new StatsPanel(COLOR_ORANGE, "Max Holding Delay", 0.0);
+        departedStats = new StatsPanel(COLOR_GREEN, "Departed", 0);
+        arrivedStats = new StatsPanel(COLOR_GREEN, "Arrived", 0);
 
         panel.add(Box.createVerticalGlue());
         addPanelYAxis(panel, cancelledStats);
@@ -280,6 +322,9 @@ public class SimulationPage extends BasicPage {
     private void setSimulationSpeed(int speed) {
         simulationSpeed = speed;
         System.out.println("Simulation speed is: " + simulationSpeed);
+
+        // Set the speed of data controller
+        dataController.setSimulationSpeedUp(speed);
     }
 
     // Runway Panel

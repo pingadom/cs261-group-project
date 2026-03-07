@@ -10,6 +10,7 @@ public class PageDataController {
     private int outboundRate;
     private int duration;
     private int numRunways;
+    private int speedUp = 1;
 
     private final List<Runway> runways;
 
@@ -17,6 +18,7 @@ public class PageDataController {
     public PageDataController() {
         this.runways = new ArrayList<>();
     }
+
 
     // Setters & Getters
     public void addAllRunways(List<Runway> runways) {
@@ -31,10 +33,15 @@ public class PageDataController {
         this.numRunways = numRunways;
     }
 
+    public void setSimulationSpeedUp(int speedup) {
+        this.speedUp = speedup;
+    }
+
     public int getInboundRate() { return inboundRate; }
     public int getOutboundRate() { return outboundRate; }
     public int getDuration() { return duration; }
     public int getNumRunways() { return numRunways; }
+    public int getSpeedUp() { return speedUp; }
 
     public List<Runway> getAllRunways() {
         // System.out.println("Runway not empty");
