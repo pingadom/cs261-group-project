@@ -814,6 +814,8 @@ public final class Engine {
         SimClock.formatHHMM(clock.now()),
         clock.isPaused(),
         currentSpeedMultiplier,
+        holdingPattern,
+        takeOffQueue,
         holdingPattern.getSize(),
         takeOffQueue.getSize(),
         new ArrayList<>(runwayStates),

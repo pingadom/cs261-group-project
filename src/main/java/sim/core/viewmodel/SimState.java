@@ -2,7 +2,7 @@ package sim.core.viewmodel;
 
 import sim.core.metrics.Metrics;
 import sim.model.stores.Aircraft;
-
+import sim.model.stores.HoldingPattern;
 import sim.core.events.ArrivalEvent;
 import sim.core.events.DepartureEvent;
 
@@ -17,6 +17,9 @@ public final class SimState {
 
     private final int holdingCount;
     private final int takeoffQueueCount;
+
+    private final HoldingPattern<Aircraft> holdingPattern;
+    private final sim.model.stores.List<Aircraft> takeoffQueue;
 
     private final List<RunwayState> runways;
 
@@ -34,6 +37,8 @@ public final class SimState {
             String simTimeHHMM,
             boolean paused,
             double speedMultiplier,
+            HoldingPattern<Aircraft> holdingPattern,
+            sim.model.stores.List<Aircraft> takeoffQueue,
             int holdingCount,
             int takeoffQueueCount,
             List<RunwayState> runways,
@@ -50,6 +55,8 @@ public final class SimState {
         this.speedMultiplier = speedMultiplier;
         this.holdingCount = holdingCount;
         this.takeoffQueueCount = takeoffQueueCount;
+        this.holdingPattern = holdingPattern;
+        this.takeoffQueue = takeoffQueue;
         this.runways = runways;
         this.generatedArrivals = generatedArrivals;
         this.generatedDepartures = generatedDepartures;
@@ -63,6 +70,9 @@ public final class SimState {
     public String getSimTimeHHMM() { return simTimeHHMM; }
     public boolean isPaused() { return paused; }
     public double getSpeedMultiplier() { return speedMultiplier; }
+
+    public HoldingPattern<Aircraft> getHoldingPattern(){ return holdingPattern;}
+    public sim.model.stores.List<Aircraft> getTakeoffQueue(){ return takeoffQueue;}
 
     public int getHoldingCount() { return holdingCount; }
     public int getTakeoffQueueCount() { return takeoffQueueCount; }
