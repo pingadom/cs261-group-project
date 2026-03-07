@@ -3,6 +3,10 @@ package sim.core;
 import sim.config.SimConfig;
 import sim.core.metrics.Metrics;
 import sim.model.stores.*;
+import sim.core.events.ArrivalEvent;
+import sim.core.events.DepartureEvent;
+
+
 
 import java.util.Map;
 

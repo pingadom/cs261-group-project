@@ -26,7 +26,6 @@ public final class Runway {
     }
 
     public int getID() { return id; }
-    public String getCode() { return code; }
     public String getOccupied() { return occupied; }
     public SimConfig.RunwayMode getMode() { return mode; }
     public SimConfig.RunwayStatus getStatus() { return status; }
@@ -64,5 +63,8 @@ public final class Runway {
             return true;
         }
         return false;
+    }
+    public String getCode() {
+        return String.format("RWY-%02d", id);
     }
 }

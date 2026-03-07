@@ -1,4 +1,4 @@
-package sim.core;
+package sim.core.events;
 
 import sim.model.stores.Aircraft;
 

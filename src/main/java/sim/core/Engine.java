@@ -9,6 +9,12 @@ import sim.model.stores.LinkedListElement;
 import sim.model.stores.Aircraft;
 import sim.model.stores.List;
 import sim.model.stores.Runway;
+import sim.core.events.ArrivalEvent;
+import sim.core.events.DepartureEvent;
+import sim.core.events.ArrivalSchedule;
+import sim.core.events.DepartureSchedule;
+import sim.core.viewmodel.SimState;
+import sim.core.viewmodel.RunwayState;
 
 import java.util.ArrayList;
 import java.io.IOException;
@@ -618,7 +624,26 @@ public final class Engine {
           System.out.println("Usage: runway <id/code> <AVAILABLE|INSPECTION|SNOW|FAILURE>");
         }
       }
-      default -> System.out.println("Commands: pause, resume, reset, speed <x>, runway <id/code> <status>");
+      case "mode" -> {
+        if (parts.length >= 3) {
+          try {
+            SimConfig.RunwayMode mode = SimConfig.RunwayMode.valueOf(parts[2].toUpperCase());
+            updateRunwayMode(parts[1], mode);
+          } catch (IllegalArgumentException e) {
+            System.out.println("Invalid runway mode. Use LANDING, TAKEOFF, or MIXED.");
+          }
+        } else {
+          System.out.println("Usage: mode <id/code> <LANDING|TAKEOFF|MIXED>");
+        }
+      }
+      case "show" -> {
+        if (parts.length >= 2 && parts[1].equalsIgnoreCase("runways")) {
+          printRunways();
+        } else {
+          System.out.println("Usage: show runways");
+        }
+      }
+      default -> System.out.println("Commands: pause, resume, reset, speed <x>, runway <id/code> <status>, mode <id/code> <mode>");
     }
   }
 
@@ -685,5 +710,140 @@ public final class Engine {
     initialiseSchedules();
 
     System.out.println("Simulation reset.");
+  }
+
+  public void pauseSimulation() {
+    clock.pause();
+  }
+
+  public void resumeSimulation() {
+    clock.resume();
+  }
+
+  public void requestReset() {
+    resetRequested = true;
+  }
+
+  public void setSimulationSpeed(double speed) {
+    if (speed > 0) {
+      currentSpeedMultiplier = speed;
+    }
+  }
+  
+
+  public void updateRunwayStatus(String idOrCode, SimConfig.RunwayStatus status) {
+    setRunwayStatus(idOrCode, status.name());
+  }
+
+  public void updateRunwayMode(String idOrCode, SimConfig.RunwayMode mode) {
+    LinkedListElement<Runway> ptr = runways.getHead();
+
+    while (ptr != null) {
+      Runway rw = ptr.getValue();
+
+      if (rw != null) {
+        boolean match = rw.getCode().equalsIgnoreCase(idOrCode)
+            || Integer.toString(rw.getID()).equals(idOrCode);
+
+        if (match) {
+          if (!rw.isIdle()) {
+            System.out.printf(
+                "Cannot change mode of runway %s (#%d) while occupied by %s%n",
+                rw.getCode(), rw.getID(), rw.getOccupied()
+            );
+            return; 
+          }
+
+          rw.setMode(mode);
+          System.out.printf(
+              "[t=%.0fs] RUNWAY %s (#%d) mode set to %s%n",
+              clock.now(), rw.getCode(), rw.getID(), mode
+          );
+          return;
+        }
+      }
+
+      ptr = ptr.getNext();
+    }
+
+    System.out.println("Runway not found.");
+  }
+
+  public synchronized SimState snapshot() {
+    java.util.List<RunwayState> runwayStates = new ArrayList<>();
+    LinkedListElement<Runway> ptr = runways.getHead();
+    while (ptr != null) {
+      Runway rw = ptr.getValue();
+      if (rw != null) {
+        runwayStates.add(new RunwayState(
+            rw.getID(),
+            rw.getCode(),
+            rw.getMode(),
+            rw.getStatus(),
+            rw.getOccupied(),
+            rw.getTimeRemaining()
+        ));
+      }
+      ptr = ptr.getNext();
+    }
+
+    java.util.List<Aircraft> postProcessedAircraft = new ArrayList<>();
+    LinkedListElement<Aircraft> aptr = postProcessing.getHead();
+    while (aptr != null) {
+      Aircraft ac = aptr.getValue();
+      if (ac != null) postProcessedAircraft.add(ac);
+      aptr = aptr.getNext();
+    }
+
+    Metrics m = new Metrics();
+    m.arrivalQueue = metrics.arrivalQueue;
+    m.departureQueue = metrics.departureQueue;
+    m.arrivalsGenerated = metrics.arrivalsGenerated;
+    m.departuresGenerated = metrics.departuresGenerated;
+    m.arrivalsProcessed = metrics.arrivalsProcessed;
+    m.departuresProcessed = metrics.departuresProcessed;
+    m.arrivalsDiverted = metrics.arrivalsDiverted;
+    m.departuresCancelled = metrics.departuresCancelled;
+    m.totalArrivalDelaySeconds = metrics.totalArrivalDelaySeconds;
+    m.totalDepartureDelaySeconds = metrics.totalDepartureDelaySeconds;
+    m.maxArrivalDelaySeconds = metrics.maxArrivalDelaySeconds;
+    m.maxDepartureDelaySeconds = metrics.maxDepartureDelaySeconds;
+
+    return new SimState(
+        clock.now(),
+        SimClock.formatHHMM(clock.now()),
+        clock.isPaused(),
+        currentSpeedMultiplier,
+        holdingPattern.getSize(),
+        takeOffQueue.getSize(),
+        new ArrayList<>(runwayStates),
+        inboundEvents == null ? new ArrayList<>() : new ArrayList<>(inboundEvents),
+        outboundEvents == null ? new ArrayList<>() : new ArrayList<>(outboundEvents),
+        postProcessedAircraft,
+        new HashMap<>(arrivalEventByCallsign),
+        new HashMap<>(departureEventByCallsign),
+        m
+    );
+  }
+
+  private void printRunways() {
+    System.out.println("=== RUNWAY STATE ===");
+    LinkedListElement<Runway> ptr = runways.getHead();
+    while (ptr != null) {
+      Runway rw = ptr.getValue();
+      if (rw != null) {
+        System.out.printf(
+            "%s (#%d) mode=%s status=%s occupied='%s' remaining=%ds%n",
+            rw.getCode(),
+            rw.getID(),
+            rw.getMode(),
+            rw.getStatus(),
+            rw.getOccupied(),
+            rw.getTimeRemaining()
+        );
+      }
+      ptr = ptr.getNext();
+    }
+    System.out.println("=== END RUNWAY STATE ===");
   }
 }
