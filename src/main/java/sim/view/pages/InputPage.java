@@ -41,6 +41,18 @@ public class InputPage extends BasicPage {
 
     // Static variables
     int numRunways = 1;
+    String[] runwayIDs = {
+            "RWY-01",
+            "RWY-02",
+            "RWY-03",
+            "RWY-04",
+            "RWY-05",
+            "RWY-06",
+            "RWY-07",
+            "RWY-08",
+            "RWY-09",
+            "RWY-10"
+    };
 
     // Constructor
     public InputPage(App app, PageDataController dataController) {
@@ -190,6 +202,7 @@ public class InputPage extends BasicPage {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
+        System.out.println(runwayIDs[newId - 1]);
         Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0);
         runways.add(runway);    // Add Runway object into list
 
@@ -213,6 +226,7 @@ public class InputPage extends BasicPage {
             numRunways++;
 
             int newId = getNextAvailableId();   // Get the nextId
+            System.out.println(runwayIDs[newId - 1]);
             Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0 );   // Create a new runway object
             runways.add(runway);    // Add the runway object into the list
 

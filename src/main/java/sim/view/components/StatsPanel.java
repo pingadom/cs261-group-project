@@ -45,6 +45,7 @@ public class StatsPanel extends JPanel {
         add(statsValue, gbc);
     }
 
+
     // Setter
     public void setValue(double value) {
         String valueString = Double.toString(value);

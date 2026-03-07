@@ -44,19 +44,20 @@ public class SimulationPage extends BasicPage {
     JLabel startPauseLabel;
     JPanel runwaysContainer;
 
-    JPanel cancelledStats;
-    JPanel divertedStats;
-    JPanel avgQueueStats;
-    JPanel avgHoldingStats;
-    JPanel maxQueueStats;
-    JPanel maxHoldingStats;
-    JPanel departedStats;
-    JPanel arrivedStats;
+    StatsPanel cancelledStats;
+    StatsPanel divertedStats;
+    StatsPanel avgQueueStats;
+    StatsPanel avgHoldingStats;
+    StatsPanel maxQueueStats;
+    StatsPanel maxHoldingStats;
+    StatsPanel departedStats;
+    StatsPanel arrivedStats;
 
     // Static variables
     private final Timer updateTimer;
     int toggleStartPause = 0;
     int simulationSpeed = 1;
+    int testCounter = 0;
 
     // Constructor
     public SimulationPage(App app, PageDataController dataController) {
@@ -100,6 +101,10 @@ public class SimulationPage extends BasicPage {
 
     private void refreshUI() {
         System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
+
+        // Testing
+        testCounter++;
+        divertedStats.setValue(testCounter);
 
         revalidate();
         repaint();
