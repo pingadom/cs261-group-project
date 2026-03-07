@@ -14,9 +14,9 @@ public class BasePanel extends BasicPage {
     // Instance variables
     protected final App app;
 
-    private final String mainTitle;
-    private final String[] columnNames;
-    private final String[][] data;
+    protected final String mainTitle;
+    protected final String[] columnNames;
+    protected final String[][] data;
 
     public BasePanel(App app, String mainTitle, String[] columnNames, String[][] data) {
         this.app = app;
@@ -56,7 +56,7 @@ public class BasePanel extends BasicPage {
         footerPanel.add(buttonBack);
     }
 
-    private JPanel createTitlePanel(String mainTitle) {
+    protected JPanel createTitlePanel(String mainTitle) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBackground(Color.white);
@@ -72,14 +72,14 @@ public class BasePanel extends BasicPage {
         return panel;
     }
 
-    private JPanel createTablePanel(String[] columnName, String[][] data) {
+    protected JPanel createTablePanel(String[] columnName, String[][] data) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBackground(Color.white);
 
         JScrollPane scrollPane = createScrollPanel(columnName, data);
 
-        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.NORTH);
         return panel;
     }
 
@@ -91,7 +91,8 @@ public class BasePanel extends BasicPage {
             }
         };
         JTable table = new JTable(model);
-        table.setFont(new Font("Arial",Font.PLAIN,15));
+        table.setRowHeight(20);
+        table.setFont(new Font("Arial",Font.BOLD,15));
         //to get the value in each cell using the mouse so we can read values with long length
         table.addMouseMotionListener(new MouseMotionAdapter() {
             @Override

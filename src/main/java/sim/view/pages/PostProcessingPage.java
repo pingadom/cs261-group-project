@@ -78,7 +78,8 @@ public class PostProcessingPage extends BasePanel {
         };
         //Create the table using the model
         JTable table = new JTable(model);
-        table.setFont(new Font("Arial", Font.PLAIN, 15));
+        table.setRowHeight(20);
+        table.setFont(new Font("Arial", Font.BOLD, 15));
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setPreferredSize(new Dimension(1040, 460));
         //Accessing the cell component
