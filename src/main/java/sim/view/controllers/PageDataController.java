@@ -46,6 +46,7 @@ public class PageDataController {
 
     public void setSimulationSpeedUp(int speedup) {
         this.speedUp = speedup;
+        simController.setSpeed(speedup);
     }
 
     public void setSimController(SimController simController) {

@@ -8,15 +8,15 @@ import javax.swing.*;
 import java.awt.*;
 
 public class RunwayInputPanel extends JPanel {
-    private final Runway runway;
+    //private final Runway runway;
     private final RunwaySetup runwaySetup;
     private final String runwayId;
 
     private JComboBox<String> modeCombo;
     private JComboBox<String> statusCombo;
 
-    public RunwayInputPanel(Runway runway, RunwaySetup runwaySetup) {
-        this.runway = runway;
+    public RunwayInputPanel(RunwaySetup runwaySetup) {
+        //this.runway = runway;
         this.runwaySetup = runwaySetup;
         this.runwayId = runwaySetup.getId();
 
@@ -71,7 +71,7 @@ public class RunwayInputPanel extends JPanel {
         statusLabel.setFont(labelFont);
         optionPanel.add(statusLabel, gbc);
         gbc.gridx = 3;
-        statusCombo = new JComboBox<>(new String[]{"Unavailable", "Available", "Runway Inspection", "Snow Clearance", "Failure"});
+        statusCombo = new JComboBox<>(new String[]{"Available", "Runway Inspection", "Snow Clearance", "Failure", "Unavailable"});
         statusCombo.setFont(comboFont);
         statusCombo.setPreferredSize(new Dimension(150, 25));
         statusCombo.addActionListener(e-> updateStatus());
@@ -87,15 +87,15 @@ public class RunwayInputPanel extends JPanel {
         if (selectedMode != null) {
             switch (selectedMode) {
                 case "Landing Only" -> {
-                    runway.setMode(SimConfig.RunwayMode.LANDING);
+                    //runway.setMode(SimConfig.RunwayMode.LANDING);
                     runwaySetup.setMode(SimConfig.RunwayMode.LANDING);
                 }
                 case "Takeoff Only" -> {
-                    runway.setMode(SimConfig.RunwayMode.TAKEOFF);
+                    //runway.setMode(SimConfig.RunwayMode.TAKEOFF);
                     runwaySetup.setMode(SimConfig.RunwayMode.TAKEOFF);
                 }
                 case "Mixed Mode" -> {
-                    runway.setMode(SimConfig.RunwayMode.MIXED);
+                    //runway.setMode(SimConfig.RunwayMode.MIXED);
                     runwaySetup.setMode(SimConfig.RunwayMode.MIXED);
                     ;
                 }
@@ -109,23 +109,23 @@ public class RunwayInputPanel extends JPanel {
         if (selectedStatus != null) {
             switch (selectedStatus) {
                 case "Available" -> {
-                    runway.setStatus(SimConfig.RunwayStatus.AVAILABLE);
+                    //runway.setStatus(SimConfig.RunwayStatus.AVAILABLE);
                     runwaySetup.setStatus(SimConfig.RunwayStatus.AVAILABLE);
                 }
                 case "Runway Inspection" -> {
-                    runway.setStatus(SimConfig.RunwayStatus.INSPECTION);
+                    //runway.setStatus(SimConfig.RunwayStatus.INSPECTION);
                     runwaySetup.setStatus(SimConfig.RunwayStatus.INSPECTION);
                 }
                 case "Snow Clearance" -> {
-                    runway.setStatus(SimConfig.RunwayStatus.SNOW);
+                    //runway.setStatus(SimConfig.RunwayStatus.SNOW);
                     runwaySetup.setStatus(SimConfig.RunwayStatus.SNOW);
                 }
                 case "Failure" -> {
-                    runway.setStatus(SimConfig.RunwayStatus.FAILURE);
+                    //runway.setStatus(SimConfig.RunwayStatus.FAILURE);
                     runwaySetup.setStatus(SimConfig.RunwayStatus.FAILURE);
                 }
                 case "Unavailable" -> {
-                    runway.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
+                    //runway.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
                     runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
 
                 }

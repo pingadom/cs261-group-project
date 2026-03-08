@@ -27,32 +27,7 @@ public class InputPage extends BasicPage {
     private static final int SPACER_SIZE_10 = 10;
     private static final int FORM_CONTENT_WIDTH = 640;
     private final int MAX_RUNWAYS = 10;
-
-    private static final Color BACKGROUND_FORM_COLOR = new Color(100, 150, 200);
-    private static final Font ARIAL_BOLD_14 = new Font("Arial", Font.BOLD, 14);
-    private static final Font ARIAL_BOLD_18 = new Font("Arial", Font.BOLD, 18);
-    private static final Font ARIAL_PLAIN_18 = new Font("Arial", Font.PLAIN, 18);
-
-    // Instance variables
-    private final App app;
-    private final PageDataController dataController;
-    private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
-    private final List<Runway> runways = new ArrayList<>();
-    private final List<RunwaySetup> runwaySetups = new ArrayList<>();
-
-    private final sim.model.stores.List<Runway> runwaysList = new sim.model.stores.List<>();
-
-    // UI Components
-    JPanel runwaysContainer;
-    StyledButton addRunwayButton;
-    StyledButton removeRunwayButton;
-    JTextField inboundRateField;
-    JTextField outboundRateField;
-    JTextField durationField;
-
-    // Static variables
-    int numRunways = 1;
-    String[] runwayIDs = {
+    String[] RUNWAY_IDS = {
             "RWY-01",
             "RWY-02",
             "RWY-03",
@@ -64,6 +39,28 @@ public class InputPage extends BasicPage {
             "RWY-09",
             "RWY-10"
     };
+
+    private static final Color BACKGROUND_FORM_COLOR = new Color(100, 150, 200);
+    private static final Font ARIAL_BOLD_14 = new Font("Arial", Font.BOLD, 14);
+    private static final Font ARIAL_BOLD_18 = new Font("Arial", Font.BOLD, 18);
+    private static final Font ARIAL_PLAIN_18 = new Font("Arial", Font.PLAIN, 18);
+
+    // Instance variables
+    private final App app;
+    private final PageDataController dataController;
+    private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
+    private final List<RunwaySetup> runwaySetups = new ArrayList<>();
+
+    // UI Components
+    JPanel runwaysContainer;
+    StyledButton addRunwayButton;
+    StyledButton removeRunwayButton;
+    JTextField inboundRateField;
+    JTextField outboundRateField;
+    JTextField durationField;
+
+    // Static variables
+    int numRunways = 1;
 
     // Constructor
     public InputPage(App app, PageDataController dataController) {
@@ -213,14 +210,11 @@ public class InputPage extends BasicPage {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
-        String runwayId = runwayIDs[newId - 1];
-        Runway runway = new Runway(newId, runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE, 0);
-        runways.add(runway);    // Add Runway object into list
-
+        String runwayId = RUNWAY_IDS[newId - 1];
         RunwaySetup runwaySetup = new RunwaySetup(runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE);
         runwaySetups.add(runwaySetup);
 
-        RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runway, runwaySetup);
+        RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runwaySetup);
         runwayPanels.put(newId, runwayInputPanel);
         runwaysContainer.add(runwayInputPanel);
 
@@ -237,21 +231,21 @@ public class InputPage extends BasicPage {
     private void addNewRunway() {
         if (numRunways < MAX_RUNWAYS) {
             removeRunwayButton.setEnabled(true);    // Enable the delete button once add
-            numRunways++;
 
             int newId = getNextAvailableId();
-            String runwayId = runwayIDs[newId - 1];
-            Runway runway = new Runway(newId, runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE, 0);
-            runways.add(runway);    // Add Runway object into list
+            String runwayId = RUNWAY_IDS[newId - 1];
+            System.out.println("Adding runway panel for: " + runwayId);
             RunwaySetup runwaySetup = new RunwaySetup(runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE);
             runwaySetups.add(runwaySetup);
 
             // Creating the RunwayPanel for that runway
-            RunwayInputPanel panel = new RunwayInputPanel(runway, runwaySetup);
+            RunwayInputPanel panel = new RunwayInputPanel(runwaySetup);
             runwayPanels.put(newId, panel);
 
             // JPanel newRunway = createRunwayPanel(numRunways);
             runwaysContainer.add(panel);
+
+            numRunways++;
 
             // Refresh the UI
             runwaysContainer.revalidate();
@@ -268,19 +262,21 @@ public class InputPage extends BasicPage {
     // Runway deletion
     private void deleteRunway(int id) {
         if (numRunways > 1) {
-            RunwayInputPanel runwayRemoved = runwayPanels.get(id); // Get the highest ID RunwayPanel
+            RunwayInputPanel runwayRemoved = runwayPanels.get(id); // Remove and get the highest ID RunwayPanel
 
             // Remove from the runwaysContainer
             if (runwayRemoved != null) {
                 runwaysContainer.remove(runwayRemoved);
             }
+            runwayPanels.remove(id);
 
-            runwayPanels.remove(id);    // Remove from the runwayPanels hashmap
+            // Remove from runwaySetups List
+            String targetId = RUNWAY_IDS[id - 1];
+            System.out.println("Deleting runway panel for: " + targetId);
 
-            // Remove from the list
-            for (Runway runway: runways) {
-                if (runway.getID() == id) {
-                    runways.remove(runway);
+            for (RunwaySetup runwaySetup : runwaySetups) {
+                if (runwaySetup.getId().equals(targetId)) {
+                    runwaySetups.remove(runwaySetup);
                     break;
                 }
             }
@@ -302,9 +298,10 @@ public class InputPage extends BasicPage {
     private int getNextAvailableId() {
         for (int id = 1; id <= MAX_RUNWAYS; id++) {
             boolean found = false;
+            String targetId = RUNWAY_IDS[id - 1];
 
-            for (Runway runway : runways) {
-                if (runway.getID() == id) {
+            for (RunwaySetup runwaySetup: runwaySetups) {
+                if (runwaySetup.getId().equals(targetId)) {
                     found = true;
                     break;
                 }
@@ -321,11 +318,11 @@ public class InputPage extends BasicPage {
     // Debug - Function to print entry of Runway
     private void printRunwayObjects() {
         System.out.println("=== Runway List Contents ===");
-        for (Runway runway : runways) {
-            System.out.println("  - Runway ID: " + runway.getID());
+        for (RunwaySetup runway : runwaySetups) {
+            System.out.println("  - Runway ID: " + runway.getId());
             System.out.println("  - Mode: " + runway.getMode());
             System.out.println("  - Status: " + runway.getStatus());
-            System.out.println("  - Time Remaining: " + runway.getTimeRemaining());
+            //System.out.println("  - Time Remaining: " + runway.getTimeRemaining());
             System.out.println();
         }
 
@@ -379,16 +376,16 @@ public class InputPage extends BasicPage {
                 return;
             }
 
-//            // Debugging by printing
-//            System.out.println("Duration: " + duration);
-//            System.out.println("Inbound rate: " + inboundRate);
-//            System.out.println("Outbound rate: " + outboundRate);
-//            System.out.println();
-//            printRunwayObjects();
+            // Debugging by printing
+            System.out.println("Duration: " + duration);
+            System.out.println("Inbound rate: " + inboundRate);
+            System.out.println("Outbound rate: " + outboundRate);
+            System.out.println();
+            printRunwayObjects();
 
             // Passing information into PageDataController
             dataController.setSimulationParams(inboundRate, outboundRate, duration, numRunways);
-            dataController.addAllRunways(runways);
+            //dataController.addAllRunways(runways);
             dataController.addAllRunwaySetups(runwaySetups);
 
             // ============ SIMULATION SETUP ============
@@ -425,6 +422,7 @@ public class InputPage extends BasicPage {
             // Output the results
 //            SimConfig cfg = SimConfigFactory.fromSetup(setup);
 //            SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
+            // ======================================
 
             app.showSimulationPage();   // move to SimulationPage
 

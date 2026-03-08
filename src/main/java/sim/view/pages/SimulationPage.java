@@ -1,20 +1,19 @@
 package sim.view.pages;
 
-import sim.core.viewmodel.RunwaySetup;
+import sim.core.metrics.Metrics;
 import sim.core.viewmodel.RunwayState;
+import sim.core.viewmodel.SimController;
 import sim.core.viewmodel.SimState;
-import sim.model.stores.Runway;
 import sim.view.App;
 import sim.view.components.*;
 import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
 
 public class SimulationPage extends BasicPage {
@@ -39,9 +38,8 @@ public class SimulationPage extends BasicPage {
     // Instance variables
     private final App app;
     private final PageDataController dataController;
-    private final List<Runway> runways;
-    private final List<RunwaySetup> runwaySetups;
-    private final SimState simState;
+    private SimState simState;
+    private final List<RunwayCard> runwayCards = new ArrayList<>();
 
     // UI Components
     StyledButton startPauseButton;
@@ -68,11 +66,6 @@ public class SimulationPage extends BasicPage {
     public SimulationPage(App app, PageDataController dataController) {
         this.app = app;
         this.dataController = dataController;
-        this.runways = dataController.getAllRunways();
-        this.runwaySetups = dataController.getAllRunwaySetups();
-
-        // Get the simulation state
-        this.simState = dataController.getSimController().getStateSnapshot();
 
         buildPage(createContentPanel());
         customizeFooter();
@@ -84,7 +77,7 @@ public class SimulationPage extends BasicPage {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                refreshRunwayDisplay();
+                refreshFromController();
                 startTimer();
             }
 
@@ -99,7 +92,6 @@ public class SimulationPage extends BasicPage {
     private void startTimer() {
         if (!updateTimer.isRunning()) {
             updateTimer.start();
-            refreshUI();
         }
     }
 
@@ -109,16 +101,79 @@ public class SimulationPage extends BasicPage {
         }
     }
 
-    private void refreshUI() {
-        System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
+    private void refreshFromController() {
+        SimController simController = dataController.getSimController();
 
-        // Testing
-        testCounter++;
-        divertedStats.setValue(testCounter);
+        if (simController != null) {
+            this.simState = simController.getStateSnapshot();
+            refreshRunwayDisplay();
+            refreshUI();
+        } else {
+            System.out.println("Controller not set yet");
+        }
+    }
+
+    private void refreshRunwayDisplay() {
+        runwaysContainer.removeAll();
+        runwayCards.clear();
+
+        // System.out.println("Refreshing display with " + runways.size() + " runways");
+
+        // Use list of RunwayStates to pass in runways to each card
+        List<RunwayState> runwayStates = simState.getRunways();
+        for (RunwayState runway : runwayStates) {
+            RunwayCard card = new RunwayCard(runway, this, dataController.getSimController());
+            runwayCards.add(card);
+            runwaysContainer.add(card);
+        }
+
+        // Refresh UI
+        runwaysContainer.revalidate();
+        runwaysContainer.repaint();
+    }
+
+
+    private void refreshUI() {
+        //System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
+
+        // Refresh the runway card every second using recent data
+        refreshRunwayDisplayEverySec();
+        refreshStatsPanelEverySec();
 
         revalidate();
         repaint();
     }
+
+    private void refreshRunwayDisplayEverySec() {
+        //System.out.println("Refreshing each runway card. Date: " + new Date());
+        for (RunwayCard runwayCard : runwayCards) {
+            runwayCard.updateOccupiedLabel();
+        }
+    }
+
+    private void refreshStatsPanelEverySec() {
+        Metrics currentMetrics = dataController.getSimController().getStateSnapshot().getMetrics();
+
+        int cancelled = currentMetrics.departuresCancelled;
+        int diverted = currentMetrics.arrivalsDiverted;
+        double avgQueue = currentMetrics.totalArrivalDelaySeconds;
+        double avgHolding = currentMetrics.totalDepartureDelaySeconds;
+        double maxQueue = currentMetrics.maxArrivalDelaySeconds;
+        double maxHolding = currentMetrics.maxDepartureDelaySeconds;
+        int departed = currentMetrics.departuresProcessed;
+        int arrived = currentMetrics.arrivalsProcessed;
+
+        // Set the text on each labels
+        cancelledStats.setValue(cancelled);
+        divertedStats.setValue(diverted);
+        avgQueueStats.setValue(avgQueue);
+        avgHoldingStats.setValue(avgHolding);
+        maxQueueStats.setValue(maxQueue);
+        maxHoldingStats.setValue(maxHolding);
+        departedStats.setValue(departed);
+        arrivedStats.setValue(arrived);
+    }
+
 
     // ================== CONTENT ==================
     // Content Panel
@@ -243,18 +298,28 @@ public class SimulationPage extends BasicPage {
     // Functions
     private void toggleStartButton() {
         if (toggleStartPause == 0) {
+            // Pause the simulation
+            dataController.getSimController().pauseSimulation();
+
             startPauseLabel.setText("Start");
-            System.out.println("System paused!");
             toggleStartPause = 1;
+
+            //System.out.println("System paused!");
         } else if (toggleStartPause == 1) {
+            // Resume the simulation
+            dataController.getSimController().resumeSimulation();
+
             startPauseLabel.setText("Pause");
-            System.out.println("System resumed!");
             toggleStartPause = 0;
+
+            //System.out.println("System resumed!");
         }
     }
 
     private void resetSimulation() {
-        System.out.println("System reset");
+        // Reset simulation
+        dataController.getSimController().resetSimulation();
+        //System.out.println("System reset");
     }
 
     // Speedup Panel
@@ -268,15 +333,15 @@ public class SimulationPage extends BasicPage {
 
         // Create radio buttons
         JToggleButton x1Button = new JToggleButton("x1");
-        JToggleButton x2Button = new JToggleButton("x2");
         JToggleButton x5Button = new JToggleButton("x5");
         JToggleButton x10Button = new JToggleButton("x10");
+        JToggleButton x50Button = new JToggleButton("x50");
 
         List<JToggleButton> speedButtons = new ArrayList<>();
         speedButtons.add(x1Button);
-        speedButtons.add(x2Button);
         speedButtons.add(x5Button);
         speedButtons.add(x10Button);
+        speedButtons.add(x50Button);
 
         ButtonGroup speedGroup = new ButtonGroup();
 
@@ -311,9 +376,9 @@ public class SimulationPage extends BasicPage {
 
         // Add ActionListeners for each
         x1Button.addActionListener(e -> setSimulationSpeed(1));
-        x2Button.addActionListener(e -> setSimulationSpeed(2));
         x5Button.addActionListener(e -> setSimulationSpeed(5));
         x10Button.addActionListener(e -> setSimulationSpeed(10));
+        x50Button.addActionListener(e -> setSimulationSpeed(50));
 
         // Add labels and buttons
         GridBagConstraints gbc = new GridBagConstraints();
@@ -325,11 +390,11 @@ public class SimulationPage extends BasicPage {
         gbc.gridx = 1; speedupPanel.add(Box.createRigidArea(new Dimension(5, 0)), gbc); // Spacer
         gbc.gridx = 2; speedupPanel.add(x1Button);
         gbc.gridx = 3; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 4; speedupPanel.add(x2Button);
+        gbc.gridx = 4; speedupPanel.add(x5Button);
         gbc.gridx = 5; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 6; speedupPanel.add(x5Button);
+        gbc.gridx = 6; speedupPanel.add(x10Button);
         gbc.gridx = 7; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 8; speedupPanel.add(x10Button);
+        gbc.gridx = 8; speedupPanel.add(x50Button);
 
         return speedupPanel;
     }
@@ -359,31 +424,6 @@ public class SimulationPage extends BasicPage {
         runwayPanel.add(scrollPaneRunwaysContainer);
 
         return runwayPanel;
-    }
-
-    private void refreshRunwayDisplay() {
-        runwaysContainer.removeAll();
-
-        // System.out.println("Refreshing display with " + runways.size() + " runways");
-
-//        for (Runway runway : runways) {
-//            RunwayCard card = new RunwayCard(runway, this);
-//            runwaysContainer.add(card);
-//        }
-
-//        for (int i = 0; i < 10; i++) {
-//            RunwayCard card = new RunwayCard(runways.get(i), runwaySetups.get(i), this, dataController.getSimController());
-//        }
-
-        // Use list of RunwayStates to pass in runways to each card
-        List<RunwayState> runwayStates = simState.getRunways();
-        for (RunwayState runway : runwayStates) {
-            RunwayCard card = new RunwayCard(runway, this, dataController.getSimController());
-        }
-
-        // Refresh UI
-        runwaysContainer.revalidate();
-        runwaysContainer.repaint();
     }
 
     // RIGHT Column - Clock + Buttons
@@ -444,26 +484,26 @@ public class SimulationPage extends BasicPage {
     // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
         app.showSoonArrivingPage();
-        // System.out.println("Flights soon arriving");
+        //System.out.println("Flights soon arriving");
     }
 
     private void showFlightsSoonDepartingPage() {
         app.showSoonDepartingPage();
-        // System.out.println("Flights soon departing");
+        //System.out.println("Flights soon departing");
     }
 
     private void showHoldingPatternPage() {
-        app.showResultsPage();
-        // System.out.println("Holding Pattern");
+        //app.showResultsPage();
+        //System.out.println("Holding Pattern");
     }
 
     private void showTakeoffQueuePage() {
-        // System.out.println("Takeoff Queue");
+        //System.out.println("Takeoff Queue");
     }
 
     private void showProcessedFlightsPage() {
         app.showPostProcessingPage();
-        // System.out.println("Processed Flights");
+        //System.out.println("Processed Flights");
     }
 
 
