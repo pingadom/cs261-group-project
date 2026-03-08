@@ -1,5 +1,6 @@
 package sim.view.pages;
 
+import sim.core.viewmodel.RunwaySetup;
 import sim.model.stores.Runway;
 import sim.view.App;
 import sim.view.components.*;
@@ -37,6 +38,7 @@ public class SimulationPage extends BasicPage {
     private final App app;
     private final PageDataController dataController;
     private final List<Runway> runways;
+    private final List<RunwaySetup> runwaySetups;
 
     // UI Components
     StyledButton startPauseButton;
@@ -64,6 +66,8 @@ public class SimulationPage extends BasicPage {
         this.app = app;
         this.dataController = dataController;
         this.runways = dataController.getAllRunways();
+        this.runwaySetups = dataController.getAllRunwaySetups();
+
         buildPage(createContentPanel());
         customizeFooter();
 
@@ -356,9 +360,13 @@ public class SimulationPage extends BasicPage {
 
         // System.out.println("Refreshing display with " + runways.size() + " runways");
 
-        for (Runway runway : runways) {
-            RunwayCard card = new RunwayCard(runway, this);
-            runwaysContainer.add(card);
+//        for (Runway runway : runways) {
+//            RunwayCard card = new RunwayCard(runway, this);
+//            runwaysContainer.add(card);
+//        }
+
+        for (int i = 0; i < 10; i++) {
+            RunwayCard card = new RunwayCard(runways.get(i), runwaySetups.get(i), this, dataController.getSimController());
         }
 
         // Refresh UI
