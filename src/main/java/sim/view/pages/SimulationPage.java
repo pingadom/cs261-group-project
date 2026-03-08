@@ -38,8 +38,8 @@ public class SimulationPage extends BasicPage {
     // Instance variables
     private final App app;
     private final PageDataController dataController;
-    private final List<Runway> runways;
-    private final List<RunwaySetup> runwaySetups;
+    //private final List<Runway> runways;
+    //private final List<RunwaySetup> runwaySetups;
 
     // NO NEED TO PASS IN BOTH RUNWAYS AND RUNWAYSETUPS (EVEN IN INPUT PAGE)
     // JUST USE SIMSTATE TO GET THE RUNWAYSTATE (LIST) -> ASSUME ID BY ORDER OF NUMBER
@@ -61,8 +61,8 @@ public class SimulationPage extends BasicPage {
     public SimulationPage(App app, PageDataController dataController) {
         this.app = app;
         this.dataController = dataController;
-        this.runways = dataController.getAllRunways();
-        this.runwaySetups = dataController.getAllRunwaySetups();
+        //this.runways = dataController.getAllRunways();
+        //this.runwaySetups = dataController.getAllRunwaySetups();
 
         // Get the simulation state
         this.simState = dataController.getSimController().getStateSnapshot();
