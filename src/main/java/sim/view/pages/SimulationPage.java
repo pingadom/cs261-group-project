@@ -56,11 +56,22 @@ public class SimulationPage extends BasicPage {
     StatsPanel departedStats;
     StatsPanel arrivedStats;
 
+    JToggleButton x1Button;
+    JToggleButton x5Button;
+    JToggleButton x10Button;
+    JToggleButton x50Button;
+
+    JLabel timeHourLabel;
+    JLabel timeMinuteLabel;
+    JLabel timeSecondLabel;
+
     // Static variables
     private final Timer updateTimer;
-    int toggleStartPause = 0;
     int simulationSpeed = 1;
-    int testCounter = 0;
+
+    String simHour;
+    String simMinute;
+    String simSecond;
 
     // Constructor
     public SimulationPage(App app, PageDataController dataController) {
@@ -78,6 +89,7 @@ public class SimulationPage extends BasicPage {
             @Override
             public void componentShown(ComponentEvent e) {
                 refreshFromController();
+                refreshControlPanel();
                 startTimer();
             }
 
@@ -106,6 +118,8 @@ public class SimulationPage extends BasicPage {
 
         if (simController != null) {
             this.simState = simController.getStateSnapshot();
+
+            // Refresh the runway display
             refreshRunwayDisplay();
             refreshUI();
         } else {
@@ -132,13 +146,38 @@ public class SimulationPage extends BasicPage {
         runwaysContainer.repaint();
     }
 
+    private void refreshControlPanel() {
+        double speed = dataController.getSimController().getStateSnapshot().getSpeedMultiplier();
 
+        if (speed == 1) {
+            x1Button.setSelected(true);
+            setButtonClicked(x1Button);
+        } else if (speed == 5) {
+            x5Button.setSelected(true);
+            setButtonClicked(x5Button);
+        } else if (speed == 10) {
+            x10Button.setSelected(true);
+            setButtonClicked(x10Button);
+        } else if (speed == 50) {
+            x50Button.setSelected(true);
+            setButtonClicked(x50Button);
+        }
+
+        if (dataController.getSimController().getStateSnapshot().isPaused()) {
+            startPauseLabel.setText("Resume");
+        } else {
+            startPauseLabel.setText("Pause");
+        }
+    }
+
+    // Methods that is called every second
     private void refreshUI() {
         //System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
 
         // Refresh the runway card every second using recent data
         refreshRunwayDisplayEverySec();
         refreshStatsPanelEverySec();
+        refreshClock();
 
         revalidate();
         repaint();
@@ -154,26 +193,57 @@ public class SimulationPage extends BasicPage {
     private void refreshStatsPanelEverySec() {
         Metrics currentMetrics = dataController.getSimController().getStateSnapshot().getMetrics();
 
+        int arrivalsGenerated = currentMetrics.arrivalsGenerated;
+        int departuresGenerated = currentMetrics.departuresGenerated;
+
         int cancelled = currentMetrics.departuresCancelled;
         int diverted = currentMetrics.arrivalsDiverted;
-        double avgQueue = currentMetrics.totalArrivalDelaySeconds;
-        double avgHolding = currentMetrics.totalDepartureDelaySeconds;
+
+        double totalQueue = currentMetrics.totalArrivalDelaySeconds;
+        double avgQueueDelay = arrivalsGenerated > 0 ? totalQueue / arrivalsGenerated : 0;
+        double roundedQueueDelay = Math.round(avgQueueDelay * 10) / 10.0;
+
+        double totalHolding = currentMetrics.totalDepartureDelaySeconds;
+        double avgHoldingDelay = arrivalsGenerated > 0 ? totalHolding / departuresGenerated : 0;
+        double roundedHoldingDelay = Math.round(avgHoldingDelay * 10) / 10.0;
+
         double maxQueue = currentMetrics.maxArrivalDelaySeconds;
         double maxHolding = currentMetrics.maxDepartureDelaySeconds;
+
         int departed = currentMetrics.departuresProcessed;
         int arrived = currentMetrics.arrivalsProcessed;
 
         // Set the text on each labels
         cancelledStats.setValue(cancelled);
         divertedStats.setValue(diverted);
-        avgQueueStats.setValue(avgQueue);
-        avgHoldingStats.setValue(avgHolding);
+        avgQueueStats.setValue(roundedQueueDelay);
+        avgHoldingStats.setValue(roundedHoldingDelay);
         maxQueueStats.setValue(maxQueue);
         maxHoldingStats.setValue(maxHolding);
         departedStats.setValue(departed);
         arrivedStats.setValue(arrived);
     }
 
+    private void refreshClock() {
+        SimState state = dataController.getSimController().getStateSnapshot();
+
+        String hhmm = state.getSimTimeHHMM();
+        String[] hhmmParts = hhmm.split(":");
+
+        if (hhmmParts.length == 2) {
+            simHour = hhmmParts[0] + "h";
+            simMinute = hhmmParts[1] + "m";
+
+            // Extract seconds
+            double totalSeconds = state.getSimTimeSeconds();
+            int seconds = (int) totalSeconds % 60;
+            simSecond = String.format("%02ds", seconds);
+
+            timeHourLabel.setText(simHour);
+            timeMinuteLabel.setText(simMinute);
+            timeSecondLabel.setText(simSecond);
+        }
+    }
 
     // ================== CONTENT ==================
     // Content Panel
@@ -201,7 +271,18 @@ public class SimulationPage extends BasicPage {
         buttonBack.setPreferredSize(new Dimension(100, 30));
         buttonBack.setMaximumSize(new Dimension(100, 30));
         buttonBack.setFont(ARIAL_BOLD_14);
-        buttonBack.addActionListener(e -> app.showInputPage());
+        buttonBack.addActionListener(e -> {
+            stopTimer();
+
+            SimController controller = dataController.getSimController();
+
+            if (controller != null) {
+                // Pause the simulation
+                controller.pauseSimulation();
+            }
+
+            app.showInputPage();
+        });
 
         footerPanel.add(buttonBack);
     }
@@ -297,29 +378,28 @@ public class SimulationPage extends BasicPage {
 
     // Functions
     private void toggleStartButton() {
-        if (toggleStartPause == 0) {
+
+        boolean isPaused = dataController.getSimController().getStateSnapshot().isPaused();
+        if (!isPaused) {
             // Pause the simulation
             dataController.getSimController().pauseSimulation();
-
-            startPauseLabel.setText("Start");
-            toggleStartPause = 1;
-
-            //System.out.println("System paused!");
-        } else if (toggleStartPause == 1) {
+            startPauseLabel.setText("Resume");
+        } else {
             // Resume the simulation
             dataController.getSimController().resumeSimulation();
-
             startPauseLabel.setText("Pause");
-            toggleStartPause = 0;
-
-            //System.out.println("System resumed!");
         }
+    }
+
+    private void updateStartButtonToMatchState() {
+        boolean isPaused = dataController.getSimController().getStateSnapshot().isPaused();
+        startPauseLabel.setText(isPaused ? "Resume" : "Pause");
     }
 
     private void resetSimulation() {
         // Reset simulation
         dataController.getSimController().resetSimulation();
-        //System.out.println("System reset");
+        updateStartButtonToMatchState();
     }
 
     // Speedup Panel
@@ -332,10 +412,10 @@ public class SimulationPage extends BasicPage {
         speedupLabel.setFont(ARIAL_BOLD_16);
 
         // Create radio buttons
-        JToggleButton x1Button = new JToggleButton("x1");
-        JToggleButton x5Button = new JToggleButton("x5");
-        JToggleButton x10Button = new JToggleButton("x10");
-        JToggleButton x50Button = new JToggleButton("x50");
+        x1Button = new JToggleButton("x1");
+        x5Button = new JToggleButton("x5");
+        x10Button = new JToggleButton("x10");
+        x50Button = new JToggleButton("x50");
 
         List<JToggleButton> speedButtons = new ArrayList<>();
         speedButtons.add(x1Button);
@@ -359,16 +439,7 @@ public class SimulationPage extends BasicPage {
             btn.setOpaque(true);
 
             // Changes appearance when selected
-            btn.addItemListener(e -> {
-                if (btn.isSelected()) {
-                    // System.out.println("Button " + btn.getText() + " selected");
-                    btn.setBackground(Color.black);
-                    btn.setForeground(Color.white);
-                } else {
-                    btn.setBackground(Color.white);
-                    btn.setForeground(Color.black);
-                }
-            });
+            btn.addItemListener(e -> setButtonClicked(btn));
         }
 
         // Default selection
@@ -399,6 +470,17 @@ public class SimulationPage extends BasicPage {
         return speedupPanel;
     }
 
+    private void setButtonClicked(JToggleButton btn) {
+        if (btn.isSelected()) {
+            // System.out.println("Button " + btn.getText() + " selected");
+            btn.setBackground(Color.black);
+            btn.setForeground(Color.white);
+        } else {
+            btn.setBackground(Color.white);
+            btn.setForeground(Color.black);
+        }
+    }
+
     private void setSimulationSpeed(int speed) {
         simulationSpeed = speed;
         System.out.println("Simulation speed is: " + simulationSpeed);
@@ -415,9 +497,11 @@ public class SimulationPage extends BasicPage {
 
         // Main container for all the runways
         runwaysContainer = new JPanel();
+        runwaysContainer.setBackground(Color.white);
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
+        scrollPaneRunwaysContainer.setBackground(Color.white);
         scrollPaneRunwaysContainer.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 470));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
@@ -434,9 +518,7 @@ public class SimulationPage extends BasicPage {
         panel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Clock panel
-        JPanel clockPanel = new JPanel();
-        clockPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
+        JPanel clockPanel = createClockPanel();
 
         // Buttons panel
         JPanel buttonsPanel = new JPanel(new GridBagLayout());
@@ -480,6 +562,41 @@ public class SimulationPage extends BasicPage {
         return panel;
     }
 
+    private JPanel createClockPanel() {
+        JPanel clockPanel = new JPanel();
+        clockPanel.setLayout(new BoxLayout(clockPanel, BoxLayout.X_AXIS));
+        clockPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.black),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        // clockPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        clockPanel.setBackground(Color.white);
+        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
+
+        simHour = "00h";
+        timeHourLabel = new JLabel(simHour);
+        timeHourLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeHourLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        simMinute = "00m";
+        timeMinuteLabel = new JLabel(simMinute);
+        timeMinuteLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeMinuteLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        simSecond = "00s";
+        timeSecondLabel = new JLabel(simSecond);
+        timeSecondLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeSecondLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        clockPanel.add(timeHourLabel);
+        clockPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_5, 0)));
+        clockPanel.add(timeMinuteLabel);
+        clockPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_5, 0)));
+        clockPanel.add(timeSecondLabel);
+
+        return clockPanel;
+    }
+
 
     // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
@@ -489,21 +606,17 @@ public class SimulationPage extends BasicPage {
 
     private void showFlightsSoonDepartingPage() {
         app.showSoonDepartingPage();
-        //System.out.println("Flights soon departing");
     }
 
     private void showHoldingPatternPage() {
         //app.showResultsPage();
-        //System.out.println("Holding Pattern");
     }
 
     private void showTakeoffQueuePage() {
-        //System.out.println("Takeoff Queue");
     }
 
     private void showProcessedFlightsPage() {
         app.showPostProcessingPage();
-        //System.out.println("Processed Flights");
     }
 
 

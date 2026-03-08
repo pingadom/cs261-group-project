@@ -2,7 +2,6 @@ package sim.view.pages;
 
 
 import sim.config.SimConfig;
-import sim.config.SimConfig.RunwayStatus;
 import sim.config.SimConfigFactory;
 import sim.core.Engine;
 import sim.core.EngineOptions;
@@ -10,7 +9,6 @@ import sim.core.SimClock;
 import sim.core.viewmodel.RunwaySetup;
 import sim.core.viewmodel.SimController;
 import sim.core.viewmodel.SimulationSetup;
-import sim.model.stores.Runway;
 import sim.view.components.*;
 import sim.view.App;
 import sim.view.controllers.PageDataController;
@@ -389,6 +387,8 @@ public class InputPage extends BasicPage {
             dataController.addAllRunwaySetups(runwaySetups);
 
             // ============ SIMULATION SETUP ============
+            dataController.cleanupSimulation();
+
             SimulationSetup setup = new SimulationSetup();
             setup.setArrivalRatePerHour(inboundRate);
             setup.setDepartureRatePerHour(outboundRate);

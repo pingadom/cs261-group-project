@@ -10,7 +10,7 @@ public class StatsPanel extends JPanel {
     Font labelFont = new Font("SansSerif", Font.BOLD, 18);
 
     public StatsPanel(Color color, String title, double value) {
-        String valueString = Double.toString(value);
+        String valueString = Double.toString(value) + "s";
         setupUI(color, title, valueString);
     }
 
@@ -49,7 +49,7 @@ public class StatsPanel extends JPanel {
     // Setter
     public void setValue(double value) {
         String valueString = Double.toString(value);
-        statsValue.setText(valueString);
+        statsValue.setText(valueString + "s");
     }
 
     public void setValue(int value) {

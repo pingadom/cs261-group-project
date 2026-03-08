@@ -39,14 +39,20 @@ public class RunwayCard extends JPanel {
         this.occupied = runway.getOccupied();
 
         this.simController = simController;
-        //this.runwayStates = simController.getStateSnapshot().getRunways();
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        setBackground(Color.white);
 
-        TitledBorder titleBorder = BorderFactory.createTitledBorder(runwayId);
-        titleBorder.setTitleFont(new Font("Arial", Font.ITALIC, 16));
-        titleBorder.setTitleColor(Color.black);
-        titleBorder.setTitleJustification(TitledBorder.LEFT);
+        Border lineBorder = BorderFactory.createLineBorder(Color.black, 1);
+
+        TitledBorder titleBorder = BorderFactory.createTitledBorder(
+                lineBorder,
+                runwayId,
+                TitledBorder.LEFT,
+                TitledBorder.DEFAULT_POSITION,
+                new Font("Arial", Font.ITALIC, 16),
+                Color.black
+        );
 
         Border padding = BorderFactory.createEmptyBorder(10, 10, 10, 10);
         Border compoundBorder = BorderFactory.createCompoundBorder(titleBorder, padding);
@@ -60,6 +66,7 @@ public class RunwayCard extends JPanel {
 
         JPanel modePanel = new JPanel();
         modePanel.setPreferredSize(new Dimension(110, 80));
+        modePanel.setBackground(Color.white);
         modePanel.setLayout(new BorderLayout());
         modeLabel = new JLabel();
         updateModeLabel();
@@ -69,6 +76,7 @@ public class RunwayCard extends JPanel {
 
         JPanel statusPanel = new JPanel();
         statusPanel.setPreferredSize(new Dimension(220, 80));
+        statusPanel.setBackground(Color.white);
         statusPanel.setLayout(new BorderLayout());
         statusLabel = new JLabel();
         updateStatusLabel();
@@ -78,6 +86,7 @@ public class RunwayCard extends JPanel {
 
         JPanel aircraftPanel = new JPanel();
         aircraftPanel.setPreferredSize(new Dimension(110, 80));
+        aircraftPanel.setBackground(Color.white);
         aircraftPanel.setLayout(new BorderLayout());
         aircraftLabel = new JLabel();
         updateOccupiedLabel();

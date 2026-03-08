@@ -50,7 +50,20 @@ public class PageDataController {
     }
 
     public void setSimController(SimController simController) {
+        if (this.simController != null) {
+            this.simController.pauseSimulation();
+            this.simController.resetSimulation();
+        }
+
         this.simController = simController;
+    }
+
+    public void cleanupSimulation() {
+        if (simController != null) {
+            simController.pauseSimulation();
+            simController.resetSimulation();
+            simController = null;
+        }
     }
 
     public int getInboundRate() { return inboundRate; }
@@ -60,7 +73,6 @@ public class PageDataController {
     public int getSpeedUp() { return speedUp; }
 
     public List<Runway> getAllRunways() {
-        // System.out.println("Runway not empty");
         return runways;
     }
 
