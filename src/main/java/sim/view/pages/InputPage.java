@@ -200,6 +200,12 @@ public class InputPage extends BasicPage {
         runwaysContainer = new JPanel();
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
+        // ======================================
+        // CREATE 10 RUNWAYS BY DEFAULT, SET EACH TO UNAVAILABLE
+        // 1. CREATE 10 RUNWAYS, INITIALIZE USING (RunwaySetup). together with the code
+        // 2. USE SimConfig.MODE / STATUS for the if statements
+        // 3.
+
         // Add the default Runway 1
         int newId = getNextAvailableId();
         System.out.println(runwayIDs[newId - 1]);

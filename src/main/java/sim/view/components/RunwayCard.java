@@ -132,6 +132,8 @@ public class RunwayCard extends JPanel {
         JComboBox<String> statusCombo = new JComboBox<>(statusList);
         statusCombo.setFont(labelFontPlain);
 
+
+        // HAVE TO CHANGE THINGS TO SimConfig.RunwayMode
         if (status == Runway.RunwayStatus.AVAILABLE) {
             statusCombo.setSelectedIndex(0);
         } else if (status == Runway.RunwayStatus.INSPECTION) {
