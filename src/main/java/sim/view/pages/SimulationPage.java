@@ -1,6 +1,8 @@
 package sim.view.pages;
 
 import sim.core.viewmodel.RunwaySetup;
+import sim.core.viewmodel.RunwayState;
+import sim.core.viewmodel.SimState;
 import sim.model.stores.Runway;
 import sim.view.App;
 import sim.view.components.*;
@@ -39,6 +41,7 @@ public class SimulationPage extends BasicPage {
     private final PageDataController dataController;
     private final List<Runway> runways;
     private final List<RunwaySetup> runwaySetups;
+    private final SimState simState;
 
     // UI Components
     StyledButton startPauseButton;
@@ -67,6 +70,9 @@ public class SimulationPage extends BasicPage {
         this.dataController = dataController;
         this.runways = dataController.getAllRunways();
         this.runwaySetups = dataController.getAllRunwaySetups();
+
+        // Get the simulation state
+        this.simState = dataController.getSimController().getStateSnapshot();
 
         buildPage(createContentPanel());
         customizeFooter();
@@ -365,8 +371,14 @@ public class SimulationPage extends BasicPage {
 //            runwaysContainer.add(card);
 //        }
 
-        for (int i = 0; i < 10; i++) {
-            RunwayCard card = new RunwayCard(runways.get(i), runwaySetups.get(i), this, dataController.getSimController());
+//        for (int i = 0; i < 10; i++) {
+//            RunwayCard card = new RunwayCard(runways.get(i), runwaySetups.get(i), this, dataController.getSimController());
+//        }
+
+        // Use list of RunwayStates to pass in runways to each card
+        List<RunwayState> runwayStates = simState.getRunways();
+        for (RunwayState runway : runwayStates) {
+            RunwayCard card = new RunwayCard(runway, this, dataController.getSimController());
         }
 
         // Refresh UI
