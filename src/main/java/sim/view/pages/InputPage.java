@@ -1,6 +1,15 @@
 package sim.view.pages;
 
 
+import sim.config.SimConfig;
+import sim.config.SimConfigFactory;
+import sim.config.SimConfigWriter;
+import sim.core.Engine;
+import sim.core.EngineOptions;
+import sim.core.SimClock;
+import sim.core.viewmodel.RunwaySetup;
+import sim.core.viewmodel.SimController;
+import sim.core.viewmodel.SimulationSetup;
 import sim.model.stores.Runway;
 import sim.view.components.*;
 import sim.view.App;
@@ -29,6 +38,7 @@ public class InputPage extends BasicPage {
     private final PageDataController dataController;
     private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
     private final List<Runway> runways = new ArrayList<>();
+    private final List<RunwaySetup> runwaySetups = new ArrayList<>();
     private final sim.model.stores.List<Runway> runwaysList = new sim.model.stores.List<>();
 
     // UI Components
@@ -41,6 +51,18 @@ public class InputPage extends BasicPage {
 
     // Static variables
     int numRunways = 1;
+    String[] runwayIDs = {
+            "RWY-01",
+            "RWY-02",
+            "RWY-03",
+            "RWY-04",
+            "RWY-05",
+            "RWY-06",
+            "RWY-07",
+            "RWY-08",
+            "RWY-09",
+            "RWY-10"
+    };
 
     // Constructor
     public InputPage(App app, PageDataController dataController) {
@@ -190,10 +212,13 @@ public class InputPage extends BasicPage {
 
         // Add the default Runway 1
         int newId = getNextAvailableId();
-        Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0);
+        String runwayId = runwayIDs[newId - 1];
+        Runway runway = new Runway(newId, runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE, 0);
         runways.add(runway);    // Add Runway object into list
+        RunwaySetup runwaySetup = new RunwaySetup(runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE);
+        runwaySetups.add(runwaySetup);
 
-        RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runway);
+        RunwayInputPanel runwayInputPanel = new RunwayInputPanel(runway, runwaySetup);
         runwayPanels.put(newId, runwayInputPanel);
         runwaysContainer.add(runwayInputPanel);
 
@@ -212,12 +237,15 @@ public class InputPage extends BasicPage {
             removeRunwayButton.setEnabled(true);    // Enable the delete button once add
             numRunways++;
 
-            int newId = getNextAvailableId();   // Get the nextId
-            Runway runway = new Runway(newId, Runway.RunwayMode.NONE, Runway.RunwayStatus.NONE, 0 );   // Create a new runway object
-            runways.add(runway);    // Add the runway object into the list
+            int newId = getNextAvailableId();
+            String runwayId = runwayIDs[newId - 1];
+            Runway runway = new Runway(newId, runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE, 0);
+            runways.add(runway);    // Add Runway object into list
+            RunwaySetup runwaySetup = new RunwaySetup(runwayId, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE);
+            runwaySetups.add(runwaySetup);
 
             // Creating the RunwayPanel for that runway
-            RunwayInputPanel panel = new RunwayInputPanel(runway);
+            RunwayInputPanel panel = new RunwayInputPanel(runway, runwaySetup);
             runwayPanels.put(newId, panel);
 
             // JPanel newRunway = createRunwayPanel(numRunways);
@@ -322,16 +350,16 @@ public class InputPage extends BasicPage {
     // When the Submit Button is clicked
     private void startSimulation() {
         try {
-            // Check mode and status for each runway configured
-            if (!allRunwaysConfigured()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Please configure all runways before starting the simulation",
-                        "Configuration Incomplete",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
+//            // Check mode and status for each runway configured
+//            if (!allRunwaysConfigured()) {
+//                JOptionPane.showMessageDialog(
+//                        this,
+//                        "Please configure all runways before starting the simulation",
+//                        "Configuration Incomplete",
+//                        JOptionPane.WARNING_MESSAGE
+//                );
+//                return;
+//            }
 
             // Get the text from fields and convert to integers
             int inboundRate = Integer.parseInt(inboundRateField.getText());
@@ -349,16 +377,52 @@ public class InputPage extends BasicPage {
                 return;
             }
 
-            // Debugging by printing
-            System.out.println("Duration: " + duration);
-            System.out.println("Inbound rate: " + inboundRate);
-            System.out.println("Outbound rate: " + outboundRate);
-            System.out.println();
-            printRunwayObjects();
+//            // Debugging by printing
+//            System.out.println("Duration: " + duration);
+//            System.out.println("Inbound rate: " + inboundRate);
+//            System.out.println("Outbound rate: " + outboundRate);
+//            System.out.println();
+//            printRunwayObjects();
 
             // Passing information into PageDataController
             dataController.setSimulationParams(inboundRate, outboundRate, duration, numRunways);
             dataController.addAllRunways(runways);
+            dataController.addAllRunwaySetups(runwaySetups);
+
+            // ============ SIMULATION SETUP ============
+            SimulationSetup setup = new SimulationSetup();
+            setup.setArrivalRatePerHour(inboundRate);
+            setup.setDepartureRatePerHour(outboundRate);
+            setup.setMaxRunways(10);
+            long seconds = duration * 3600L;
+            setup.setDurationSeconds(seconds);
+            setup.setDtSeconds(1.0);
+            setup.setSpeedMultiplier(1.0);
+            setup.setSeed(42L);
+            setup.setPrintEverySeconds(60);
+            setup.setCsvPath(java.nio.file.Path.of("output.csv"));
+
+            // Adding runways
+            for (RunwaySetup runwaySetup : runwaySetups) {
+                setup.addRunway(runwaySetup);
+            }
+
+            // Simulation Configuration
+            SimConfig cfg = SimConfigFactory.fromSetup(setup);
+            EngineOptions opts = SimConfigFactory.engineOptionsFromSetup(setup);
+            SimClock clock = new SimClock(setup.getDtSeconds());
+
+            // Simulation Engine
+            Engine engine = new Engine(cfg, opts, clock);
+            SimController controller = new SimController(engine);
+            dataController.setSimController(controller);
+
+            // Start simulation
+            controller.startSimulation();
+
+            // Output the results
+//            SimConfig cfg = SimConfigFactory.fromSetup(setup);
+//            SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
 
             app.showSimulationPage();   // move to SimulationPage
 
@@ -373,14 +437,14 @@ public class InputPage extends BasicPage {
         }
     }
 
-    private boolean allRunwaysConfigured() {
-        for (Runway runway: runways) {
-            if (runway.getMode() == Runway.RunwayMode.NONE || runway.getStatus() == Runway.RunwayStatus.NONE) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    private boolean allRunwaysConfigured() {
+//        for (Runway runway: runways) {
+//            if (runway.getMode() == Runway.RunwayMode.NONE || runway.getStatus() == Runway.RunwayStatus.NONE) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
 }
 
