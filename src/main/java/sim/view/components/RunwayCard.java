@@ -1,10 +1,8 @@
 package sim.view.components;
 
 import sim.config.SimConfig;
-import sim.core.viewmodel.RunwaySetup;
 import sim.core.viewmodel.RunwayState;
 import sim.core.viewmodel.SimController;
-import sim.model.stores.Runway;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -218,9 +216,9 @@ public class RunwayCard extends JPanel {
                     case "Failure" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.FAILURE);
                     case "Unavailable" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.UNAVAIALABLE);
                 }
-                status = runwayState.getStatus();
-                updateStatusLabel();
             }
+            //status = runwayState.getStatus();
+            updateStatusLabel();
         }
 
         // Update UI

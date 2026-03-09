@@ -2,7 +2,6 @@ package sim.view;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
 import sim.core.viewmodel.SimController;
-import sim.view.controllers.PageDataController;
 import sim.view.pages.*;
 
 import javax.swing.*;
