@@ -40,14 +40,8 @@ class SimConfigFactoryTest {
   @Test
   // Check valid engine options accepted
   void acceptValidEngineOptions() {
-    SimulationSetup setup = new SimulationSetup();
-    setup.setDurationSeconds(3600);
-    setup.setDtSeconds(1.0);
-    setup.setSpeedMultiplier(1.0);
+    SimulationSetup setup = createValidSetup();
 
-    RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
-    setup.addRunway(runway);
-    
     EngineOptions options = SimConfigFactory.engineOptionsFromSetup(setup);
     
     assertNotNull(options);
