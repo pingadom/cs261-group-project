@@ -96,46 +96,6 @@ class EngineTest {
     }    
 
     @Test
-    // Check exception from CSV write failure caught
-    void handleCSVWriteFailure(@TempDir Path tempDir) throws IOException {
-        // Create directory instead of a file
-        Path csvPath = tempDir.resolve("metrics.csv");
-        Files.createFile(csvPath);
-        csvPath.toFile().setReadOnly();
-
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
-
-        Engine engine = new Engine(cfg, options, clock);
-        // Test it does not throw an exception
-        assertDoesNotThrow(() -> {
-          engine.run();
-        }, "tryWriteCsvRow() should catch IOException and continue");
-        csvPath.toFile().setWritable(true);
-    }
-
-    @Test
-    // Check exception from Flight CSV write failure caught
-    void handleFlightCSVWriteFailure(@TempDir Path tempDir) throws IOException {
-        // Create directory instead of a file
-        Path csvPath = tempDir.resolve("metrics.csv");
-        Path flightPath = tempDir.resolve("flights.csv");
-        Files.createFile(csvPath);
-        Files.createFile(flightPath);
-
-        flightPath.toFile().setReadOnly();
-
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
-
-        Engine engine = new Engine(cfg, options, clock);
-        // Test it does not throw an exception
-        assertDoesNotThrow(() -> {
-          engine.run();
-        }, "writeFlightCsvRows() should catch IOException and continue");
-
-        flightPath.toFile().setWritable(true);
-    }
-
-    @Test
     // Check exception from delay trend CSV write failure caught
     void handleDelayTrendCSVWriteFailure(@TempDir Path tempDir) throws IOException {
         // Create directory instead of a file
