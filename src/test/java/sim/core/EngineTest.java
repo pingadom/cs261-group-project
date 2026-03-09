@@ -28,7 +28,7 @@ class EngineTest {
         setup.setArrivalRatePerHour(30); 
         setup.setDepartureRatePerHour(10);
         setup.setMaxRunways(10);
-        setup.setDurationSeconds(10);
+        setup.setDurationSeconds(1);
         setup.setDtSeconds(1.0);
         setup.setSpeedMultiplier(1.0);
         RunwaySetup runway = new RunwaySetup(id, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
@@ -42,7 +42,7 @@ class EngineTest {
         setup.setArrivalRatePerHour(30); 
         setup.setDepartureRatePerHour(10);
         setup.setMaxRunways(10);
-        setup.setDurationSeconds(10);
+        setup.setDurationSeconds(1);
         setup.setDtSeconds(1.0);
         setup.setSpeedMultiplier(1.0);
 
@@ -50,7 +50,7 @@ class EngineTest {
         setup.addRunway(runway);
 
         cfg = SimConfigFactory.fromSetup(setup);
-        opts = new EngineOptions(10, 1.0, 1.0, null, null, 60);
+        opts = new EngineOptions(1, 1.0, 1.0, null, null, 60);
         clock = new SimClock(1.0);
     }
     
@@ -61,7 +61,7 @@ class EngineTest {
         Path csvPath = tempDir.resolve("test.csv");
         Files.createDirectory(csvPath);
 
-        EngineOptions options = new EngineOptions(10, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
 
         Engine engine = new Engine(cfg, options, clock);
         // Test it throws an exception
@@ -81,7 +81,7 @@ class EngineTest {
         Path flightPath = tempDir.resolve("flights.csv");
         Files.createDirectory(flightPath);
 
-        EngineOptions options = new EngineOptions(10, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
 
         Engine engine = new Engine(cfg, options, clock);
 
@@ -101,7 +101,7 @@ class EngineTest {
         Path csvPath = tempDir.resolve("metrics.csv");
         Files.createDirectory(csvPath);
 
-        EngineOptions options = new EngineOptions(10, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
 
         Engine engine = new Engine(cfg, options, clock);
         // Test it does not throw an exception
@@ -118,7 +118,7 @@ class EngineTest {
         Path flightPath = tempDir.resolve("flights.csv");
         Files.createDirectory(flightPath);
 
-        EngineOptions options = new EngineOptions(10, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
 
         Engine engine = new Engine(cfg, options, clock);
         // Test it does not throw an exception
@@ -135,7 +135,7 @@ class EngineTest {
         Path delayPath = tempDir.resolve("delay_trend.csv");
         Files.createDirectory(delayPath);
 
-        EngineOptions options = new EngineOptions(10, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
 
         Engine engine = new Engine(cfg, options, clock);
 
@@ -153,7 +153,7 @@ class EngineTest {
         Path svgPath = tempDir.resolve("delay_trend.svg");
         Files.createDirectory(svgPath);
 
-        EngineOptions options = new EngineOptions(10, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
 
         Engine engine = new Engine(cfg, options, clock);
 
