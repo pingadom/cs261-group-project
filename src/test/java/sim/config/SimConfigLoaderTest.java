@@ -72,8 +72,8 @@ class SimConfigLoaderTest {
   }
 
   @Test
-  // T-02 - Check over 10 runways are rejected
-  void rejectOver10Runways(@TempDir Path tempDir) throws IOException {
+  // T-02 - Check over max runways are rejected
+  void rejectOveMaxRunways(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
 
