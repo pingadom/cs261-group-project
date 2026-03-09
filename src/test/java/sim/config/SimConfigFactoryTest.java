@@ -45,6 +45,9 @@ class SimConfigFactoryTest {
     setup.setDtSeconds(1.0);
     setup.setSpeedMultiplier(1.0);
 
+    RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+    setup.addRunway(runway);
+    
     EngineOptions options = SimConfigFactory.engineOptionsFromSetup(setup);
     
     assertNotNull(options);
