@@ -1,12 +1,7 @@
 package sim.config;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.IOException;
-import java.nio.file.Path;
-
+import org.junit.jupiter.api.Test;
 import sim.core.EngineOptions;
 import sim.core.viewmodel.RunwaySetup;
 import sim.core.viewmodel.SimulationSetup;
@@ -21,14 +16,46 @@ class SimConfigFactoryTest {
     setup.setDurationSeconds(3600);
     setup.setDtSeconds(1.0);
     setup.setSpeedMultiplier(1.0);
-    RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE) 
+    RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
     setup.addRunway(runway);
     return setup;
   }  
+
+  @Test
+  // Check valid simulation configuration accepted
+  void acceptValidSimConfig() {
+    SimulationSetup setup = createValidSetup();
+    SimConfig config = SimConfigFactory.fromSetup(setup);
+    
+    assertNotNull(config);
+    assertEquals(30, config.arrivalRatePerHour);
+    assertEquals(10, config.departureRatePerHour);
+    assertEquals(10, config.maxRunways);
+    assertEquals("RWY01", config.runways.get(0).id);
+    assertEquals(SimConfig.RunwayMode.LANDING, config.runways.get(0).mode);
+    assertEquals(SimConfig.RunwayStatus.AVAILABLE, config.runways.get(0).status);
+    assertEquals(1, config.runways.size());
+  }
           
   @Test
-  // Check null setup rejected
-  void rejectNullSetup() {
+  // Check valid engine options accepted
+  void acceptValidEngineOptions() {
+    SimulationSetup setup = new SimulationSetup();
+    setup.setDurationSeconds(3600);
+    setup.setDtSeconds(1.0);
+    setup.setSpeedMultiplier(1.0);
+
+    EngineOptions options = SimConfigFactory.engineOptionsFromSetup(setup);
+    
+    assertNotNull(options);
+    assertEquals(3600, options.durationSeconds());
+    assertEquals(1.0, options.dtSeconds());
+    assertEquals(1.0, options.speedMultiplier());
+  }
+
+  @Test
+  // Check null sim config setup rejected
+  void rejectNullSimConfigSetup() {
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
       SimConfigFactory.fromSetup(null);
@@ -38,13 +65,24 @@ class SimConfigFactoryTest {
   }
   
   @Test
+  // Check null engine options setup rejected
+  void rejectNullEngineOptionsSetup() {
+    // Test it throws an exception
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+      SimConfigFactory.engineOptionsFromSetup(null);
+    });
+    // Check for error message Simulation setup must not be null
+    assertTrue(exception.getMessage().contains("Simulation setup must not be null"));
+  }
+
+  @Test
   // Check setups with no runways are rejected
   void rejectNoRunways() {
     SimulationSetup setup = createValidSetup();
     setup.clearRunways();
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-      SimConfigFactory.fromSetup(Setup);
+      SimConfigFactory.fromSetup(setup);
     });
     // Check for error message At least one runway must be provided
     assertTrue(exception.getMessage().contains("At least one runway must be provided"));
@@ -55,8 +93,8 @@ class SimConfigFactoryTest {
   void rejectMaxRunway() {
     SimulationSetup setup = createValidSetup();
     setup.setMaxRunways(1);
-    setup.addRunway("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE);
-    setup.addRunway("RWY02", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE);
+    RunwaySetup runway = new RunwaySetup("RWY02", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+    setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
       SimConfigFactory.fromSetup(setup);
@@ -203,17 +241,32 @@ class SimConfigFactoryTest {
     setup.getRunways().add(null);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-      SimConfigFactory.fromSetup(Setup);
+      SimConfigFactory.fromSetup(setup);
     });
     // Check for error message Runway at index 0 is null
     assertTrue(exception.getMessage().contains("Runway at index 0 is null"));
   }
 
   @Test
-  // Check missing runway id rejected
-  void rejectMissingRunwayID() {
+  // Check null runway id rejected
+  void rejectNullRunwayID() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup(null, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+    setup.addRunway(runway);
+    // Test it throws an exception
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+      SimConfigFactory.fromSetup(setup);
+    });
+    // Check for error message Runway id missing at index i
+    assertTrue(exception.getMessage().contains("Runway id missing at index"));
+  }
+
+  @Test
+  // Check empty runway id rejected
+  void rejectEmptyRunwayID() {
+    SimulationSetup setup = createValidSetup();
+    RunwaySetup runway = new RunwaySetup("", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+    setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
       SimConfigFactory.fromSetup(setup);
@@ -228,6 +281,7 @@ class SimConfigFactoryTest {
   void rejectMissingMode() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup("RWY01", null, SimConfig.RunwayStatus.AVAILABLE); 
+    setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
       SimConfigFactory.fromSetup(setup);
@@ -241,6 +295,7 @@ class SimConfigFactoryTest {
   void rejectMissingStatus() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, null); 
+    setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
       SimConfigFactory.fromSetup(setup);
