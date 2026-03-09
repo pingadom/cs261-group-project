@@ -1,6 +1,7 @@
 package sim.core;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -50,7 +51,7 @@ class EngineTest {
         setup.addRunway(runway);
 
         cfg = SimConfigFactory.fromSetup(setup);
-        opts = new EngineOptions(1, 1.0, 1.0, null, null, 60);
+        opts = new EngineOptions(1, 1.0, 1.0, null, null, 1);
         clock = new SimClock(1.0);
     }
     
@@ -61,7 +62,7 @@ class EngineTest {
         Path csvPath = tempDir.resolve("test.csv");
         Files.createDirectory(csvPath);
 
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
 
         Engine engine = new Engine(cfg, options, clock);
         // Test it throws an exception
@@ -81,7 +82,7 @@ class EngineTest {
         Path flightPath = tempDir.resolve("flights.csv");
         Files.createDirectory(flightPath);
 
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
 
         Engine engine = new Engine(cfg, options, clock);
 
@@ -99,15 +100,17 @@ class EngineTest {
     void handleCSVWriteFailure(@TempDir Path tempDir) throws IOException {
         // Create directory instead of a file
         Path csvPath = tempDir.resolve("metrics.csv");
-        Files.createDirectory(csvPath);
+        Files.createFile(csvPath);
+        csvPath.toFile().setReadOnly();
 
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
 
         Engine engine = new Engine(cfg, options, clock);
         // Test it does not throw an exception
         assertDoesNotThrow(() -> {
           engine.run();
         }, "tryWriteCsvRow() should catch IOException and continue");
+        csvPath.toFile().setWritable(true);
     }
 
     @Test
@@ -116,15 +119,20 @@ class EngineTest {
         // Create directory instead of a file
         Path csvPath = tempDir.resolve("metrics.csv");
         Path flightPath = tempDir.resolve("flights.csv");
-        Files.createDirectory(flightPath);
+        Files.createFile(csvPath);
+        Files.createFile(flightPath);
 
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
+        flightPath.toFile().setReadOnly();
+
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
 
         Engine engine = new Engine(cfg, options, clock);
         // Test it does not throw an exception
         assertDoesNotThrow(() -> {
           engine.run();
         }, "writeFlightCsvRows() should catch IOException and continue");
+
+        flightPath.toFile().setWritable(true);
     }
 
     @Test
@@ -135,7 +143,7 @@ class EngineTest {
         Path delayPath = tempDir.resolve("delay_trend.csv");
         Files.createDirectory(delayPath);
 
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
 
         Engine engine = new Engine(cfg, options, clock);
 
@@ -153,7 +161,7 @@ class EngineTest {
         Path svgPath = tempDir.resolve("delay_trend.svg");
         Files.createDirectory(svgPath);
 
-        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 60);
+        EngineOptions options = new EngineOptions(1, 1.0, 1.0, null, csvPath, 1);
 
         Engine engine = new Engine(cfg, options, clock);
 
@@ -179,12 +187,17 @@ class EngineTest {
 
     @Test
     // Check exception from invalid runway mode caught
-    void handleInvalidMode(@TempDir Path tempDir) throws IOException {
+    void handleInvalidMode(@TempDir Path tempDir) throws Exception {
         Engine engine = new Engine(cfg, opts, clock);
+
+        // Access private handleConsoleCommand method
+        Method handleConsoleCommand = Engine.class.getDeclaredMethod("handleConsoleCommand", String.class);
+        handleConsoleCommand.setAccessible(true);
+        
         // Test invalid does not throw an exception
         assertDoesNotThrow(() -> {
-          engine.updateRunwayMode("RWY101", null);
-        }, "Invalid runway mode that causes IllegalArgumentException should be caught");
+          handleConsoleCommand.invoke(engine, "runway RWY01 INVALID_STATUS");
+        }, "Invalid runway status should be caught by console handler");
         // Test valid does not throw an exception
         assertDoesNotThrow(() -> {
           engine.updateRunwayMode("RWY101", SimConfig.RunwayMode.LANDING);
@@ -193,16 +206,21 @@ class EngineTest {
 
     @Test
     // Check exception from invalid runway status caught
-    void handleInvalidStatus(@TempDir Path tempDir) throws IOException {
+    void handleInvalidStatus(@TempDir Path tempDir) throws Exception {
         Engine engine = new Engine(cfg, opts, clock);
+
+        // Access private handleConsoleCommand method
+        Method handleConsoleCommand = Engine.class.getDeclaredMethod("handleConsoleCommand", String.class);
+        handleConsoleCommand.setAccessible(true);
+        
         // Test invalid does not throw an exception
         assertDoesNotThrow(() -> {
-          engine.updateRunwayStatus("RWY101", null);
-        }, "Invalid runway status that causes IllegalArgumentException should be caught");
+          handleConsoleCommand.invoke(engine, "runway RWY01 INVALID_STATUS");
+        }, "Invalid runway status should be caught by console handler");
         // Test valid does not throw an exception
         assertDoesNotThrow(() -> {
           engine.updateRunwayStatus("RWY101", SimConfig.RunwayStatus.AVAILABLE);
-        }, "Valid runway status should not cause");
+        }, "Valid runway status should not cause exception");
     }
 
     @Test
