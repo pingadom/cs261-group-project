@@ -45,7 +45,7 @@ public class InputPage extends BasicPage {
 
     // Instance variables
     private final App app;
-    private final PageDataController dataController;
+    private final SimController simController;
     private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
     private final List<RunwaySetup> runwaySetups = new ArrayList<>();
 
@@ -61,9 +61,10 @@ public class InputPage extends BasicPage {
     int numRunways = 1;
 
     // Constructor
-    public InputPage(App app, PageDataController dataController) {
+    public InputPage(App app, SimController simController) {
         this.app = app;
-        this.dataController = dataController;
+        this.simController = simController;
+
         buildPage(createContentPanel());
     }
 
@@ -348,15 +349,15 @@ public class InputPage extends BasicPage {
     private void startSimulation() {
         try {
             // Check mode and status for each runway configured
-//            if (!allRunwaysConfigured()) {
-//                JOptionPane.showMessageDialog(
-//                        this,
-//                        "Please configure all runways before starting the simulation",
-//                        "Configuration Incomplete",
-//                        JOptionPane.WARNING_MESSAGE
-//                );
-//                return;
-//            }
+            if (!atLeastRunwayAvailable()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "At least one runway must be available",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
 
             // Get the text from fields and convert to integers
             int inboundRate = Integer.parseInt(inboundRateField.getText());
@@ -374,21 +375,14 @@ public class InputPage extends BasicPage {
                 return;
             }
 
-            // Debugging by printing
+            // Debug
             System.out.println("Duration: " + duration);
             System.out.println("Inbound rate: " + inboundRate);
             System.out.println("Outbound rate: " + outboundRate);
             System.out.println();
             printRunwayObjects();
 
-            // Passing information into PageDataController
-            dataController.setSimulationParams(inboundRate, outboundRate, duration, numRunways);
-            //dataController.addAllRunways(runways);
-            dataController.addAllRunwaySetups(runwaySetups);
-
             // ============ SIMULATION SETUP ============
-            dataController.cleanupSimulation();
-
             SimulationSetup setup = new SimulationSetup();
             setup.setArrivalRatePerHour(inboundRate);
             setup.setDepartureRatePerHour(outboundRate);
@@ -413,11 +407,8 @@ public class InputPage extends BasicPage {
 
             // Simulation Engine
             Engine engine = new Engine(cfg, opts, clock);
-            SimController controller = new SimController(engine);
-            dataController.setSimController(controller);
-
-            // Start simulation
-            controller.startSimulation();
+            simController.setEngine(engine);
+            simController.startSimulation();
 
             // Output the results
 //            SimConfig cfg = SimConfigFactory.fromSetup(setup);
@@ -437,14 +428,14 @@ public class InputPage extends BasicPage {
         }
     }
 
-//    private boolean allRunwaysConfigured() {
-//        for (Runway runway: runways) {
-//            if (runway.getMode() == null || runway.getStatus() == sim.config.SimConfig.RunwayStatus.UNAVAIALABLE) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+    private boolean atLeastRunwayAvailable() {
+        for (RunwaySetup runwaySetup : runwaySetups) {
+            if (runwaySetup.getStatus() == SimConfig.RunwayStatus.AVAILABLE) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
 

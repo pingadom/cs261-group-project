@@ -37,8 +37,7 @@ public class SimulationPage extends BasicPage {
 
     // Instance variables
     private final App app;
-    private final PageDataController dataController;
-    private SimState simState;
+    private final SimController simController;
     private final List<RunwayCard> runwayCards = new ArrayList<>();
 
     // UI Components
@@ -74,9 +73,9 @@ public class SimulationPage extends BasicPage {
     String simSecond;
 
     // Constructor
-    public SimulationPage(App app, PageDataController dataController) {
+    public SimulationPage(App app, SimController simController) {
         this.app = app;
-        this.dataController = dataController;
+        this.simController = simController;
 
         buildPage(createContentPanel());
         customizeFooter();
@@ -114,13 +113,8 @@ public class SimulationPage extends BasicPage {
     }
 
     private void refreshFromController() {
-        SimController simController = dataController.getSimController();
-
         if (simController != null) {
-            this.simState = simController.getStateSnapshot();
-
-            // Refresh the runway display
-            refreshRunwayDisplay();
+            refreshRunwayDisplay();     // Refresh the runway display
             refreshUI();
         } else {
             System.out.println("Controller not set yet");
@@ -134,9 +128,9 @@ public class SimulationPage extends BasicPage {
         // System.out.println("Refreshing display with " + runways.size() + " runways");
 
         // Use list of RunwayStates to pass in runways to each card
-        List<RunwayState> runwayStates = simState.getRunways();
+        List<RunwayState> runwayStates = simController.getStateSnapshot().getRunways();
         for (RunwayState runway : runwayStates) {
-            RunwayCard card = new RunwayCard(runway, this, dataController.getSimController());
+            RunwayCard card = new RunwayCard(runway, this, simController);
             runwayCards.add(card);
             runwaysContainer.add(card);
         }
@@ -147,7 +141,7 @@ public class SimulationPage extends BasicPage {
     }
 
     private void refreshControlPanel() {
-        double speed = dataController.getSimController().getStateSnapshot().getSpeedMultiplier();
+        double speed = simController.getStateSnapshot().getSpeedMultiplier();
 
         if (speed == 1) {
             x1Button.setSelected(true);
@@ -163,7 +157,7 @@ public class SimulationPage extends BasicPage {
             setButtonClicked(x50Button);
         }
 
-        if (dataController.getSimController().getStateSnapshot().isPaused()) {
+        if (simController.getStateSnapshot().isPaused()) {
             startPauseLabel.setText("Resume");
         } else {
             startPauseLabel.setText("Pause");
@@ -172,8 +166,6 @@ public class SimulationPage extends BasicPage {
 
     // Methods that is called every second
     private void refreshUI() {
-        //System.out.println("Updated: " + new Date() + ". Speedup: " + dataController.getSpeedUp());
-
         // Refresh the runway card every second using recent data
         refreshRunwayDisplayEverySec();
         refreshStatsPanelEverySec();
@@ -184,14 +176,13 @@ public class SimulationPage extends BasicPage {
     }
 
     private void refreshRunwayDisplayEverySec() {
-        //System.out.println("Refreshing each runway card. Date: " + new Date());
         for (RunwayCard runwayCard : runwayCards) {
             runwayCard.updateOccupiedLabel();
         }
     }
 
     private void refreshStatsPanelEverySec() {
-        Metrics currentMetrics = dataController.getSimController().getStateSnapshot().getMetrics();
+        Metrics currentMetrics = simController.getStateSnapshot().getMetrics();
 
         int arrivalsGenerated = currentMetrics.arrivalsGenerated;
         int departuresGenerated = currentMetrics.departuresGenerated;
@@ -225,7 +216,7 @@ public class SimulationPage extends BasicPage {
     }
 
     private void refreshClock() {
-        SimState state = dataController.getSimController().getStateSnapshot();
+        SimState state = simController.getStateSnapshot();
 
         String hhmm = state.getSimTimeHHMM();
         String[] hhmmParts = hhmm.split(":");
@@ -274,12 +265,12 @@ public class SimulationPage extends BasicPage {
         buttonBack.addActionListener(e -> {
             stopTimer();
 
-            SimController controller = dataController.getSimController();
-
-            if (controller != null) {
-                // Pause the simulation
-                controller.pauseSimulation();
-            }
+//            SimController controller = simController;
+//
+//            if (controller != null) {
+//                // Pause the simulation
+//                controller.pauseSimulation();
+//            }
 
             app.showInputPage();
         });
@@ -354,7 +345,6 @@ public class SimulationPage extends BasicPage {
         startPauseButton.setButtonSize(CONTROL_BUTTON_WIDTH, CONTROL_BUTTON_HEIGHT);
         startPauseButton.addActionListener(e -> toggleStartButton());
 
-        // Add an icon
         startPauseLabel = new JLabel("Pause", JLabel.CENTER);
         startPauseLabel.setFont(ARIAL_BOLD_16);
         startPauseLabel.setForeground(Color.white);
@@ -379,27 +369,22 @@ public class SimulationPage extends BasicPage {
     // Functions
     private void toggleStartButton() {
 
-        boolean isPaused = dataController.getSimController().getStateSnapshot().isPaused();
+        boolean isPaused = simController.getStateSnapshot().isPaused();
         if (!isPaused) {
             // Pause the simulation
-            dataController.getSimController().pauseSimulation();
+            simController.pauseSimulation();
             startPauseLabel.setText("Resume");
         } else {
             // Resume the simulation
-            dataController.getSimController().resumeSimulation();
+            simController.resumeSimulation();
             startPauseLabel.setText("Pause");
         }
     }
 
-    private void updateStartButtonToMatchState() {
-        boolean isPaused = dataController.getSimController().getStateSnapshot().isPaused();
-        startPauseLabel.setText(isPaused ? "Resume" : "Pause");
-    }
-
     private void resetSimulation() {
         // Reset simulation
-        dataController.getSimController().resetSimulation();
-        updateStartButtonToMatchState();
+        simController.resetSimulation();
+        startPauseLabel.setText("Pause");
     }
 
     // Speedup Panel
@@ -472,7 +457,6 @@ public class SimulationPage extends BasicPage {
 
     private void setButtonClicked(JToggleButton btn) {
         if (btn.isSelected()) {
-            // System.out.println("Button " + btn.getText() + " selected");
             btn.setBackground(Color.black);
             btn.setForeground(Color.white);
         } else {
@@ -483,10 +467,7 @@ public class SimulationPage extends BasicPage {
 
     private void setSimulationSpeed(int speed) {
         simulationSpeed = speed;
-        System.out.println("Simulation speed is: " + simulationSpeed);
-
-        // Set the speed of data controller
-        dataController.setSimulationSpeedUp(speed);
+        simController.setSpeed(simulationSpeed);    // Set the speed of simulation
     }
 
     // Runway Panel
@@ -601,7 +582,6 @@ public class SimulationPage extends BasicPage {
     // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
         app.showSoonArrivingPage();
-        //System.out.println("Flights soon arriving");
     }
 
     private void showFlightsSoonDepartingPage() {
