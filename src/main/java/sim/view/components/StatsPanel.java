@@ -9,9 +9,18 @@ public class StatsPanel extends JPanel {
 
     Font labelFont = new Font("SansSerif", Font.BOLD, 18);
 
+    public StatsPanel(Color color, String title, double value) {
+        String valueString = Double.toString(value) + "s";
+        setupUI(color, title, valueString);
+    }
+
+    // For integer
     public StatsPanel(Color color, String title, int value) {
         String valueString = Integer.toString(value);
+        setupUI(color, title, valueString);
+    }
 
+    private void setupUI(Color color, String title, String value) {
         setLayout(new GridBagLayout());
         setBackground(color);
         setBorder(BorderFactory.createLineBorder(Color.black, 1));
@@ -30,13 +39,19 @@ public class StatsPanel extends JPanel {
 
         gbc.gridy = 1;
         statsValue = new JLabel();
-        statsValue.setText(valueString);
+        statsValue.setText(value);
         statsValue.setFont(labelFont);
         statsValue.setForeground(Color.white);
         add(statsValue, gbc);
     }
 
+
     // Setter
+    public void setValue(double value) {
+        String valueString = Double.toString(value);
+        statsValue.setText(valueString + "s");
+    }
+
     public void setValue(int value) {
         String valueString = Integer.toString(value);
         statsValue.setText(valueString);

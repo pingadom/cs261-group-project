@@ -4,10 +4,16 @@ import sim.config.SimConfig;
 import sim.core.Engine;
 
 public final class SimController {
-    private final Engine engine;
+    private Engine engine;
     private Thread engineThread;
 
     public SimController(Engine engine) {
+        this.engine = engine;
+    }
+
+    public SimController() {}
+
+    public void setEngine(Engine engine) {
         this.engine = engine;
     }
 

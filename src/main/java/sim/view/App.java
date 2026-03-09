@@ -1,7 +1,7 @@
 package sim.view;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
-import sim.view.controllers.PageDataController;
+import sim.core.viewmodel.SimController;
 import sim.view.pages.*;
 
 import javax.swing.*;
@@ -23,15 +23,15 @@ public class App extends JFrame {
         setResizable(false);
 
         // Controller
-        PageDataController dataController = new PageDataController();
+        SimController simController = new SimController();
 
         // Setup CardLayout
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
         // Create pages
-        InputPage inputPage = new InputPage(this, dataController);
-        SimulationPage simulationPage = new SimulationPage(this, dataController);
+        InputPage inputPage = new InputPage(this, simController);
+        SimulationPage simulationPage = new SimulationPage(this, simController);
         SimulationResultsPage resultsPage = new SimulationResultsPage(this, "Simulation Results", resultColumns, resultData);
         PostProcessingPage postProcessingPage = new PostProcessingPage(this, "Post Processing Flights", postProcessColumns, postProcessData);
         BasePanel soonArrivingPage = new BasePanel(this, "Flights Soon Arriving", soonArrivingColumns, soonArrivingData);

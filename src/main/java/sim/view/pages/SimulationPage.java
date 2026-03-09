@@ -1,16 +1,19 @@
 package sim.view.pages;
 
-import sim.model.stores.Runway;
+import sim.core.metrics.Metrics;
+import sim.core.viewmodel.RunwayState;
+import sim.core.viewmodel.SimController;
+import sim.core.viewmodel.SimState;
 import sim.view.App;
 import sim.view.components.*;
 import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class SimulationPage extends BasicPage {
@@ -34,8 +37,8 @@ public class SimulationPage extends BasicPage {
 
     // Instance variables
     private final App app;
-    private final PageDataController dataController;
-    private final List<Runway> runways;
+    private final SimController simController;
+    private final List<RunwayCard> runwayCards = new ArrayList<>();
 
     // UI Components
     StyledButton startPauseButton;
@@ -43,27 +46,197 @@ public class SimulationPage extends BasicPage {
     JLabel startPauseLabel;
     JPanel runwaysContainer;
 
+    StatsPanel cancelledStats;
+    StatsPanel divertedStats;
+    StatsPanel avgQueueStats;
+    StatsPanel avgHoldingStats;
+    StatsPanel maxQueueStats;
+    StatsPanel maxHoldingStats;
+    StatsPanel departedStats;
+    StatsPanel arrivedStats;
+
+    JToggleButton x1Button;
+    JToggleButton x5Button;
+    JToggleButton x10Button;
+    JToggleButton x50Button;
+
+    JLabel timeHourLabel;
+    JLabel timeMinuteLabel;
+    JLabel timeSecondLabel;
+
     // Static variables
-    int toggleStartPause = 0;
+    private final Timer updateTimer;
     int simulationSpeed = 1;
 
+    String simHour;
+    String simMinute;
+    String simSecond;
+
     // Constructor
-    public SimulationPage(App app, PageDataController dataController) {
+    public SimulationPage(App app, SimController simController) {
         this.app = app;
-        this.dataController = dataController;
-        this.runways = dataController.getAllRunways();
+        this.simController = simController;
+
         buildPage(createContentPanel());
         customizeFooter();
 
-        // When page becomes visible
+        // Timer (for every second)
+        updateTimer = new Timer(1000, e -> refreshUI());
+
+        // Detects when page becomes visible
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                refreshRunwayDisplay();
+                refreshFromController();
+                refreshControlPanel();
+                startTimer();
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                stopTimer();
             }
         });
     }
 
+    // ================== REFRESH UI ==================
+    private void startTimer() {
+        if (!updateTimer.isRunning()) {
+            updateTimer.start();
+        }
+    }
+
+    private void stopTimer() {
+        if (updateTimer.isRunning()) {
+            updateTimer.stop();
+        }
+    }
+
+    private void refreshFromController() {
+        if (simController != null) {
+            refreshRunwayDisplay();     // Refresh the runway display
+            refreshUI();
+        } else {
+            System.out.println("Controller not set yet");
+        }
+    }
+
+    private void refreshRunwayDisplay() {
+        runwaysContainer.removeAll();
+        runwayCards.clear();
+
+        // System.out.println("Refreshing display with " + runways.size() + " runways");
+
+        // Use list of RunwayStates to pass in runways to each card
+        List<RunwayState> runwayStates = simController.getStateSnapshot().getRunways();
+        for (RunwayState runway : runwayStates) {
+            RunwayCard card = new RunwayCard(runway, this, simController);
+            runwayCards.add(card);
+            runwaysContainer.add(card);
+        }
+
+        // Refresh UI
+        runwaysContainer.revalidate();
+        runwaysContainer.repaint();
+    }
+
+    private void refreshControlPanel() {
+        double speed = simController.getStateSnapshot().getSpeedMultiplier();
+
+        if (speed == 1) {
+            x1Button.setSelected(true);
+            setButtonClicked(x1Button);
+        } else if (speed == 5) {
+            x5Button.setSelected(true);
+            setButtonClicked(x5Button);
+        } else if (speed == 10) {
+            x10Button.setSelected(true);
+            setButtonClicked(x10Button);
+        } else if (speed == 50) {
+            x50Button.setSelected(true);
+            setButtonClicked(x50Button);
+        }
+
+        if (simController.getStateSnapshot().isPaused()) {
+            startPauseLabel.setText("Resume");
+        } else {
+            startPauseLabel.setText("Pause");
+        }
+    }
+
+    // Methods that is called every second
+    private void refreshUI() {
+        // Refresh the runway card every second using recent data
+        refreshRunwayDisplayEverySec();
+        refreshStatsPanelEverySec();
+        refreshClock();
+
+        revalidate();
+        repaint();
+    }
+
+    private void refreshRunwayDisplayEverySec() {
+        for (RunwayCard runwayCard : runwayCards) {
+            runwayCard.updateOccupiedLabel();
+        }
+    }
+
+    private void refreshStatsPanelEverySec() {
+        Metrics currentMetrics = simController.getStateSnapshot().getMetrics();
+
+        int arrivalsGenerated = currentMetrics.arrivalsGenerated;
+        int departuresGenerated = currentMetrics.departuresGenerated;
+
+        int cancelled = currentMetrics.departuresCancelled;
+        int diverted = currentMetrics.arrivalsDiverted;
+
+        double totalQueue = currentMetrics.totalArrivalDelaySeconds;
+        double avgQueueDelay = arrivalsGenerated > 0 ? totalQueue / arrivalsGenerated : 0;
+        double roundedQueueDelay = Math.round(avgQueueDelay * 10) / 10.0;
+
+        double totalHolding = currentMetrics.totalDepartureDelaySeconds;
+        double avgHoldingDelay = arrivalsGenerated > 0 ? totalHolding / departuresGenerated : 0;
+        double roundedHoldingDelay = Math.round(avgHoldingDelay * 10) / 10.0;
+
+        double maxQueue = currentMetrics.maxArrivalDelaySeconds;
+        double maxHolding = currentMetrics.maxDepartureDelaySeconds;
+
+        int departed = currentMetrics.departuresProcessed;
+        int arrived = currentMetrics.arrivalsProcessed;
+
+        // Set the text on each labels
+        cancelledStats.setValue(cancelled);
+        divertedStats.setValue(diverted);
+        avgQueueStats.setValue(roundedQueueDelay);
+        avgHoldingStats.setValue(roundedHoldingDelay);
+        maxQueueStats.setValue(maxQueue);
+        maxHoldingStats.setValue(maxHolding);
+        departedStats.setValue(departed);
+        arrivedStats.setValue(arrived);
+    }
+
+    private void refreshClock() {
+        SimState state = simController.getStateSnapshot();
+
+        String hhmm = state.getSimTimeHHMM();
+        String[] hhmmParts = hhmm.split(":");
+
+        if (hhmmParts.length == 2) {
+            simHour = hhmmParts[0] + "h";
+            simMinute = hhmmParts[1] + "m";
+
+            // Extract seconds
+            double totalSeconds = state.getSimTimeSeconds();
+            int seconds = (int) totalSeconds % 60;
+            simSecond = String.format("%02ds", seconds);
+
+            timeHourLabel.setText(simHour);
+            timeMinuteLabel.setText(simMinute);
+            timeSecondLabel.setText(simSecond);
+        }
+    }
+
+    // ================== CONTENT ==================
     // Content Panel
     @Override
     protected JPanel createContentPanel() {
@@ -89,7 +262,18 @@ public class SimulationPage extends BasicPage {
         buttonBack.setPreferredSize(new Dimension(100, 30));
         buttonBack.setMaximumSize(new Dimension(100, 30));
         buttonBack.setFont(ARIAL_BOLD_14);
-        buttonBack.addActionListener(e -> app.showInputPage());
+        buttonBack.addActionListener(e -> {
+            stopTimer();
+
+//            SimController controller = simController;
+//
+//            if (controller != null) {
+//                // Pause the simulation
+//                controller.pauseSimulation();
+//            }
+
+            app.showInputPage();
+        });
 
         footerPanel.add(buttonBack);
     }
@@ -103,14 +287,14 @@ public class SimulationPage extends BasicPage {
         panel.setMaximumSize(new Dimension(STATS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Panels for all stats
-        JPanel cancelledStats = new StatsPanel(COLOR_RED, "Cancelled", 0);
-        JPanel divertedStats = new StatsPanel(COLOR_RED, "Diverted", 0);
-        JPanel avgQueueStats = new StatsPanel(COLOR_ORANGE, "Avg Queue Delay", 0);
-        JPanel avgHoldingStats = new StatsPanel(COLOR_ORANGE, "Avg Holding Delay", 0);
-        JPanel maxQueueStats = new StatsPanel(COLOR_ORANGE, "Max Queue Delay", 0);
-        JPanel maxHoldingStats = new StatsPanel(COLOR_ORANGE, "Max Holding Delay", 0);
-        JPanel departedStats = new StatsPanel(COLOR_GREEN, "Departed", 0);
-        JPanel arrivedStats = new StatsPanel(COLOR_GREEN, "Arrived", 0);
+        cancelledStats = new StatsPanel(COLOR_RED, "Cancelled", 0);
+        divertedStats = new StatsPanel(COLOR_RED, "Diverted", 0);
+        avgQueueStats = new StatsPanel(COLOR_ORANGE, "Avg Queue Delay", 0.0);
+        avgHoldingStats = new StatsPanel(COLOR_ORANGE, "Avg Holding Delay", 0.0);
+        maxQueueStats = new StatsPanel(COLOR_ORANGE, "Max Queue Delay", 0.0);
+        maxHoldingStats = new StatsPanel(COLOR_ORANGE, "Max Holding Delay", 0.0);
+        departedStats = new StatsPanel(COLOR_GREEN, "Departed", 0);
+        arrivedStats = new StatsPanel(COLOR_GREEN, "Arrived", 0);
 
         panel.add(Box.createVerticalGlue());
         addPanelYAxis(panel, cancelledStats);
@@ -161,7 +345,6 @@ public class SimulationPage extends BasicPage {
         startPauseButton.setButtonSize(CONTROL_BUTTON_WIDTH, CONTROL_BUTTON_HEIGHT);
         startPauseButton.addActionListener(e -> toggleStartButton());
 
-        // Add an icon
         startPauseLabel = new JLabel("Pause", JLabel.CENTER);
         startPauseLabel.setFont(ARIAL_BOLD_16);
         startPauseLabel.setForeground(Color.white);
@@ -185,19 +368,23 @@ public class SimulationPage extends BasicPage {
 
     // Functions
     private void toggleStartButton() {
-        if (toggleStartPause == 0) {
-            startPauseLabel.setText("Start");
-            System.out.println("System paused!");
-            toggleStartPause = 1;
-        } else if (toggleStartPause == 1) {
+
+        boolean isPaused = simController.getStateSnapshot().isPaused();
+        if (!isPaused) {
+            // Pause the simulation
+            simController.pauseSimulation();
+            startPauseLabel.setText("Resume");
+        } else {
+            // Resume the simulation
+            simController.resumeSimulation();
             startPauseLabel.setText("Pause");
-            System.out.println("System resumed!");
-            toggleStartPause = 0;
         }
     }
 
     private void resetSimulation() {
-        System.out.println("System reset");
+        // Reset simulation
+        simController.resetSimulation();
+        startPauseLabel.setText("Pause");
     }
 
     // Speedup Panel
@@ -210,16 +397,16 @@ public class SimulationPage extends BasicPage {
         speedupLabel.setFont(ARIAL_BOLD_16);
 
         // Create radio buttons
-        JToggleButton x1Button = new JToggleButton("x1");
-        JToggleButton x2Button = new JToggleButton("x2");
-        JToggleButton x5Button = new JToggleButton("x5");
-        JToggleButton x10Button = new JToggleButton("x10");
+        x1Button = new JToggleButton("x1");
+        x5Button = new JToggleButton("x5");
+        x10Button = new JToggleButton("x10");
+        x50Button = new JToggleButton("x50");
 
         List<JToggleButton> speedButtons = new ArrayList<>();
         speedButtons.add(x1Button);
-        speedButtons.add(x2Button);
         speedButtons.add(x5Button);
         speedButtons.add(x10Button);
+        speedButtons.add(x50Button);
 
         ButtonGroup speedGroup = new ButtonGroup();
 
@@ -237,16 +424,7 @@ public class SimulationPage extends BasicPage {
             btn.setOpaque(true);
 
             // Changes appearance when selected
-            btn.addItemListener(e -> {
-                if (btn.isSelected()) {
-                    // System.out.println("Button " + btn.getText() + " selected");
-                    btn.setBackground(Color.black);
-                    btn.setForeground(Color.white);
-                } else {
-                    btn.setBackground(Color.white);
-                    btn.setForeground(Color.black);
-                }
-            });
+            btn.addItemListener(e -> setButtonClicked(btn));
         }
 
         // Default selection
@@ -254,9 +432,9 @@ public class SimulationPage extends BasicPage {
 
         // Add ActionListeners for each
         x1Button.addActionListener(e -> setSimulationSpeed(1));
-        x2Button.addActionListener(e -> setSimulationSpeed(2));
         x5Button.addActionListener(e -> setSimulationSpeed(5));
         x10Button.addActionListener(e -> setSimulationSpeed(10));
+        x50Button.addActionListener(e -> setSimulationSpeed(50));
 
         // Add labels and buttons
         GridBagConstraints gbc = new GridBagConstraints();
@@ -268,18 +446,28 @@ public class SimulationPage extends BasicPage {
         gbc.gridx = 1; speedupPanel.add(Box.createRigidArea(new Dimension(5, 0)), gbc); // Spacer
         gbc.gridx = 2; speedupPanel.add(x1Button);
         gbc.gridx = 3; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 4; speedupPanel.add(x2Button);
+        gbc.gridx = 4; speedupPanel.add(x5Button);
         gbc.gridx = 5; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 6; speedupPanel.add(x5Button);
+        gbc.gridx = 6; speedupPanel.add(x10Button);
         gbc.gridx = 7; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 8; speedupPanel.add(x10Button);
+        gbc.gridx = 8; speedupPanel.add(x50Button);
 
         return speedupPanel;
     }
 
+    private void setButtonClicked(JToggleButton btn) {
+        if (btn.isSelected()) {
+            btn.setBackground(Color.black);
+            btn.setForeground(Color.white);
+        } else {
+            btn.setBackground(Color.white);
+            btn.setForeground(Color.black);
+        }
+    }
+
     private void setSimulationSpeed(int speed) {
         simulationSpeed = speed;
-        System.out.println("Simulation speed is: " + simulationSpeed);
+        simController.setSpeed(simulationSpeed);    // Set the speed of simulation
     }
 
     // Runway Panel
@@ -290,30 +478,17 @@ public class SimulationPage extends BasicPage {
 
         // Main container for all the runways
         runwaysContainer = new JPanel();
+        runwaysContainer.setBackground(Color.white);
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
         JScrollPane scrollPaneRunwaysContainer = new JScrollPane(runwaysContainer);
+        scrollPaneRunwaysContainer.setBackground(Color.white);
         scrollPaneRunwaysContainer.setPreferredSize(new Dimension(CENTER_COLUMN_WIDTH, 470));
         scrollPaneRunwaysContainer.getVerticalScrollBar().setUnitIncrement(10);     // Changing sensitivity of scrollbar
 
         runwayPanel.add(scrollPaneRunwaysContainer);
 
         return runwayPanel;
-    }
-
-    private void refreshRunwayDisplay() {
-        runwaysContainer.removeAll();
-
-        // System.out.println("Refreshing display with " + runways.size() + " runways");
-
-        for (Runway runway : runways) {
-            RunwayCard card = new RunwayCard(runway, this);
-            runwaysContainer.add(card);
-        }
-
-        // Refresh UI
-        runwaysContainer.revalidate();
-        runwaysContainer.repaint();
     }
 
     // RIGHT Column - Clock + Buttons
@@ -324,9 +499,7 @@ public class SimulationPage extends BasicPage {
         panel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, CONTENT_PANEL_HEIGHT));
 
         // Clock panel
-        JPanel clockPanel = new JPanel();
-        clockPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
+        JPanel clockPanel = createClockPanel();
 
         // Buttons panel
         JPanel buttonsPanel = new JPanel(new GridBagLayout());
@@ -370,30 +543,60 @@ public class SimulationPage extends BasicPage {
         return panel;
     }
 
+    private JPanel createClockPanel() {
+        JPanel clockPanel = new JPanel();
+        clockPanel.setLayout(new BoxLayout(clockPanel, BoxLayout.X_AXIS));
+        clockPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.black),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        // clockPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        clockPanel.setBackground(Color.white);
+        clockPanel.setPreferredSize(new Dimension(BUTTONS_PANEL_WIDTH, 80));
+
+        simHour = "00h";
+        timeHourLabel = new JLabel(simHour);
+        timeHourLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeHourLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        simMinute = "00m";
+        timeMinuteLabel = new JLabel(simMinute);
+        timeMinuteLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeMinuteLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        simSecond = "00s";
+        timeSecondLabel = new JLabel(simSecond);
+        timeSecondLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        timeSecondLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        clockPanel.add(timeHourLabel);
+        clockPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_5, 0)));
+        clockPanel.add(timeMinuteLabel);
+        clockPanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_5, 0)));
+        clockPanel.add(timeSecondLabel);
+
+        return clockPanel;
+    }
+
 
     // Navigation to other pages
     private void showFlightsSoonArrivingPage() {
         app.showSoonArrivingPage();
-        // System.out.println("Flights soon arriving");
     }
 
     private void showFlightsSoonDepartingPage() {
         app.showSoonDepartingPage();
-        // System.out.println("Flights soon departing");
     }
 
     private void showHoldingPatternPage() {
-        app.showResultsPage();
-        // System.out.println("Holding Pattern");
+        //app.showResultsPage();
     }
 
     private void showTakeoffQueuePage() {
-        // System.out.println("Takeoff Queue");
     }
 
     private void showProcessedFlightsPage() {
         app.showPostProcessingPage();
-        // System.out.println("Processed Flights");
     }
 
 

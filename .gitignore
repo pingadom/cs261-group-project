@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 # intellij default .idea folder
 .idea
+target/
