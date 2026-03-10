@@ -1,8 +1,6 @@
 package sim.model.stores;
 
-import java.time.LocalTime; 
-
-
+import java.time.LocalTime;
 
 /** aircaft store */
 
@@ -10,18 +8,13 @@ public class Aircraft {
     private String callsign;
     private String operator;
     private String origin;
-    private double time;
+    private LocalTime time;
     private int altitude;
     private int groundSpeed;
-    private double fuel;
-    private double realTime;
-    private EmergencyStatus emergency;
-    private AircraftStatus status;
+    private int fuel;
+    private String emergency;
 
-    public enum AircraftStatus {ARRIVING,DEPARTING,ARRIVED,DEPARTED,CANCELLED,DIVERTED}
-    public enum EmergencyStatus {NONE,ILLNESS,EQUIPMENT,FUEL,MECHANICAL}
-
-    public Aircraft(String _callsign,String _operator,String _origin,double _time,int _altitude,int _groundSpeed,double _fuel,EmergencyStatus _emergency,AircraftStatus _status){
+    public Aircraft(String _callsign,String _operator,String _origin,LocalTime _time,int _altitude,int _groundSpeed,int _fuel,String _emergency){
         callsign = _callsign;
         operator = _operator;
         origin = _origin;
@@ -30,13 +23,8 @@ public class Aircraft {
         groundSpeed = _groundSpeed;
         fuel = _fuel;
         emergency = _emergency;
-        status = _status;
     }
 
-    public AircraftStatus getStatus(){
-        return status;
-    }
-    
     public String getCallsign(){
         return callsign;
     }
@@ -49,7 +37,7 @@ public class Aircraft {
         return origin;
     }
 
-    public double getTime(){
+    public LocalTime getTime(){
         return time;
     }
 
@@ -61,19 +49,19 @@ public class Aircraft {
         return groundSpeed;
     }
 
-    public double getFuel(){
+    public int getFuel(){
         return fuel;
     }
 
-    public EmergencyStatus getEmergency(){
+    public String getEmergency(){
         return emergency;
     }
 
 
     public int setCallsign(String newCallsign){
         if (newCallsign.length() > 0 && newCallsign.length() < 10){
-        callsign = newCallsign;
-        return 1;}
+            callsign = newCallsign;
+            return 1;}
         else {
             return 0;
         }
@@ -89,22 +77,22 @@ public class Aircraft {
         return 1;
     }
 
-    public int setTime(double newTime){
+    public int setTime(LocalTime newTime){
         time = newTime;
         return 1;
     }
 
     public int setAltitude(int newAltitude){
         if (newAltitude > 0 && newAltitude < 40000){
-        altitude = newAltitude;
-        return 1;}
+            altitude = newAltitude;
+            return 1;}
         return 0;
     }
 
     public int setGroundspeed(int newGroundspeed){
         if (newGroundspeed > 0){
-        groundSpeed = newGroundspeed;
-        return 1;}
+            groundSpeed = newGroundspeed;
+            return 1;}
         return 0;
     }
 
@@ -117,18 +105,8 @@ public class Aircraft {
         return 1;
     }
 
-    public int setEmergency(EmergencyStatus newEmergency){
+    public int setEmergency(String newEmergency){
         emergency = newEmergency;
-        return 1;
-    }
-
-    public int setStatus(AircraftStatus newStatus){
-        status = newStatus;
-        return 1;
-    }
-
-    public int setRealTime(double newRealTime){
-        realTime = newRealTime;
         return 1;
     }
 
