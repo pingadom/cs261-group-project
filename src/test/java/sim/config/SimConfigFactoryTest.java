@@ -26,7 +26,7 @@ class SimConfigFactoryTest {
   }  
 
   @Test
-  // Check valid simulation configuration accepted
+  // T-01 - FR1.1 Check valid simulation configuration accepted
   void acceptValidSimConfig() {
     SimulationSetup setup = createValidSetup();
     SimConfig config = SimConfigFactory.fromSetup(setup);
@@ -42,7 +42,7 @@ class SimConfigFactoryTest {
   }
           
   @Test
-  // Check valid engine options accepted
+  // T-01 - FR1.1 Check valid engine options accepted
   void acceptValidEngineOptions() {
     SimulationSetup setup = createValidSetup();
 
@@ -55,7 +55,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check null sim config setup rejected
+  // T-01 - FR1.1 Check null sim config setup rejected
   void rejectNullSimConfigSetup() {
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -66,7 +66,7 @@ class SimConfigFactoryTest {
   }
   
   @Test
-  // Check null engine options setup rejected
+  // T-01 - FR1.1 Check null engine options setup rejected
   void rejectNullEngineOptionsSetup() {
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -77,7 +77,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check setups with no runways are rejected
+  // T-01 - FR1.1 Check setups with no runways are rejected
   void rejectNoRunways() {
     SimulationSetup setup = createValidSetup();
     setup.clearRunways();
@@ -90,7 +90,7 @@ class SimConfigFactoryTest {
   }    
   
   @Test
-  // Check runway count over max rejected
+  // T-02 - FR1.1 Check runway count over max rejected
   void rejectMaxRunway() {
     SimulationSetup setup = createValidSetup();
     setup.setMaxRunways(1);
@@ -105,7 +105,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check arrivalRatePerHour that is negative is rejected
+  // T-03 - FR1.2 Check arrivalRatePerHour that is negative is rejected
   void rejectNegativeArrivalRatePerHour() {
     SimulationSetup setup = createValidSetup();
     setup.setArrivalRatePerHour(-10); 
@@ -118,7 +118,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check arrivalRatePerHour that is 0 is rejected
+  // T-03 - FR1.2 Check arrivalRatePerHour that is 0 is rejected
   void rejectZeroArrivalRatePerHour() {
     SimulationSetup setup = createValidSetup();
     setup.setArrivalRatePerHour(0); 
@@ -131,7 +131,7 @@ class SimConfigFactoryTest {
   }
   
   @Test
-  // Check departureRatePerHour that is negative is rejected
+  // T-03 - FR1.2 Check departureRatePerHour that is negative is rejected
   void rejectNegativeDepartureRatePerHour() {
     SimulationSetup setup = createValidSetup();
     setup.setDepartureRatePerHour(-10); 
@@ -144,7 +144,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check departureRatePerHour that is 0 is rejected
+  // T-03 - FR1.2 Check departureRatePerHour that is 0 is rejected
   void rejectZeroDepartureRatePerHour() {
     SimulationSetup setup = createValidSetup();
     setup.setDepartureRatePerHour(0); 
@@ -157,7 +157,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check durationSeconds that is negative is rejected
+  // T-03 - FR1.2 Check durationSeconds that is negative is rejected
   void rejectNegativeDurationSeconds() {
     SimulationSetup setup = createValidSetup();
     setup.setDurationSeconds(-10); 
@@ -170,7 +170,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check durationSeconds that is 0 is rejected
+  // T-03 - FR1.2 Check durationSeconds that is 0 is rejected
   void rejectZeroDurationSeconds() {
     SimulationSetup setup = createValidSetup();
     setup.setDurationSeconds(0); 
@@ -183,7 +183,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check dtSeconds that is negative is rejected
+  // T-03 - FR1.2 Check dtSeconds that is negative is rejected
   void rejectNegativeDtSeconds() {
     SimulationSetup setup = createValidSetup();
     setup.setDtSeconds(-10.0); 
@@ -196,7 +196,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check dtSeconds that is 0 is rejected
+  // T-03 - FR1.2 Check dtSeconds that is 0 is rejected
   void rejectZeroDtSeconds() {
     SimulationSetup setup = createValidSetup();
     setup.setDtSeconds(0); 
@@ -209,7 +209,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check speedMultiplier that is negative is rejected
+  // T-03 - FR1.2 Check speedMultiplier that is negative is rejected
   void rejectNegativeSpeedMultiplier() {
     SimulationSetup setup = createValidSetup();
     setup.setSpeedMultiplier(-10.0); 
@@ -222,7 +222,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check speedMultiplier that is 0 is rejected
+  // T-03 - FR1.2 Check speedMultiplier that is 0 is rejected
   void rejectZeroSpeedMultiplier() {
     SimulationSetup setup = createValidSetup();
     setup.setSpeedMultiplier(0); 
@@ -235,7 +235,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check null runway rejected
+  // T-02 - FR1.1 Check null runway rejected
   void rejectNullRunway() {
     SimulationSetup setup = createValidSetup();
     setup.clearRunways();
@@ -249,7 +249,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check null runway id rejected
+  // T-02 - FR1.1 Check null runway id rejected
   void rejectNullRunwayID() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup(null, SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
@@ -263,7 +263,7 @@ class SimConfigFactoryTest {
   }
 
   @Test
-  // Check empty runway id rejected
+  // T-02 - FR1.1 Check empty runway id rejected
   void rejectEmptyRunwayID() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup("", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
@@ -278,7 +278,7 @@ class SimConfigFactoryTest {
 
 
   @Test
-  // Check missing runway mode rejected
+  // T-06 - FR1.5 Check missing runway mode rejected
   void rejectMissingMode() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup("RWY-01", null, SimConfig.RunwayStatus.AVAILABLE); 
@@ -292,7 +292,7 @@ class SimConfigFactoryTest {
   }  
   
   @Test
-  // Check missing runway status rejected
+  // T-05 - FR1.4 Check missing runway status rejected
   void rejectMissingStatus() {
     SimulationSetup setup = createValidSetup();
     RunwaySetup runway = new RunwaySetup("RWY-01", SimConfig.RunwayMode.LANDING, null); 
