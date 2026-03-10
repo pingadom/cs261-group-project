@@ -1,7 +1,11 @@
 package sim.config;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+
 import sim.core.EngineOptions;
 import sim.core.viewmodel.RunwaySetup;
 import sim.core.viewmodel.SimulationSetup;
@@ -16,7 +20,7 @@ class SimConfigFactoryTest {
     setup.setDurationSeconds(3600);
     setup.setDtSeconds(1.0);
     setup.setSpeedMultiplier(1.0);
-    RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+    RunwaySetup runway = new RunwaySetup("RWY-01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
     setup.addRunway(runway);
     return setup;
   }  
@@ -31,7 +35,7 @@ class SimConfigFactoryTest {
     assertEquals(30, config.arrivalRatePerHour);
     assertEquals(10, config.departureRatePerHour);
     assertEquals(10, config.maxRunways);
-    assertEquals("RWY01", config.runways.get(0).id);
+    assertEquals("RWY-01", config.runways.get(0).id);
     assertEquals(SimConfig.RunwayMode.LANDING, config.runways.get(0).mode);
     assertEquals(SimConfig.RunwayStatus.AVAILABLE, config.runways.get(0).status);
     assertEquals(1, config.runways.size());
@@ -90,7 +94,7 @@ class SimConfigFactoryTest {
   void rejectMaxRunway() {
     SimulationSetup setup = createValidSetup();
     setup.setMaxRunways(1);
-    RunwaySetup runway = new RunwaySetup("RWY02", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+    RunwaySetup runway = new RunwaySetup("RWY-02", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
     setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -277,7 +281,7 @@ class SimConfigFactoryTest {
   // Check missing runway mode rejected
   void rejectMissingMode() {
     SimulationSetup setup = createValidSetup();
-    RunwaySetup runway = new RunwaySetup("RWY01", null, SimConfig.RunwayStatus.AVAILABLE); 
+    RunwaySetup runway = new RunwaySetup("RWY-01", null, SimConfig.RunwayStatus.AVAILABLE); 
     setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -291,7 +295,7 @@ class SimConfigFactoryTest {
   // Check missing runway status rejected
   void rejectMissingStatus() {
     SimulationSetup setup = createValidSetup();
-    RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, null); 
+    RunwaySetup runway = new RunwaySetup("RWY-01", SimConfig.RunwayMode.LANDING, null); 
     setup.addRunway(runway);
     // Test it throws an exception
     Exception exception = assertThrows(IllegalArgumentException.class, () -> {

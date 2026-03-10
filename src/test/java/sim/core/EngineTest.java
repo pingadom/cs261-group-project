@@ -47,7 +47,7 @@ class EngineTest {
         setup.setDtSeconds(1.0);
         setup.setSpeedMultiplier(1.0);
 
-        RunwaySetup runway = new RunwaySetup("RWY01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
+        RunwaySetup runway = new RunwaySetup("RWY-01", SimConfig.RunwayMode.LANDING, SimConfig.RunwayStatus.AVAILABLE); 
         setup.addRunway(runway);
 
         cfg = SimConfigFactory.fromSetup(setup);
@@ -156,7 +156,7 @@ class EngineTest {
         
         // Test invalid does not throw an exception
         assertDoesNotThrow(() -> {
-          handleConsoleCommand.invoke(engine, "runway RWY01 INVALID_STATUS");
+          handleConsoleCommand.invoke(engine, "runway RWY-01 INVALID_STATUS");
         }, "Invalid runway status should be caught by console handler");
         // Test valid does not throw an exception
         assertDoesNotThrow(() -> {
@@ -175,7 +175,7 @@ class EngineTest {
         
         // Test invalid does not throw an exception
         assertDoesNotThrow(() -> {
-          handleConsoleCommand.invoke(engine, "runway RWY01 INVALID_STATUS");
+          handleConsoleCommand.invoke(engine, "runway RWY-01 INVALID_STATUS");
         }, "Invalid runway status should be caught by console handler");
         // Test valid does not throw an exception
         assertDoesNotThrow(() -> {
