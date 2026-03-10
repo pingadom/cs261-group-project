@@ -29,7 +29,7 @@ class SimConfigLoaderTest {
   }
   
   @Test
-  // T-01 - Check empty config rejected
+  // T-01 - FR1.1 Check empty config rejected
   void verifyMandatoryInputs(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -47,7 +47,7 @@ class SimConfigLoaderTest {
   }
   
   @Test
-  // T-02 - Check 0 runways are rejected
+  // T-02 - FR1.1 Check 0 runways are rejected
   void reject0Runways(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -72,7 +72,7 @@ class SimConfigLoaderTest {
   }
 
   @Test
-  // T-02 - Check over max runways are rejected
+  // T-02 - FR1.1 Check over max runways are rejected
   void rejectOveMaxRunways(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -105,7 +105,7 @@ class SimConfigLoaderTest {
   }
 
   @Test
-  // T-02 - Check over runways 1-10 are accepted
+  // T-02 - FR1.1 Check over runways 1-10 are accepted
   void acceptValidRunways(@TempDir Path tempDir) throws IOException {
     // Test 1 through 10 runways
     for (int count = 1; count <= 10; count++) {
@@ -138,7 +138,7 @@ class SimConfigLoaderTest {
   }
 
   @Test
-  // T-02 - Check null runway rejected
+  // T-02 - FR1.1 Null runway rejected
   void rejectNullRunway(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -164,7 +164,7 @@ class SimConfigLoaderTest {
 
 
   @Test
-  // T-02 - Check null runway ID rejected
+  // T-02 - FR1.1 Check null runway ID rejected
   void rejectNullRunwayID(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -190,7 +190,7 @@ class SimConfigLoaderTest {
 
 
   @Test
-  // T-02 - Check missing runway mode rejected
+  // T-06 - FR1.5 Check missing runway mode rejected
   void rejectNullRunwayMode(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -216,7 +216,7 @@ class SimConfigLoaderTest {
 
 
   @Test
-  // T-02 - Check missing runway status rejected
+  // T-05 - FR1.4 Check missing runway status rejected
   void rejectNullRunwayStatus(@TempDir Path tempDir) throws IOException {
     // Create temporary file
     File configFile = new File(tempDir.toFile(), "config.json");
@@ -241,7 +241,7 @@ class SimConfigLoaderTest {
   }    
   
   @Test
-  // T-03 - Check negative arrival rate rejected
+  // T-03 - FR1.2 Check negative arrival rate rejected
   void rejectNegativeArrivalRate(@TempDir Path tempDir) throws IOException {
     // Create temporary file
       File configFile = new File(tempDir.toFile(), "config.json");
@@ -266,7 +266,7 @@ class SimConfigLoaderTest {
   }     
 
   @Test
-    // T-03 - Check arrival rate of zero rejected
+    // T-03 - FR1.2 Check arrival rate of zero rejected
     void rejectZeroArrivalRate(@TempDir Path tempDir) throws IOException {
       // Create temporary file
         File configFile = new File(tempDir.toFile(), "config.json");
@@ -291,7 +291,7 @@ class SimConfigLoaderTest {
   }  
       
     @Test
-    // T-03 - Check negative departure rate rejected
+    // T-03 - FR1.2 Check negative departure rate rejected
     void rejectNegativeDepartureRate(@TempDir Path tempDir) throws IOException {
       // Create temporary file
         File configFile = new File(tempDir.toFile(), "config.json");
@@ -316,7 +316,7 @@ class SimConfigLoaderTest {
   }  
 
   @Test
-    // T-03 - Check departure rate of zero rejected
+    // T-03 - FR1.2 Check departure rate of zero rejected
     void rejectZeroDepartureRate(@TempDir Path tempDir) throws IOException {
       // Create temporary file
         File configFile = new File(tempDir.toFile(), "config.json");
