@@ -56,7 +56,7 @@ class EngineTest {
     }
     
     @Test
-    // Check invalid CSV rejected
+    // T-29 - FR5.5 Check invalid CSV rejected
     void rejectInvalidCSVPath(@TempDir Path tempDir) throws IOException {
         // Create directory instead of a file
         Path csvPath = tempDir.resolve("test.csv");
@@ -75,7 +75,7 @@ class EngineTest {
     }
 
     @Test
-    // Check invalid flight CSV rejected
+    // T-29 - FR5.5 Check invalid flight CSV rejected
     void rejectInvalidFlightCSVPath(@TempDir Path tempDir) throws IOException {
         // Create directory instead of a file
         Path csvPath = tempDir.resolve("metrics.csv");
@@ -96,7 +96,7 @@ class EngineTest {
     }    
 
     @Test
-    // Check exception from delay trend CSV write failure caught
+    // T-28 - FR5.4 Check exception from delay trend CSV write failure caught
     void handleDelayTrendCSVWriteFailure(@TempDir Path tempDir) throws IOException {
         // Create directory instead of a file
         Path csvPath = tempDir.resolve("metrics.csv");
@@ -114,7 +114,7 @@ class EngineTest {
     }
 
     @Test
-    // Check exception from delay trend SVG write failure caught
+    // T-28 - FR5.4 Check exception from delay trend SVG write failure caught
     void handleDelayTrendSVGWriteFailure(@TempDir Path tempDir) throws IOException {
         // Create directory instead of a file
         Path csvPath = tempDir.resolve("metrics.csv");
@@ -132,7 +132,7 @@ class EngineTest {
     }
 
     @Test
-    // Check exception from invalid simulation speed caught
+    // T-25 - FR5.1 Check exception from invalid simulation speed caught
     void handleInvalidSpeed(@TempDir Path tempDir) throws IOException {
         Engine engine = new Engine(cfg, opts, clock);
         // Test it does not throw an exception
@@ -146,7 +146,7 @@ class EngineTest {
     }
 
     @Test
-    // Check exception from invalid runway mode caught
+    // T-06 - FR1.5 Check exception from invalid runway mode caught
     void handleInvalidMode(@TempDir Path tempDir) throws Exception {
         Engine engine = new Engine(cfg, opts, clock);
 
@@ -165,7 +165,7 @@ class EngineTest {
     }
 
     @Test
-    // Check exception from invalid runway status caught
+    // T-05 - FR1.4 Check exception from invalid runway status caught
     void handleInvalidStatus(@TempDir Path tempDir) throws Exception {
         Engine engine = new Engine(cfg, opts, clock);
 
@@ -184,7 +184,7 @@ class EngineTest {
     }
 
     @Test
-    // Check exception from no numbers in runway ids caught
+    // T-02 - FR1.1 Check exception from no numbers in runway ids caught
     void handleNonNumberID(@TempDir Path tempDir) {
         SimulationSetup setup = createInvalidSetup("RUNWAY");
         cfg = SimConfigFactory.fromSetup(setup);
@@ -195,7 +195,7 @@ class EngineTest {
     }
 
     @Test
-    // Check exception from special characters in runway ids caught
+    // T-02 - FR1.1 Check exception from special characters in runway ids caught
     void handleSpecialCharID(@TempDir Path tempDir) {
         SimulationSetup setup = createInvalidSetup("&(*(@))");
         cfg = SimConfigFactory.fromSetup(setup);
