@@ -6,7 +6,6 @@ import sim.core.viewmodel.SimController;
 import sim.core.viewmodel.SimState;
 import sim.view.App;
 import sim.view.components.*;
-import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -66,7 +65,7 @@ public class SimulationPage extends BasicPage {
 
     // Static variables
     private final Timer updateTimer;
-    int simulationSpeed = 1;
+    private boolean simulationEnded = false;
 
     String simHour;
     String simMinute;
@@ -81,12 +80,18 @@ public class SimulationPage extends BasicPage {
         customizeFooter();
 
         // Timer (for every second)
-        updateTimer = new Timer(1000, e -> refreshUI());
+        updateTimer = new Timer(1000, e -> {
+            if (!simulationEnded) {
+                refreshUI();
+                checkSimulationEnded();
+            }
+        });
 
         // Detects when page becomes visible
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
+                simulationEnded = false;
                 refreshFromController();
                 refreshControlPanel();
                 startTimer();
@@ -99,7 +104,6 @@ public class SimulationPage extends BasicPage {
         });
     }
 
-    // ================== REFRESH UI ==================
     private void startTimer() {
         if (!updateTimer.isRunning()) {
             updateTimer.start();
@@ -112,6 +116,7 @@ public class SimulationPage extends BasicPage {
         }
     }
 
+    // ================== REFRESH UI (PAGE SHOWN) ==================
     private void refreshFromController() {
         if (simController != null) {
             refreshRunwayDisplay();     // Refresh the runway display
@@ -164,7 +169,7 @@ public class SimulationPage extends BasicPage {
         }
     }
 
-    // Methods that is called every second
+    // ================== REFRESH UI (EVERY SEC) ==================
     private void refreshUI() {
         // Refresh the runway card every second using recent data
         refreshRunwayDisplayEverySec();
@@ -233,6 +238,24 @@ public class SimulationPage extends BasicPage {
             timeHourLabel.setText(simHour);
             timeMinuteLabel.setText(simMinute);
             timeSecondLabel.setText(simSecond);
+        }
+    }
+
+    // Checks if the simulation has ended
+    private void checkSimulationEnded() {
+        SimState state = simController.getStateSnapshot();
+        if (state == null) return;
+
+        double currentTime = state.getSimTimeSeconds();
+        //System.out.println("Current second is: " + currentTime);
+        long duration = simController.getDurationSim();
+
+        if (currentTime >= duration) {
+            simulationEnded = true;
+            updateTimer.stop();
+
+            // App shows the results page
+            app.showResultsPage();
         }
     }
 
@@ -466,8 +489,7 @@ public class SimulationPage extends BasicPage {
     }
 
     private void setSimulationSpeed(int speed) {
-        simulationSpeed = speed;
-        simController.setSpeed(simulationSpeed);    // Set the speed of simulation
+        simController.setSpeed(speed);    // Set the speed of simulation
     }
 
     // Runway Panel
@@ -589,10 +611,11 @@ public class SimulationPage extends BasicPage {
     }
 
     private void showHoldingPatternPage() {
-        //app.showResultsPage();
+        app.showHoldingPatternPage();
     }
 
     private void showTakeoffQueuePage() {
+        app.showTakeoffQueuePage();
     }
 
     private void showProcessedFlightsPage() {

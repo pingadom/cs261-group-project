@@ -36,6 +36,8 @@ public class App extends JFrame {
         PostProcessingPage postProcessingPage = new PostProcessingPage(this, "Post Processing Flights", postProcessColumns, postProcessData);
         BasePanel soonArrivingPage = new BasePanel(this, "Flights Soon Arriving", soonArrivingColumns, soonArrivingData);
         BasePanel soonDepartingPage = new BasePanel(this, "Flights Soon Departing", soonDepartingColumns, soonDepartingData);
+        BasePanel holdingPatternPage = new BasePanel(this, "Holding Pattern", soonArrivingColumns, soonArrivingData);
+        BasePanel takeoffQueuePage = new BasePanel(this, "Take-off Queue", soonDepartingColumns, soonDepartingData);
 
         // Add pages to CardLayout
         mainPanel.add(inputPage, "INPUT");
@@ -44,6 +46,8 @@ public class App extends JFrame {
         mainPanel.add(postProcessingPage, "POST");
         mainPanel.add(soonArrivingPage, "SOON_ARRIVING");
         mainPanel.add(soonDepartingPage, "SOON_DEPARTING");
+        mainPanel.add(holdingPatternPage, "HOLDING_PATTERN");
+        mainPanel.add(takeoffQueuePage, "TAKEOFF_QUEUE");
 
         add(mainPanel);
         setVisible(true);
@@ -81,6 +85,15 @@ public class App extends JFrame {
         cardLayout.show(mainPanel, "SOON_DEPARTING");
     }
 
+    public void showHoldingPatternPage() {
+        this.setTitle("Holding Pattern");
+        cardLayout.show(mainPanel, "HOLDING_PATTERN");
+    }
+
+    public void showTakeoffQueuePage() {
+        this.setTitle("Take-off Queue");
+        cardLayout.show(mainPanel, "TAKEOFF_QUEUE");
+    }
 
 
     // Sample data for results

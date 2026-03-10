@@ -3,6 +3,7 @@ package sim.view.pages;
 
 import sim.config.SimConfig;
 import sim.config.SimConfigFactory;
+import sim.config.SimConfigWriter;
 import sim.core.Engine;
 import sim.core.EngineOptions;
 import sim.core.SimClock;
@@ -388,6 +389,7 @@ public class InputPage extends BasicPage {
             setup.setDepartureRatePerHour(outboundRate);
             setup.setMaxRunways(10);
             long seconds = duration * 3600L;
+            simController.setDurationSim(seconds);
             setup.setDurationSeconds(seconds);
             setup.setDtSeconds(1.0);
             setup.setSpeedMultiplier(1.0);
@@ -411,8 +413,7 @@ public class InputPage extends BasicPage {
             simController.startSimulation();
 
             // Output the results
-//            SimConfig cfg = SimConfigFactory.fromSetup(setup);
-//            SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
+            //SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
             // ======================================
 
             app.showSimulationPage();   // move to SimulationPage
