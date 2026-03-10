@@ -9,32 +9,34 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class FlightCSVWriterTest {
+
+class MetricsCSVWriterTest {
     @Test
     // Constructor rejects invalid path
     void rejectInvalidPath(@TempDir Path tempDir) {
         // Create directory instead of a file
-        Path invalidPath = tempDir.resolve("test.csv");
+        Path invalidPath;
+        invalidPath = tempDir.resolve("metrics.csv");
         assertDoesNotThrow(() -> {
           Files.createDirectory(invalidPath);
         });
         // Test it throws an exception
         Exception exception = assertThrows(IOException.class, () -> {
-            new FlightCsvWriter(invalidPath);
-        }, "Should throw IOEXception when path is directory");
+            new MetricsCsvWriter(invalidPath);
+        }, "Should throw IOEXception when path is directory" );
     }
 
     @Test
     // Constructor rejects non writable path
     void rejectWritablePath(@TempDir Path tempDir) throws IOException {
         // Create read only path
-        Path path = tempDir.resolve("test.csv");
+        Path path = tempDir.resolve("metrics.csv");
         Files.createFile(path);
         path.toFile().setReadOnly();
 
         // Test it throws an exception
         Exception exception = assertThrows(IOException.class, () -> {
-            new FlightCsvWriter(path);
+            new MetricsCsvWriter(path);
         }, "Should throw IOEXception when file is read only");
         path.toFile().setWritable(true);
     }    
@@ -42,8 +44,8 @@ class FlightCSVWriterTest {
     @Test
     // writeHeader rejects closed writer
     void rejectClosedWriterHeader(@TempDir Path tempDir) throws IOException {
-        Path path = tempDir.resolve("flights.csv");
-        FlightCsvWriter writer = new FlightCsvWriter(path);
+        Path path = tempDir.resolve("metrics.csv");
+        MetricsCsvWriter writer = new MetricsCsvWriter(path);
         writer.close();
 
         // Test it throws an exception
@@ -53,15 +55,16 @@ class FlightCSVWriterTest {
     }    
 
     @Test
-    // writeFlight rejects closed writer
-    void rejectClosedWriterFlight(@TempDir Path tempDir) throws IOException {
-        Path path = tempDir.resolve("flights.csv");
-        FlightCsvWriter writer = new FlightCsvWriter(path);
+    // writeRow rejects closed writer
+    void rejectClosedWriterRow(@TempDir Path tempDir) throws IOException {
+        Path path = tempDir.resolve("metrics.csv");
+        MetricsCsvWriter writer = new MetricsCsvWriter(path);
         writer.close();
 
+        Metrics metrics = new Metrics();
         // Test it throws an exception
         Exception exception = assertThrows(IOException.class, () -> {
-            writer.writeFlight("QR2101", "ARRIVAL", 100.0, 110.0, 10.0, true, "LANDED", "None", false, false, 500);
+            writer.writeRow(100.0, metrics);
         }, "Should throw IOEXception when writer is closed");
     }   
 
@@ -69,7 +72,7 @@ class FlightCSVWriterTest {
     // Check closing writer is accepted
     void acceptCloseWriter(@TempDir Path tempDir) throws IOException {
         Path path = tempDir.resolve("flights.csv");
-        FlightCsvWriter writer = new FlightCsvWriter(path);
+        MetricsCsvWriter writer = new MetricsCsvWriter(path);
         // Test it does not throw an exception
         assertDoesNotThrow(() -> {
           writer.close();
