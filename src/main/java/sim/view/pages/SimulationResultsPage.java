@@ -25,16 +25,27 @@ public class SimulationResultsPage extends BasePanel{
 
     @Override
     protected void customizeFooter() {
-        super.customizeFooter();
+        StyledButton buttonBack = new StyledButton("Back", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
+        buttonBack.setPreferredSize(new Dimension(100, 30));
+        buttonBack.setMaximumSize(new Dimension(100, 30));
+        buttonBack.setFont(new Font("Arial", Font.BOLD, 14));
+        buttonBack.addActionListener(e -> {
+            app.getSimulationPage().stopTimer();
+            app.showSimulationPage();
+        });
 
         // Adding the New Simulation button
         StyledButton newSimButton = new StyledButton("+ New Simulation", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         newSimButton.setPreferredSize(new Dimension(150, 30));
         newSimButton.setMaximumSize(new Dimension(150, 30));
         newSimButton.setFont(new Font("Arial", Font.BOLD, 14));
-        newSimButton.addActionListener(e -> app.showInputPage());
+        newSimButton.addActionListener(e -> {
+            app.getSimulationPage().resetSimulationEndedFlag();
+            app.showInputPage();
+        });
 
         // Add button to the right side of footer
+        footerPanel.add(buttonBack);
         footerPanel.add(Box.createHorizontalGlue());
         footerPanel.add(newSimButton);
     }

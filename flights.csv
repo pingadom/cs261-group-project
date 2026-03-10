@@ -1,17 +1,1 @@
 callsign,type,scheduled_time_s,actual_runway_time_s,delay_s,completed,outcome,emergency,diverted,cancelled,fuel
-BA100,ARRIVAL,343,343,0,true,LANDED,None,false,false,1799
-BA101,ARRIVAL,726,726,0,true,LANDED,None,false,false,2279
-BA102,ARRIVAL,1132,1132,0,true,LANDED,None,false,false,3359
-BA103,ARRIVAL,1275,1275,0,true,LANDED,None,false,false,1799
-BA104,ARRIVAL,2041,2041,0,true,LANDED,None,false,false,3179
-BA105,ARRIVAL,2214,2214,0,true,LANDED,None,false,false,3479
-BA107,ARRIVAL,2750,2750,0,true,LANDED,None,false,false,2579
-BA106,ARRIVAL,2831,2831,0,true,LANDED,None,false,false,2819
-DEP100,DEPARTURE,466,466,0,true,TOOK_OFF,None,false,false,0
-DEP101,DEPARTURE,582,582,0,true,TOOK_OFF,None,false,false,0
-DEP102,DEPARTURE,1045,1045,0,true,TOOK_OFF,None,false,false,0
-DEP104,DEPARTURE,1717,1717,0,true,TOOK_OFF,None,false,false,0
-DEP103,DEPARTURE,1806,1806,0,true,TOOK_OFF,None,false,false,0
-DEP105,DEPARTURE,2225,2225,0,true,TOOK_OFF,None,false,false,0
-DEP107,DEPARTURE,3053,3053,0,true,TOOK_OFF,None,false,false,0
-DEP106,DEPARTURE,3077,3077,0,true,TOOK_OFF,None,false,false,0

@@ -11,6 +11,8 @@ public class App extends JFrame {
     private final CardLayout cardLayout;
     private final JPanel mainPanel;
 
+    SimulationPage simulationPage;
+
     // Dimension constants
     private static final int APP_HEIGHT = 720;
     private static final int APP_WIDTH = 1280;
@@ -31,7 +33,7 @@ public class App extends JFrame {
 
         // Create pages
         InputPage inputPage = new InputPage(this, simController);
-        SimulationPage simulationPage = new SimulationPage(this, simController);
+        simulationPage = new SimulationPage(this, simController);
         SimulationResultsPage resultsPage = new SimulationResultsPage(this, "Simulation Results", resultColumns, resultData);
         PostProcessingPage postProcessingPage = new PostProcessingPage(this, "Post Processing Flights", postProcessColumns, postProcessData);
         BasePanel soonArrivingPage = new BasePanel(this, "Flights Soon Arriving", soonArrivingColumns, soonArrivingData);
@@ -51,6 +53,11 @@ public class App extends JFrame {
 
         add(mainPanel);
         setVisible(true);
+    }
+
+    // Getters
+    public SimulationPage getSimulationPage() {
+        return simulationPage;
     }
 
 

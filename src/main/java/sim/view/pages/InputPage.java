@@ -140,13 +140,13 @@ public class InputPage extends BasicPage {
         gbc.insets = new Insets(5, 13, 2, 0);
 
         // Row 2: Inbound rate
-        inboundRateField = new JTextField("8");
+        inboundRateField = new JTextField("15");
         addFormField(panel, gbc, "Inbound Rate (aircraft/hour)", inboundRateField, 1);
         // Row 3: Outbound rate
-        outboundRateField = new JTextField("8");
+        outboundRateField = new JTextField("15");
         addFormField(panel, gbc, "Outbound Rate (aircraft/hour)", outboundRateField, 2);
         // Row 4: Duration
-        durationField = new JTextField("8");
+        durationField = new JTextField("2");
         addFormField(panel, gbc, "Duration (hour)", durationField, 3);
 
         return panel;
@@ -370,6 +370,33 @@ public class InputPage extends BasicPage {
                 JOptionPane.showMessageDialog(
                         this,
                         "Each field should be at least 1",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            // Check if exceeds maximum
+            if (inboundRate > 150) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Inbound Rate exceeds maximum",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            } else if (outboundRate > 150) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Outbound Rate exceeds maximum",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            } else if (duration > 100) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Duration exceeds maximum",
                         "Configuration Incomplete",
                         JOptionPane.WARNING_MESSAGE
                 );
