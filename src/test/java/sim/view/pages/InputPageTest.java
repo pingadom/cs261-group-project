@@ -28,7 +28,7 @@ class InputPageTest {
         startSimulationMethod.setAccessible(true);
         addNewRunwayMethod = InputPage.class.getDeclaredMethod("addNewRunway");
         addNewRunwayMethod.setAccessible(true);
-        deleteRunwayMethod = InputPage.class.getDeclaredMethod("deleteRunway");
+        deleteRunwayMethod = InputPage.class.getDeclaredMethod("deleteRunway", int.class);
         deleteRunwayMethod.setAccessible(true);
     }
     
@@ -202,12 +202,12 @@ class InputPageTest {
     void deleteBelowOneRunways() throws Exception {
         // Delete until one remains
         while (inputPage.numRunways > 1) {
-            deleteRunwayMethod.invoke(inputPage.numRunways);
+            deleteRunwayMethod.invoke(inputPage, inputPage.numRunways);
         }
         
         // Check button disabled rather than exception thrown 
         assertDoesNotThrow(() -> {
-            deleteRunwayMethod.invoke(1);
+            deleteRunwayMethod.invoke(inputPage, 1);
         });
         
         assertFalse(inputPage.removeRunwayButton.isEnabled());
