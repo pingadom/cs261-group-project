@@ -56,9 +56,9 @@ public class SimulationPage extends BasicPage {
     StatsPanel arrivedStats;
 
     JToggleButton x1Button;
-    JToggleButton x5Button;
     JToggleButton x10Button;
     JToggleButton x50Button;
+    JToggleButton x100Button;
 
     JLabel timeHourLabel;
     JLabel timeMinuteLabel;
@@ -81,7 +81,7 @@ public class SimulationPage extends BasicPage {
         customizeFooter();
 
         // Timer (for every second)
-        updateTimer = new Timer(1000, e -> {
+        updateTimer = new Timer(500, e -> {
             if (!simulationEnded) {
                 refreshUI();
                 checkSimulationEnded();
@@ -151,9 +151,9 @@ public class SimulationPage extends BasicPage {
         if (speed == 1) {
             x1Button.setSelected(true);
             setButtonClicked(x1Button);
-        } else if (speed == 5) {
-            x5Button.setSelected(true);
-            setButtonClicked(x5Button);
+        } else if (speed == 100) {
+            x100Button.setSelected(true);
+            setButtonClicked(x100Button);
         } else if (speed == 10) {
             x10Button.setSelected(true);
             setButtonClicked(x10Button);
@@ -441,15 +441,15 @@ public class SimulationPage extends BasicPage {
 
         // Create radio buttons
         x1Button = new JToggleButton("x1");
-        x5Button = new JToggleButton("x5");
         x10Button = new JToggleButton("x10");
         x50Button = new JToggleButton("x50");
+        x100Button = new JToggleButton("x100");
 
         List<JToggleButton> speedButtons = new ArrayList<>();
         speedButtons.add(x1Button);
-        speedButtons.add(x5Button);
         speedButtons.add(x10Button);
         speedButtons.add(x50Button);
+        speedButtons.add(x100Button);
 
         ButtonGroup speedGroup = new ButtonGroup();
 
@@ -475,9 +475,9 @@ public class SimulationPage extends BasicPage {
 
         // Add ActionListeners for each
         x1Button.addActionListener(e -> setSimulationSpeed(1));
-        x5Button.addActionListener(e -> setSimulationSpeed(5));
         x10Button.addActionListener(e -> setSimulationSpeed(10));
         x50Button.addActionListener(e -> setSimulationSpeed(50));
+        x100Button.addActionListener(e -> setSimulationSpeed(100));
 
         // Add labels and buttons
         GridBagConstraints gbc = new GridBagConstraints();
@@ -489,11 +489,11 @@ public class SimulationPage extends BasicPage {
         gbc.gridx = 1; speedupPanel.add(Box.createRigidArea(new Dimension(5, 0)), gbc); // Spacer
         gbc.gridx = 2; speedupPanel.add(x1Button);
         gbc.gridx = 3; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 4; speedupPanel.add(x5Button);
+        gbc.gridx = 4; speedupPanel.add(x10Button);
         gbc.gridx = 5; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 6; speedupPanel.add(x10Button);
+        gbc.gridx = 6; speedupPanel.add(x50Button);
         gbc.gridx = 7; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 8; speedupPanel.add(x50Button);
+        gbc.gridx = 8; speedupPanel.add(x100Button);
 
         return speedupPanel;
     }
