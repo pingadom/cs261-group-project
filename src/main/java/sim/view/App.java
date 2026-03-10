@@ -1,6 +1,5 @@
 package sim.view;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import sim.core.viewmodel.SimController;
 import sim.view.pages.*;
 
@@ -23,6 +22,15 @@ public class App extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
+
+        java.net.URL imgPath = getClass().getResource("/images/airport_icon.png");
+        if (imgPath != null) {
+            ImageIcon icon = new ImageIcon(imgPath);
+            setIconImage(icon.getImage());
+        } else {
+            System.out.println("Path not found");
+        }
+
 
         // Controller
         SimController simController = new SimController();

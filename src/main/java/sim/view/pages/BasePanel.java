@@ -2,7 +2,6 @@ package sim.view.pages;
 
 import sim.view.App;
 import sim.view.components.StyledButton;
-import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

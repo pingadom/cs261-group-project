@@ -12,7 +12,6 @@ import sim.core.viewmodel.SimController;
 import sim.core.viewmodel.SimulationSetup;
 import sim.view.components.*;
 import sim.view.App;
-import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import java.awt.*;

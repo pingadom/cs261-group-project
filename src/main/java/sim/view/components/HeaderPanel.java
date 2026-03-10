@@ -22,5 +22,4 @@ public class HeaderPanel extends JPanel {
 
         add(titleLabel, BorderLayout.CENTER);
     }
-
 }

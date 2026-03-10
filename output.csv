@@ -1,12 +1,1 @@
 sim_time_s,arrival_queue,departure_queue,arrivals_generated,arrivals_processed,arrivals_diverted,departures_generated,departures_processed,departures_cancelled,total_arrival_delay_s,max_arrival_delay_s,total_departure_delay_s,max_departure_delay_s,avg_arrival_delay_s,avg_departure_delay_s
-60,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
-120,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
-180,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
-240,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
-300,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
-360,0,0,1,1,0,1,1,0,0,0,0,0,0.00,0.00
-420,0,0,1,1,0,1,1,0,0,0,0,0,0.00,0.00
-480,0,0,1,1,0,1,1,0,0,0,0,0,0.00,0.00
-540,0,0,1,1,0,1,1,0,0,0,0,0,0.00,0.00
-60,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
-120,0,0,0,0,0,1,1,0,0,0,0,0,0.00,0.00
