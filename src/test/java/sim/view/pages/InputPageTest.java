@@ -26,13 +26,15 @@ class InputPageTest {
         // Access private methods
         startSimulationMethod = InputPage.class.getDeclaredMethod("startSimulation");
         startSimulationMethod.setAccessible(true);
-        startSimulationMethod = InputPage.class.getDeclaredMethod("startSimulation");
-        startSimulationMethod.setAccessible(true);
+        addNewRunwayMethod = InputPage.class.getDeclaredMethod("addNewRunway");
+        addNewRunwayMethod.setAccessible(true);
+        deleteRunwayMethod = InputPage.class.getDeclaredMethod("deleteRunway");
+        deleteRunwayMethod.setAccessible(true);
     }
     
     @Test
-    // Check exeception from invalid number caught 
-    void handleInvalidNumber() throws Exception {
+    // Check exeception from textual inbound rate caught 
+    void handleTextInbound() throws Exception {
         inputPage.inboundRateField.setText("abc");
         inputPage.outboundRateField.setText("8");
         inputPage.durationField.setText("8");
@@ -40,33 +42,145 @@ class InputPageTest {
         // Test invalid does not throw an exception
         assertDoesNotThrow(() -> {
             startSimulationMethod.invoke(inputPage);
-        }, "Invalid numbers should be caught");
+        }, "Textual inbound should be caught");
+    }
+
+    @Test
+    // Check exeception from textual outbound rate caught 
+    void handleTextOutbound() throws Exception {
+        inputPage.inboundRateField.setText("8");
+        inputPage.outboundRateField.setText("abc");
+        inputPage.durationField.setText("8");
+        
+        // Test invalid does not throw an exception
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Textual outbound should be caught");
+    }
+
+    @Test
+    // Check exeception from textual duration caught 
+    void handleTextDuration() throws Exception {
+        inputPage.inboundRateField.setText("8");
+        inputPage.outboundRateField.setText("8");
+        inputPage.durationField.setText("abc");
+        
+        // Test invalid does not throw an exception
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Textual duration should be caught");
     }
     
     @Test
-    // Check exeception from non positive values caught  
-    void handleNonPositiveValues() throws Exception {
-        inputPage.inboundRateField.setText("0");
+    // Check exeception from negative inbound rate caught  
+    void handleNegativeInbound() throws Exception {
+        inputPage.inboundRateField.setText("-5");
+        inputPage.outboundRateField.setText("8");
+        inputPage.durationField.setText("8");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Negative inbound should be caught");
+    }
+
+    @Test
+    // Check exeception from negative outbound rate caught  
+    void handleNegativeOutbound() throws Exception {
+        inputPage.inboundRateField.setText("8");
         inputPage.outboundRateField.setText("-5");
+        inputPage.durationField.setText("8");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Negative outbound should be caught");
+    }
+    
+    @Test
+    // Check exeception from negative duration caught  
+    void handleNegativeDuration() throws Exception {
+        inputPage.inboundRateField.setText("8");
+        inputPage.outboundRateField.setText("8");
+        inputPage.durationField.setText("-5");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Negative duration should be caught");
+    }
+
+    @Test
+    // Check exeception from zero inbound rate caught  
+    void handleZeroInbound() throws Exception {
+        inputPage.inboundRateField.setText("0");
+        inputPage.outboundRateField.setText("8");
+        inputPage.durationField.setText("8");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Zero inbound should be caught");
+    }
+
+    @Test
+    // Check exeception from zero outbound rate caught  
+    void handleZeroOutbound() throws Exception {
+        inputPage.inboundRateField.setText("8");
+        inputPage.outboundRateField.setText("0");
+        inputPage.durationField.setText("8");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Zero outbound should be caught");
+    }
+    
+    @Test
+    // Check exeception from zero duration caught  
+    void handleZeroDuration() throws Exception {
+        inputPage.inboundRateField.setText("8");
+        inputPage.outboundRateField.setText("8");
         inputPage.durationField.setText("0");
         
         assertDoesNotThrow(() -> {
             startSimulationMethod.invoke(inputPage);
-        }, "Non positive values should be caught");
+        }, "Zero duration should be caught");
+    }
+
+
+    @Test
+    // Check exeception from empty inbound caught  
+    void handleEmptyInbound() throws Exception {
+        inputPage.inboundRateField.setText("");
+        inputPage.outboundRateField.setText("8");
+        inputPage.durationField.setText("8");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Empty inbound should be caught");
     }
     
     @Test
-    // Check exeception from empty fields caught  
-    void handleEmptyFields() throws Exception {
-        inputPage.inboundRateField.setText("");
+    // Check exeception from empty outbound caught  
+    void handleEmptyOutbound() throws Exception {
+        inputPage.inboundRateField.setText("8");
         inputPage.outboundRateField.setText("");
+        inputPage.durationField.setText("8");
+        
+        assertDoesNotThrow(() -> {
+            startSimulationMethod.invoke(inputPage);
+        }, "Empty outbound should be caught");
+    }
+
+    @Test
+    // Check exeception from empty duration caught  
+    void handleEmptyDuration() throws Exception {
+        inputPage.inboundRateField.setText("8");
+        inputPage.outboundRateField.setText("8");
         inputPage.durationField.setText("");
         
         assertDoesNotThrow(() -> {
             startSimulationMethod.invoke(inputPage);
-        }, "Empty fields should be caught");
-    }
-    
+        }, "Empty duration should be caught");
+    }    
+
+
     @Test
     // Check exeception from adding runways over max limit caught  
     void addOverMaxRunways() throws Exception {
