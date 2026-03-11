@@ -2,7 +2,6 @@ package sim.view.pages;
 
 import sim.view.App;
 import sim.view.components.StyledButton;
-import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,9 +13,9 @@ public class BasePanel extends BasicPage {
     // Instance variables
     protected final App app;
 
-    private final String mainTitle;
-    private final String[] columnNames;
-    private final String[][] data;
+    protected final String mainTitle;
+    protected final String[] columnNames;
+    protected final String[][] data;
 
     public BasePanel(App app, String mainTitle, String[] columnNames, String[][] data) {
         this.app = app;
@@ -56,7 +55,7 @@ public class BasePanel extends BasicPage {
         footerPanel.add(buttonBack);
     }
 
-    private JPanel createTitlePanel(String mainTitle) {
+    protected JPanel createTitlePanel(String mainTitle) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBackground(Color.white);

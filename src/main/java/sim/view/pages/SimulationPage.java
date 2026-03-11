@@ -6,7 +6,6 @@ import sim.core.viewmodel.SimController;
 import sim.core.viewmodel.SimState;
 import sim.view.App;
 import sim.view.components.*;
-import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -21,7 +20,7 @@ public class SimulationPage extends BasicPage {
     private static final int SPACER_SIZE_10 = 10;
     private static final int SPACER_SIZE_5 = 5;
     private static final int CONTROL_BUTTON_HEIGHT = 40;
-    private static final int CONTROL_BUTTON_WIDTH = 120;
+    private static final int CONTROL_BUTTON_WIDTH = 90;
 
     private static final int CONTENT_PANEL_HEIGHT = 520;
     private static final int STATS_PANEL_WIDTH = 200;
@@ -43,6 +42,7 @@ public class SimulationPage extends BasicPage {
     // UI Components
     StyledButton startPauseButton;
     StyledButton resetButton;
+    StyledButton finishButton;
     JLabel startPauseLabel;
     JPanel runwaysContainer;
 
@@ -56,9 +56,9 @@ public class SimulationPage extends BasicPage {
     StatsPanel arrivedStats;
 
     JToggleButton x1Button;
-    JToggleButton x5Button;
     JToggleButton x10Button;
     JToggleButton x50Button;
+    JToggleButton x100Button;
 
     JLabel timeHourLabel;
     JLabel timeMinuteLabel;
@@ -66,7 +66,7 @@ public class SimulationPage extends BasicPage {
 
     // Static variables
     private final Timer updateTimer;
-    int simulationSpeed = 1;
+    private boolean simulationEnded = false;
 
     String simHour;
     String simMinute;
@@ -81,15 +81,22 @@ public class SimulationPage extends BasicPage {
         customizeFooter();
 
         // Timer (for every second)
-        updateTimer = new Timer(1000, e -> refreshUI());
+        updateTimer = new Timer(500, e -> {
+            if (!simulationEnded) {
+                refreshUI();
+                checkSimulationEnded();
+            }
+        });
 
         // Detects when page becomes visible
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                refreshFromController();
-                refreshControlPanel();
-                startTimer();
+                if (!simulationEnded) {
+                    refreshFromController();
+                    refreshControlPanel();
+                    startTimer();
+                }
             }
 
             @Override
@@ -99,19 +106,19 @@ public class SimulationPage extends BasicPage {
         });
     }
 
-    // ================== REFRESH UI ==================
-    private void startTimer() {
-        if (!updateTimer.isRunning()) {
+    public void startTimer() {
+        if (updateTimer != null && !updateTimer.isRunning()) {
             updateTimer.start();
         }
     }
 
-    private void stopTimer() {
-        if (updateTimer.isRunning()) {
+    public void stopTimer() {
+        if (updateTimer != null && updateTimer.isRunning()) {
             updateTimer.stop();
         }
     }
 
+    // ================== REFRESH UI (PAGE SHOWN) ==================
     private void refreshFromController() {
         if (simController != null) {
             refreshRunwayDisplay();     // Refresh the runway display
@@ -124,8 +131,6 @@ public class SimulationPage extends BasicPage {
     private void refreshRunwayDisplay() {
         runwaysContainer.removeAll();
         runwayCards.clear();
-
-        // System.out.println("Refreshing display with " + runways.size() + " runways");
 
         // Use list of RunwayStates to pass in runways to each card
         List<RunwayState> runwayStates = simController.getStateSnapshot().getRunways();
@@ -146,9 +151,9 @@ public class SimulationPage extends BasicPage {
         if (speed == 1) {
             x1Button.setSelected(true);
             setButtonClicked(x1Button);
-        } else if (speed == 5) {
-            x5Button.setSelected(true);
-            setButtonClicked(x5Button);
+        } else if (speed == 100) {
+            x100Button.setSelected(true);
+            setButtonClicked(x100Button);
         } else if (speed == 10) {
             x10Button.setSelected(true);
             setButtonClicked(x10Button);
@@ -164,7 +169,7 @@ public class SimulationPage extends BasicPage {
         }
     }
 
-    // Methods that is called every second
+    // ================== REFRESH UI (EVERY SEC) ==================
     private void refreshUI() {
         // Refresh the runway card every second using recent data
         refreshRunwayDisplayEverySec();
@@ -235,6 +240,29 @@ public class SimulationPage extends BasicPage {
             timeSecondLabel.setText(simSecond);
         }
     }
+
+    // Checks if the simulation has ended
+    private void checkSimulationEnded() {
+        SimState state = simController.getStateSnapshot();
+        if (state == null) return;
+
+        double currentTime = state.getSimTimeSeconds();
+        //System.out.println("Current second is: " + currentTime);
+        long duration = simController.getDurationSim();
+
+        if (currentTime >= duration) {
+            simulationEnded = true;
+            updateTimer.stop();
+
+            // App shows the results page
+            app.showResultsPage();
+        }
+    }
+
+    public void resetSimulationEndedFlag() {
+        simulationEnded = false;
+    }
+
 
     // ================== CONTENT ==================
     // Content Panel
@@ -338,7 +366,7 @@ public class SimulationPage extends BasicPage {
         controlPanel.setMinimumSize(new Dimension(CENTER_COLUMN_WIDTH, 40));
 
         // Start button
-        startPauseButton = new StyledButton("", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
+        startPauseButton = new StyledButton("", Color.black, new Color(0x333333), Color.black, Color.black);
         startPauseButton.setLayout(new BorderLayout());
         startPauseButton.setFocusPainted(false);
         startPauseButton.setBackground(Color.black);
@@ -351,16 +379,23 @@ public class SimulationPage extends BasicPage {
         startPauseButton.add(startPauseLabel, BorderLayout.CENTER);
 
         // Reset button
-        resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
+        resetButton = new StyledButton("Reset", Color.black, new Color(0x333333), Color.black, Color.black);
         resetButton.setButtonSize(CONTROL_BUTTON_WIDTH, CONTROL_BUTTON_HEIGHT);
         resetButton.setFont(ARIAL_BOLD_16);
         resetButton.addActionListener(e -> resetSimulation());
+
+        // Finish button
+        finishButton = new StyledButton("Finish Sim.", new Color(0, 128, 128), new Color(0, 150, 150), new Color(0, 100, 100), new Color(0, 70, 70));
+        finishButton.setButtonSize(120, CONTROL_BUTTON_HEIGHT);
+        finishButton.setFont(ARIAL_BOLD_16);
+        finishButton.addActionListener(e -> finishSimulation());
 
         JPanel speedupPanel = createSpeedPanel();
 
         // Adding components into controlPanel
         addPanelXAxis(controlPanel, startPauseButton);
         addPanelXAxis(controlPanel, resetButton);
+        addPanelXAxis(controlPanel, finishButton);
         controlPanel.add(speedupPanel);
 
         return controlPanel;
@@ -368,7 +403,6 @@ public class SimulationPage extends BasicPage {
 
     // Functions
     private void toggleStartButton() {
-
         boolean isPaused = simController.getStateSnapshot().isPaused();
         if (!isPaused) {
             // Pause the simulation
@@ -381,10 +415,19 @@ public class SimulationPage extends BasicPage {
         }
     }
 
+    // Reset simulation
     private void resetSimulation() {
-        // Reset simulation
         simController.resetSimulation();
         startPauseLabel.setText("Pause");
+    }
+
+    // Finish the simulation
+    private void finishSimulation() {
+        if (simulationEnded) {
+            app.showResultsPage();
+            return;
+        }
+        simController.setSpeed(10000);
     }
 
     // Speedup Panel
@@ -398,15 +441,15 @@ public class SimulationPage extends BasicPage {
 
         // Create radio buttons
         x1Button = new JToggleButton("x1");
-        x5Button = new JToggleButton("x5");
         x10Button = new JToggleButton("x10");
         x50Button = new JToggleButton("x50");
+        x100Button = new JToggleButton("x100");
 
         List<JToggleButton> speedButtons = new ArrayList<>();
         speedButtons.add(x1Button);
-        speedButtons.add(x5Button);
         speedButtons.add(x10Button);
         speedButtons.add(x50Button);
+        speedButtons.add(x100Button);
 
         ButtonGroup speedGroup = new ButtonGroup();
 
@@ -432,9 +475,9 @@ public class SimulationPage extends BasicPage {
 
         // Add ActionListeners for each
         x1Button.addActionListener(e -> setSimulationSpeed(1));
-        x5Button.addActionListener(e -> setSimulationSpeed(5));
         x10Button.addActionListener(e -> setSimulationSpeed(10));
         x50Button.addActionListener(e -> setSimulationSpeed(50));
+        x100Button.addActionListener(e -> setSimulationSpeed(100));
 
         // Add labels and buttons
         GridBagConstraints gbc = new GridBagConstraints();
@@ -446,11 +489,11 @@ public class SimulationPage extends BasicPage {
         gbc.gridx = 1; speedupPanel.add(Box.createRigidArea(new Dimension(5, 0)), gbc); // Spacer
         gbc.gridx = 2; speedupPanel.add(x1Button);
         gbc.gridx = 3; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 4; speedupPanel.add(x5Button);
+        gbc.gridx = 4; speedupPanel.add(x10Button);
         gbc.gridx = 5; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 6; speedupPanel.add(x10Button);
+        gbc.gridx = 6; speedupPanel.add(x50Button);
         gbc.gridx = 7; speedupPanel.add(Box.createRigidArea(new Dimension(2, 0)), gbc); // Spacer
-        gbc.gridx = 8; speedupPanel.add(x50Button);
+        gbc.gridx = 8; speedupPanel.add(x100Button);
 
         return speedupPanel;
     }
@@ -466,8 +509,7 @@ public class SimulationPage extends BasicPage {
     }
 
     private void setSimulationSpeed(int speed) {
-        simulationSpeed = speed;
-        simController.setSpeed(simulationSpeed);    // Set the speed of simulation
+        simController.setSpeed(speed);    // Set the speed of simulation
     }
 
     // Runway Panel
@@ -589,10 +631,11 @@ public class SimulationPage extends BasicPage {
     }
 
     private void showHoldingPatternPage() {
-        //app.showResultsPage();
+        app.showHoldingPatternPage();
     }
 
     private void showTakeoffQueuePage() {
+        app.showTakeoffQueuePage();
     }
 
     private void showProcessedFlightsPage() {

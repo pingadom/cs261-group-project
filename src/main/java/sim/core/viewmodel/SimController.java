@@ -7,6 +7,8 @@ public final class SimController {
     private Engine engine;
     private Thread engineThread;
 
+    private long durationSim;
+
     public SimController(Engine engine) {
         this.engine = engine;
     }
@@ -43,10 +45,17 @@ public final class SimController {
         engine.updateRunwayStatus(runwayIdOrCode, status);
     }
 
-    public SimState getStateSnapshot() {
-        return engine.snapshot();
-    }
     public void setRunwayMode(String runwayIdOrCode, SimConfig.RunwayMode mode) {
         engine.updateRunwayMode(runwayIdOrCode, mode);
     }
+
+    public SimState getStateSnapshot() {
+        return engine.snapshot();
+    }
+
+    public void setDurationSim(long duration) { this.durationSim = duration; }
+
+    public long getDurationSim() { return durationSim; }
+
+
 }

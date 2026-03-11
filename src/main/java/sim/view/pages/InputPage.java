@@ -3,6 +3,7 @@ package sim.view.pages;
 
 import sim.config.SimConfig;
 import sim.config.SimConfigFactory;
+import sim.config.SimConfigWriter;
 import sim.core.Engine;
 import sim.core.EngineOptions;
 import sim.core.SimClock;
@@ -11,7 +12,6 @@ import sim.core.viewmodel.SimController;
 import sim.core.viewmodel.SimulationSetup;
 import sim.view.components.*;
 import sim.view.App;
-import sim.view.controllers.PageDataController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -139,13 +139,13 @@ public class InputPage extends BasicPage {
         gbc.insets = new Insets(5, 13, 2, 0);
 
         // Row 2: Inbound rate
-        inboundRateField = new JTextField("8");
+        inboundRateField = new JTextField("15");
         addFormField(panel, gbc, "Inbound Rate (aircraft/hour)", inboundRateField, 1);
         // Row 3: Outbound rate
-        outboundRateField = new JTextField("8");
+        outboundRateField = new JTextField("15");
         addFormField(panel, gbc, "Outbound Rate (aircraft/hour)", outboundRateField, 2);
         // Row 4: Duration
-        durationField = new JTextField("8");
+        durationField = new JTextField("2");
         addFormField(panel, gbc, "Duration (hour)", durationField, 3);
 
         return panel;
@@ -375,6 +375,33 @@ public class InputPage extends BasicPage {
                 return;
             }
 
+            // Check if exceeds maximum
+            if (inboundRate > 150) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Inbound Rate exceeds maximum",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            } else if (outboundRate > 150) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Outbound Rate exceeds maximum",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            } else if (duration > 100) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Duration exceeds maximum",
+                        "Configuration Incomplete",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
             // Debug
             System.out.println("Duration: " + duration);
             System.out.println("Inbound rate: " + inboundRate);
@@ -388,6 +415,7 @@ public class InputPage extends BasicPage {
             setup.setDepartureRatePerHour(outboundRate);
             setup.setMaxRunways(10);
             long seconds = duration * 3600L;
+            simController.setDurationSim(seconds);
             setup.setDurationSeconds(seconds);
             setup.setDtSeconds(1.0);
             setup.setSpeedMultiplier(1.0);
@@ -411,8 +439,7 @@ public class InputPage extends BasicPage {
             simController.startSimulation();
 
             // Output the results
-//            SimConfig cfg = SimConfigFactory.fromSetup(setup);
-//            SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
+            //SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
             // ======================================
 
             app.showSimulationPage();   // move to SimulationPage

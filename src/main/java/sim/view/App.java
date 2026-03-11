@@ -1,6 +1,5 @@
 package sim.view;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import sim.core.viewmodel.SimController;
 import sim.view.pages.*;
 
@@ -10,6 +9,8 @@ import java.awt.*;
 public class App extends JFrame {
     private final CardLayout cardLayout;
     private final JPanel mainPanel;
+
+    SimulationPage simulationPage;
 
     // Dimension constants
     private static final int APP_HEIGHT = 720;
@@ -22,6 +23,15 @@ public class App extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
+        java.net.URL imgPath = getClass().getResource("/images/airport_icon.png");
+        if (imgPath != null) {
+            ImageIcon icon = new ImageIcon(imgPath);
+            setIconImage(icon.getImage());
+        } else {
+            System.out.println("Path not found");
+        }
+
+
         // Controller
         SimController simController = new SimController();
 
@@ -31,11 +41,13 @@ public class App extends JFrame {
 
         // Create pages
         InputPage inputPage = new InputPage(this, simController);
-        SimulationPage simulationPage = new SimulationPage(this, simController);
+        simulationPage = new SimulationPage(this, simController);
         SimulationResultsPage resultsPage = new SimulationResultsPage(this, "Simulation Results", resultColumns, resultData);
         PostProcessingPage postProcessingPage = new PostProcessingPage(this, "Post Processing Flights", postProcessColumns, postProcessData);
         BasePanel soonArrivingPage = new BasePanel(this, "Flights Soon Arriving", soonArrivingColumns, soonArrivingData);
         BasePanel soonDepartingPage = new BasePanel(this, "Flights Soon Departing", soonDepartingColumns, soonDepartingData);
+        BasePanel holdingPatternPage = new BasePanel(this, "Holding Pattern", soonArrivingColumns, soonArrivingData);
+        BasePanel takeoffQueuePage = new BasePanel(this, "Take-off Queue", soonDepartingColumns, soonDepartingData);
 
         // Add pages to CardLayout
         mainPanel.add(inputPage, "INPUT");
@@ -44,9 +56,16 @@ public class App extends JFrame {
         mainPanel.add(postProcessingPage, "POST");
         mainPanel.add(soonArrivingPage, "SOON_ARRIVING");
         mainPanel.add(soonDepartingPage, "SOON_DEPARTING");
+        mainPanel.add(holdingPatternPage, "HOLDING_PATTERN");
+        mainPanel.add(takeoffQueuePage, "TAKEOFF_QUEUE");
 
         add(mainPanel);
         setVisible(true);
+    }
+
+    // Getters
+    public SimulationPage getSimulationPage() {
+        return simulationPage;
     }
 
 
@@ -81,6 +100,15 @@ public class App extends JFrame {
         cardLayout.show(mainPanel, "SOON_DEPARTING");
     }
 
+    public void showHoldingPatternPage() {
+        this.setTitle("Holding Pattern");
+        cardLayout.show(mainPanel, "HOLDING_PATTERN");
+    }
+
+    public void showTakeoffQueuePage() {
+        this.setTitle("Take-off Queue");
+        cardLayout.show(mainPanel, "TAKEOFF_QUEUE");
+    }
 
 
     // Sample data for results
