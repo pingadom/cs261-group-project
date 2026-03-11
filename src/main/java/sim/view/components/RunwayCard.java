@@ -96,7 +96,18 @@ public class RunwayCard extends JPanel {
         StyledButton runwayConfigButton = new StyledButton("Configure", new Color(70, 130, 180), new Color(100, 150, 200), new Color(70, 130, 180), new Color(70, 130, 180));
         runwayConfigButton.setButtonSize(90, 30);
         runwayConfigButton.setFont(new Font("Arial", Font.BOLD, 14));
-        runwayConfigButton.addActionListener(e -> createRunwayConfigPanel());
+        runwayConfigButton.addActionListener(e -> {
+            if (!simController.getStateSnapshot().isPaused()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "The system should be paused to configure runways",
+                        "Configuration Blocked",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            } else {
+                createRunwayConfigPanel();
+            }
+        });
 
         // Add labels and buttons
         add(modePanel);
