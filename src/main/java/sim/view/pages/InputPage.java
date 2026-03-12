@@ -230,6 +230,7 @@ public class InputPage extends BasicPage {
     private void addNewRunway() {
         if (numRunways < MAX_RUNWAYS) {
             removeRunwayButton.setEnabled(true);    // Enable the delete button once add
+            removeRunwayButton.setToolTipText("Remove the last runway");
 
             int newId = getNextAvailableId();
             String runwayId = RUNWAY_IDS[newId - 1];
@@ -253,7 +254,7 @@ public class InputPage extends BasicPage {
             // Disable the add button if number of runways reach max
             if (numRunways >= MAX_RUNWAYS) {
                 addRunwayButton.setEnabled(false);
-                // Add a tooltip
+                addRunwayButton.setToolTipText("Maximum number of runways reached (10)");
             }
         }
     }
@@ -281,6 +282,7 @@ public class InputPage extends BasicPage {
             }
 
             addRunwayButton.setEnabled(true);   // Enable the addRunwayButton
+            addRunwayButton.setToolTipText("Add a new runway");
             numRunways--;   // Decrement number of runways
 
             runwaysContainer.revalidate();
@@ -288,7 +290,7 @@ public class InputPage extends BasicPage {
 
             if (numRunways < 2) {
                 removeRunwayButton.setEnabled(false);
-                // Add a tooltip
+                removeRunwayButton.setToolTipText("Minimum one runway required");
             }
         }
     }

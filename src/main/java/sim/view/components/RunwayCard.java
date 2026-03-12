@@ -3,6 +3,7 @@ package sim.view.components;
 import sim.config.SimConfig;
 import sim.core.viewmodel.RunwayState;
 import sim.core.viewmodel.SimController;
+import sim.core.viewmodel.SimState;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -13,9 +14,14 @@ import java.util.List;
 public class RunwayCard extends JPanel {
     private final JPanel parentPanel;
 
-    private final JLabel statusLabel;
+    JPanel modePanel;
+    JPanel statusPanel;
+    JPanel aircraftPanel;
     private final JLabel modeLabel;
+    private final JLabel statusLabel;
     private final JLabel aircraftLabel;
+
+    private static final Color RUNWAY_CLOSED_COLOR = new Color(255, 160, 160);
 
     private final RunwayState runwayState;
     private List<RunwayState> runwayStates;
@@ -62,7 +68,10 @@ public class RunwayCard extends JPanel {
 
         Font labelFont = new Font("Arial", Font.BOLD, 14);
 
-        JPanel modePanel = new JPanel();
+        modePanel = new JPanel();
+        statusPanel = new JPanel();
+        aircraftPanel = new JPanel();
+
         modePanel.setPreferredSize(new Dimension(110, 80));
         modePanel.setBackground(Color.white);
         modePanel.setLayout(new BorderLayout());
@@ -72,7 +81,6 @@ public class RunwayCard extends JPanel {
         modeLabel.setHorizontalAlignment(JLabel.CENTER);
         modePanel.add(modeLabel, BorderLayout.CENTER);
 
-        JPanel statusPanel = new JPanel();
         statusPanel.setPreferredSize(new Dimension(220, 80));
         statusPanel.setBackground(Color.white);
         statusPanel.setLayout(new BorderLayout());
@@ -82,7 +90,6 @@ public class RunwayCard extends JPanel {
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         statusPanel.add(statusLabel, BorderLayout.CENTER);
 
-        JPanel aircraftPanel = new JPanel();
         aircraftPanel.setPreferredSize(new Dimension(110, 80));
         aircraftPanel.setBackground(Color.white);
         aircraftPanel.setLayout(new BorderLayout());
@@ -275,7 +282,8 @@ public class RunwayCard extends JPanel {
 
     private void updateStatusLabel() {
         // Get the most recent list of RunwayStates
-        this.runwayStates = simController.getStateSnapshot().getRunways();
+        SimState simState = simController.getStateSnapshot();
+        this.runwayStates = simState.getRunways();
 
         // Find the matching runwayState to update its Status
         for (RunwayState runwayState: runwayStates) {
@@ -295,6 +303,19 @@ public class RunwayCard extends JPanel {
         } else if (status == SimConfig.RunwayStatus.UNAVAIALABLE) {
             statusLabel.setText("Status: Unavailable");
         }
+
+        if (status == SimConfig.RunwayStatus.AVAILABLE) {
+            setBackgroundColour(Color.white);
+        } else {
+            setBackgroundColour(RUNWAY_CLOSED_COLOR);
+        }
+    }
+
+    private void setBackgroundColour(Color color) {
+        this.setBackground(color);
+        modePanel.setBackground(color);
+        statusPanel.setBackground(color);
+        aircraftPanel.setBackground(color);
     }
 
     public void updateOccupiedLabel() {

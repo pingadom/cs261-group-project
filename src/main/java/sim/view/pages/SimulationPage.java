@@ -138,6 +138,7 @@ public class SimulationPage extends BasicPage {
             RunwayCard card = new RunwayCard(runway, this, simController);
             runwayCards.add(card);
             runwaysContainer.add(card);
+            runwaysContainer.add(Box.createRigidArea(new Dimension(0, 5)));
         }
 
         // Refresh UI
