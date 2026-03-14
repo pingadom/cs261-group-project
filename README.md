@@ -11,10 +11,10 @@ Clone the repository and build the project using Maven:
 ```bash
 mvn clean install
 ```
-This will comile the source code, run the unit tests, and create an executable JAR file. 
+This will compile the source code, run the unit tests, and create an executable JAR file. 
 
 ## Execution
-The simulation runs with a visual GUI. You must provide the configuration file via the command line to start. To run the compiled simulation from the terminal and open the UI, use 
+The simulation runs with a visual GUI. You must provide the configuration file via the command line to start. To run the compiled simulation from the terminal and open the UI, use:
 ```bash
 java -jar target/airport-sim-prototype-1.0.0.jar --config config.json --duration 6000 --speed 100 --csv output.csv
 ```
