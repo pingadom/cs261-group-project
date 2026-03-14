@@ -375,6 +375,12 @@ public final class Engine {
     }
   }
 
+  /**
+   * Ensures the aircraft in the holding pattern all remain in the air, in order,
+   * with 1000 feet of vertical separation between all aircraft
+   * 
+   * @param @param holdingPattern FIFO data structure holding aircraft waiting to land
+   */
   private void adjustAltitude(HoldingPattern<Aircraft> holdingPattern) {
     int i = 1;
 
@@ -395,6 +401,16 @@ public final class Engine {
     }
   }
 
+  /** 
+   * Reduces the fuel level of all aircraft in the holding pattern.
+   * Fuel level is stored as a value representing how long the aircraft remains in the air.
+   * If an aircraft goes below 1200 seconds (20 mins) of fuel remaining, it is promoted to emergency status
+   * If an aircraft goes below 600 seconds (10 mins) of fuel remaining, it is diverted.
+   * 
+   * @param holdingPattern FIFO data structure holding aircraft waiting to land
+   * @param dtSeconds the number of seconds since this function has last been called
+   * @param postProcessing store of all departed, arrived, cancelled, or diverted planes
+   */
   private void fuelConsumption(
       HoldingPattern<Aircraft> holdingPattern,
       double dtSeconds,
