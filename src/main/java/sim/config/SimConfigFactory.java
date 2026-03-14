@@ -6,9 +6,32 @@ import sim.core.viewmodel.SimulationSetup;
 
 import java.util.ArrayList;
 
+/**
+ * Factory class for converting frontend/user setup objects into backend
+ * simulation configuration objects.
+ *
+ * <p>This class acts as a bridge between the setup entered by the user and the
+ * internal objects needed by the simulation engine. It:
+ * <ul>
+ *   <li>validates the supplied setup,</li>
+ *   <li>builds a {@link SimConfig} object,</li>
+ *   <li>builds matching {@link EngineOptions} for runtime execution.</li>
+ * </ul>
+ */
 public final class SimConfigFactory {
+    /** Prevents instantiation of this utility class. */
     private SimConfigFactory() {}
 
+    /**
+     * Builds a simulation configuration from a user-facing setup object.
+     *
+     * <p>This method copies the traffic settings and runway definitions from the
+     * provided setup into a backend {@link SimConfig} object.
+     *
+     * @param setup user-provided simulation setup
+     * @return validated simulation configuration
+     * @throws IllegalArgumentException if the setup is invalid
+     */
     public static SimConfig fromSetup(SimulationSetup setup) {
         validateSetup(setup);
 
@@ -29,6 +52,13 @@ public final class SimConfigFactory {
         return cfg;
     }
 
+    /**
+     * Builds runtime engine options from a user-facing setup object.
+     *
+     * @param setup user-provided simulation setup
+     * @return engine options derived from the setup
+     * @throws IllegalArgumentException if the setup is invalid
+     */
     public static EngineOptions engineOptionsFromSetup(SimulationSetup setup) {
         validateSetup(setup);
 
@@ -42,6 +72,22 @@ public final class SimConfigFactory {
         );
     }
 
+    /**
+     * Validates that a simulation setup contains all required values and that
+     * those values fall within acceptable limits.
+     *
+     * <p>This checks:
+     * <ul>
+     *   <li>that the setup exists,</li>
+     *   <li>that at least one runway is provided,</li>
+     *   <li>that runway count does not exceed the maximum,</li>
+     *   <li>that traffic rates and timing values are positive,</li>
+     *   <li>that each runway has an ID, mode, and status.</li>
+     * </ul>
+     *
+     * @param setup simulation setup to validate
+     * @throws IllegalArgumentException if any required value is missing or invalid
+     */
     private static void validateSetup(SimulationSetup setup) {
         if (setup == null) {
             throw new IllegalArgumentException("Simulation setup must not be null.");
