@@ -126,7 +126,7 @@ public class RunwayInputPanel extends JPanel {
                 }
                 case "Unavailable" -> {
                     //runway.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
-                    runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
+                    runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAILABLE);
 
                 }
             }

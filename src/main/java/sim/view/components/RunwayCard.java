@@ -162,7 +162,7 @@ public class RunwayCard extends JPanel {
             statusCombo.setSelectedIndex(2);
         } else if (status == SimConfig.RunwayStatus.FAILURE) {
             statusCombo.setSelectedIndex(3);
-        } else if (status == SimConfig.RunwayStatus.UNAVAIALABLE) {
+        } else if (status == SimConfig.RunwayStatus.UNAVAILABLE) {
             statusCombo.setSelectedIndex(4);
         }
 
@@ -214,7 +214,7 @@ public class RunwayCard extends JPanel {
                     case "Runway Inspection" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.INSPECTION);
                     case "Snow Clearance" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.SNOW);
                     case "Failure" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.FAILURE);
-                    case "Unavailable" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.UNAVAIALABLE);
+                    case "Unavailable" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.UNAVAILABLE);
                 }
             }
             //status = runwayState.getStatus();
@@ -281,7 +281,7 @@ public class RunwayCard extends JPanel {
             statusLabel.setText("Status: Snow Clearance");
         } else if (status == SimConfig.RunwayStatus.FAILURE) {
             statusLabel.setText("Status: Failure");
-        } else if (status == SimConfig.RunwayStatus.UNAVAIALABLE) {
+        } else if (status == SimConfig.RunwayStatus.UNAVAILABLE) {
             statusLabel.setText("Status: Unavailable");
         }
     }

@@ -82,6 +82,6 @@ public final class SimConfig {
     FAILURE,
 
     /** Runway is unavailable for general use. */
-    UNAVAIALABLE
+    UNAVAILABLE
   }
 }
