@@ -37,8 +37,9 @@ public class LinkedListElement<E> {
         return 1;
     }
 
+    
     public int setPriority(int _priority) {
-        // probably want more than 0/1 later, but keep it for now
+        // Priority of the element determines whether the aircraft is considered an emergency or not
         if (_priority == 0 || _priority == 1) {
             priority = _priority;
             return 1;

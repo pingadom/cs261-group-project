@@ -14,6 +14,7 @@ public class Aircraft {
     private int fuel;
     private String emergency;
 
+   
     public Aircraft(String _callsign,String _operator,String _origin,LocalTime _time,int _altitude,int _groundSpeed,int _fuel,String _emergency){
         callsign = _callsign;
         operator = _operator;
