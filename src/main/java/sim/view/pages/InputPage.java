@@ -20,8 +20,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The input configuration page where users set up simulation parameters and runways.
+ *
+ * <p>
+ *     This page allows users to:
+ *     <ul>
+ *          <li>Configure inbound/outbound rates and simulation duration</li>
+ *          <li>Add and remove runways dynamically (up to 10)</li>
+ *          <li>Configure individual runway settings</li>
+ *          <li>Start the simulation with specified parameters</li>
+ *     </ul>
+ * </p>
+ *
+ * @see BasicPage
+ * @see SimController
+ * @see RunwaySetup
+ */
 public class InputPage extends BasicPage {
-    // Constants
+    // ===================== CONSTANTS =====================
     private static final int SPACER_SIZE_10 = 10;
     private static final int FORM_CONTENT_WIDTH = 640;
     private final int MAX_RUNWAYS = 10;
@@ -37,19 +54,18 @@ public class InputPage extends BasicPage {
             "RWY-09",
             "RWY-10"
     };
-
     private static final Color BACKGROUND_FORM_COLOR = new Color(100, 150, 200);
     private static final Font ARIAL_BOLD_14 = new Font("Arial", Font.BOLD, 14);
     private static final Font ARIAL_BOLD_18 = new Font("Arial", Font.BOLD, 18);
     private static final Font ARIAL_PLAIN_18 = new Font("Arial", Font.PLAIN, 18);
 
-    // Instance variables
+    // ===================== INSTANCE VARIABLES =====================
     private final App app;
     private final SimController simController;
     private final Map<Integer, RunwayInputPanel> runwayPanels = new HashMap<>();
     private final List<RunwaySetup> runwaySetups = new ArrayList<>();
 
-    // UI Components
+    // ===================== UI COMPONENTS =====================
     JPanel runwaysContainer;
     StyledButton addRunwayButton;
     StyledButton removeRunwayButton;
@@ -57,10 +73,17 @@ public class InputPage extends BasicPage {
     JTextField outboundRateField;
     JTextField durationField;
 
-    // Static variables
+    // ===================== STATE VARIABLES =====================
     int numRunways = 1;
 
-    // Constructor
+    // ===================== CONSTRUCTOR =====================
+
+    /**
+     * Constructs a new InputPage with the specified application and controller references.
+     *
+     * @param app the main application instance for navigation
+     * @param simController the controller for managing simulation state
+     */
     public InputPage(App app, SimController simController) {
         this.app = app;
         this.simController = simController;
@@ -68,13 +91,26 @@ public class InputPage extends BasicPage {
         buildPage(createContentPanel());
     }
 
-    // Content Panel
+    // ===================== CONTENT PANEL CREATION =====================
+
+    /**
+     * Creates the main content panel containing all input forms and controls
+     * The panel uses a vertical BoxLayout to stack:
+     * <ol>
+     *     <li>Title panel</li>
+     *     <li>Simulation configuration panel</li>
+     *     <li>Runway configuration panel</li>
+     *     <li>Start simulation button</li>
+     * </ol>
+     *
+     * @return the complete content panel for the input page
+     */
     @Override
     protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel();
         contentPanel.setBackground(Color.white);
 
-        // formPanel
+        // Main form container
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setPreferredSize(new Dimension(700, 500));
@@ -84,10 +120,11 @@ public class InputPage extends BasicPage {
                 BorderFactory.createEmptyBorder(10, 30, 10, 30)
         ));
 
-        JPanel titlePanel = createTitlePanel();     // 1. TITLE PANEL
-        JPanel simConfigPanel = createSimConfigPanel();     // 2. SIMULATION CONFIG PANEL
+        // Create and assemble all sub-panels
+        JPanel titlePanel = createTitlePanel();                 // 1. TITLE PANEL
+        JPanel simConfigPanel = createSimConfigPanel();         // 2. SIMULATION CONFIG PANEL
         JPanel runwayConfigPanel = createRunwayConfigPanel();   // 3. RUNWAY CONFIG PANEL
-        JPanel startSimPanel = createStartSimPanel();   // 4. START SIMULATION BUTTON
+        JPanel startSimPanel = createStartSimPanel();           // 4. START SIMULATION BUTTON
 
         formPanel.add(titlePanel);
         formPanel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
@@ -97,12 +134,15 @@ public class InputPage extends BasicPage {
         formPanel.add(Box.createRigidArea(new Dimension(0, SPACER_SIZE_10)));
         formPanel.add(startSimPanel);
 
-        // add formPanel into the contentPanel
         contentPanel.add(formPanel);
         return contentPanel;
     }
 
-    // TITLE Panel
+    /**
+     * Creates the title panel for the input page.
+     *
+     * @return a panel containing the page title
+     */
     private JPanel createTitlePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setMaximumSize(new Dimension(500, 70));
@@ -119,7 +159,12 @@ public class InputPage extends BasicPage {
     }
 
 
-    // SIMULATION CONFIG Panel
+    /**
+     * Creates the simulation configuration panel containing input fields for
+     * inbound rate, outbound rate, and duration
+     *
+     * @return a panel with simulation parameter input fields
+     */
     private JPanel createSimConfigPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(BACKGROUND_FORM_COLOR);
@@ -141,9 +186,11 @@ public class InputPage extends BasicPage {
         // Row 2: Inbound rate
         inboundRateField = new JTextField("15");
         addFormField(panel, gbc, "Inbound Rate (aircraft/hour)", inboundRateField, 1);
+
         // Row 3: Outbound rate
         outboundRateField = new JTextField("15");
         addFormField(panel, gbc, "Outbound Rate (aircraft/hour)", outboundRateField, 2);
+
         // Row 4: Duration
         durationField = new JTextField("2");
         addFormField(panel, gbc, "Duration (hour)", durationField, 3);
@@ -151,6 +198,17 @@ public class InputPage extends BasicPage {
         return panel;
     }
 
+    /**
+     * Helper method to add a labelled text field to a GridBagLayout container
+     * This method creates a label and a text field in adjacent columns at the specified row,
+     * with appropriate weight distribution.
+     *
+     * @param container the panel to which the form field will be added
+     * @param gbc the GridBagConstraints object
+     * @param labelText the text to display on label
+     * @param field the JTextField component to add
+     * @param y the grid row position
+     */
     private void addFormField(JPanel container, GridBagConstraints gbc, String labelText, JTextField field, int y) {
         // Label
         gbc.gridx = 0; gbc.gridy = y;
@@ -169,14 +227,23 @@ public class InputPage extends BasicPage {
     }
 
 
-    // RUNWAY CONFIG Panel
+    /**
+     * Creates the runway configuration panel that allows users to dynamically
+     * add and remove runways. The panel includes:
+     * <ul>
+     *     <li>A title with "Add" and "Remove" buttons</li>
+     *     <li>A scrollable container for runway input panels</li>
+     * </ul>
+     *
+     * @return a panel for configuring runways
+     */
     private JPanel createRunwayConfigPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(BACKGROUND_FORM_COLOR);
         panel.setPreferredSize(new Dimension(FORM_CONTENT_WIDTH, 270));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        // TITLE Panel
+        // title Panel
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(BACKGROUND_FORM_COLOR);
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
@@ -203,7 +270,7 @@ public class InputPage extends BasicPage {
         titlePanel.add(Box.createRigidArea(new Dimension(SPACER_SIZE_10, 0)));
         titlePanel.add(removeRunwayButton);
 
-        // RUNWAY PANEL
+        // runway Panel
         runwaysContainer = new JPanel();
         runwaysContainer.setLayout(new BoxLayout(runwaysContainer, BoxLayout.Y_AXIS));
 
@@ -226,7 +293,19 @@ public class InputPage extends BasicPage {
         return panel;
     }
 
-    // Runway addition
+    /**
+     * Adds a new runway to the configuration
+     *
+     * <p>
+     *     This method:
+     *     <ul>
+     *         <li>Checks if the maximum number of runway has not been reached</li>
+     *         <li>Generates the new available runway ID</li>
+     *         <li>Creates a new {@link RunwaySetup} object</li>
+     *         <li>Creates and adds a corresponding {@link RunwayInputPanel} to the UI</li>
+     *     </ul>
+     * </p>
+     */
     private void addNewRunway() {
         if (numRunways < MAX_RUNWAYS) {
             removeRunwayButton.setEnabled(true);    // Enable the delete button once add
@@ -241,8 +320,6 @@ public class InputPage extends BasicPage {
             // Creating the RunwayPanel for that runway
             RunwayInputPanel panel = new RunwayInputPanel(runwaySetup);
             runwayPanels.put(newId, panel);
-
-            // JPanel newRunway = createRunwayPanel(numRunways);
             runwaysContainer.add(panel);
 
             numRunways++;
@@ -259,7 +336,22 @@ public class InputPage extends BasicPage {
         }
     }
 
-    // Runway deletion
+    /**
+     * Removes the specified runway from the configuration.
+     *
+     * <p>
+     *     This method:
+     *     <ul>
+     *         <li>Ensures at least one runway remains</li>
+     *         <li>Removes the runway panel from the UI container</li>
+     *         <li>Removes the runway from the {@link #runwayPanels} map</li>
+     *         <li>Removes the corresponding {@link RunwaySetup} from the list</li>
+     *         <li>Updates button states and tooltips based on the new runway count</li>
+     *     </ul>
+     * </p>
+     *
+     * @param id the numeric identifier of the runway to remove
+     */
     private void deleteRunway(int id) {
         if (numRunways > 1) {
             RunwayInputPanel runwayRemoved = runwayPanels.get(id); // Remove and get the highest ID RunwayPanel
@@ -285,9 +377,11 @@ public class InputPage extends BasicPage {
             addRunwayButton.setToolTipText("Add a new runway");
             numRunways--;   // Decrement number of runways
 
+            // Refresh the UI
             runwaysContainer.revalidate();
             runwaysContainer.repaint();
 
+            // Update the button state
             if (numRunways < 2) {
                 removeRunwayButton.setEnabled(false);
                 removeRunwayButton.setToolTipText("Minimum one runway required");
@@ -295,7 +389,18 @@ public class InputPage extends BasicPage {
         }
     }
 
-    // Getting the next available runway ID
+    /**
+     * Finds the next available numeric ID for a new runway.
+     * <p>
+     *     IDs range from 1 to 10 and correspond to the {@link #RUNWAY_IDS} array.
+     *     An ID is considered available if no existing {@link RunwaySetup} has that ID.
+     * </p>
+     *
+     * This method ensures that IDs are reused when runways are deleted, maintaining a compact sequence
+     *
+     * @return the smallest unused runway ID, or -1 if no IDs are available (should only happen if
+     * {@link #MAX_RUNWAYS} is exceeded)
+     */
     private int getNextAvailableId() {
         for (int id = 1; id <= MAX_RUNWAYS; id++) {
             boolean found = false;
@@ -316,7 +421,11 @@ public class InputPage extends BasicPage {
     }
 
 
-    // Debug - Function to print entry of Runway
+    /**
+     * Prints the current list of runway configurations to the console for debugging.
+     * This method is useful for verifying that runway configurations are being created
+     * and removed correctly during development.
+     */
     private void printRunwayObjects() {
         System.out.println("=== Runway List Contents ===");
         for (RunwaySetup runway : runwaySetups) {
@@ -332,13 +441,23 @@ public class InputPage extends BasicPage {
     }
 
 
-    // START SIM Panel
+    /**
+     * Creates the panel containing the "Start Simulation" button.
+     *
+     * @return a JPanel containing the styled start button
+     * */
     private JPanel createStartSimPanel()  {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panel.setBackground(BACKGROUND_FORM_COLOR);
         panel.setMinimumSize(new Dimension(FORM_CONTENT_WIDTH, 30));
 
-        StyledButton button = new StyledButton("Start Simulation", Color.black, new Color(0x333333), new Color(0x555555), Color.black);
+        StyledButton button = new StyledButton(
+                "Start Simulation",
+                Color.black,
+                new Color(0x333333),
+                new Color(0x555555),
+                Color.black
+        );
         button.setFont(ARIAL_BOLD_18);
         button.setButtonSize(200, 30);
         button.addActionListener(e -> startSimulation());
@@ -347,116 +466,170 @@ public class InputPage extends BasicPage {
         return panel;
     }
 
-    // When the Submit Button is clicked
+
+    // ===================== SIMULATION INITIALISATION =====================
+
+    private static final int MAX_RATE = 150;
+    private static final int MAX_DURATION = 100;
+    private static final int MIN_VALUE = 1;
+
+    /**
+     * Validate user inputs and initialises a new simulation
+     *
+     * <p>
+     *     This method performs the following steps:
+     *     <ol>
+     *         <li>Validates at least one runway is available</li>
+     *         <li>Parses and validates input fields (inbound, outbound, duration)</li>
+     *         <li>Checks values against the defined minimum and maximum thresholds</li>
+     *         <li>Creates a {@link SimulationSetup} object with the configured parameters</li>
+     *         <li>Adds all configured runways to the setup</li>
+     *         <li>Initialises the simulation engine and controller</li>
+     *         <li>Navigates to the simulation page</li>
+     *     </ol>
+     * </p>
+     *
+     * @throws NumberFormatException if input fields contain non-numeric values
+     */
     private void startSimulation() {
         try {
-            // Check mode and status for each runway configured
+            // Step 1: Validate runway availability
             if (!atLeastRunwayAvailable()) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "At least one runway must be available",
-                        "Configuration Incomplete",
-                        JOptionPane.WARNING_MESSAGE
+                showWarningDialog(
+                        "At least one runway must be available"
                 );
                 return;
             }
 
-            // Get the text from fields and convert to integers
+            // Step 2: Parse input values
             int inboundRate = Integer.parseInt(inboundRateField.getText());
             int outboundRate = Integer.parseInt(outboundRateField.getText());
             int duration = Integer.parseInt(durationField.getText());
 
-            // Check if negative value
-            if (inboundRate < 1 || outboundRate < 1 || duration < 1) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Each field should be at least 1",
-                        "Configuration Incomplete",
-                        JOptionPane.WARNING_MESSAGE
-                );
+            // Step 3: Validate numeric ranges
+            if (!validateInputRanges(inboundRate, outboundRate, duration)) {
                 return;
             }
 
-            // Check if exceeds maximum
-            if (inboundRate > 150) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Inbound Rate exceeds maximum",
-                        "Configuration Incomplete",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            } else if (outboundRate > 150) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Outbound Rate exceeds maximum",
-                        "Configuration Incomplete",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            } else if (duration > 100) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Duration exceeds maximum",
-                        "Configuration Incomplete",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                return;
-            }
-
-            // Debug
-            System.out.println("Duration: " + duration);
-            System.out.println("Inbound rate: " + inboundRate);
-            System.out.println("Outbound rate: " + outboundRate);
-            System.out.println();
+            // Step 4: Debug output
+            printSimulationParameters(inboundRate, outboundRate, duration);
             printRunwayObjects();
 
-            // ============ SIMULATION SETUP ============
-            SimulationSetup setup = new SimulationSetup();
-            setup.setArrivalRatePerHour(inboundRate);
-            setup.setDepartureRatePerHour(outboundRate);
-            setup.setMaxRunways(10);
-            long seconds = duration * 3600L;
-            simController.setDurationSim(seconds);
-            setup.setDurationSeconds(seconds);
-            setup.setDtSeconds(1.0);
-            setup.setSpeedMultiplier(1.0);
-            setup.setSeed(42L);
-            setup.setPrintEverySeconds(60);
-            setup.setCsvPath(java.nio.file.Path.of("output.csv"));
+            // Step 5: Create and configure simulation setup
+            SimulationSetup setup = createSimulationSetup(inboundRate, outboundRate, duration);
 
-            // Adding runways
-            for (RunwaySetup runwaySetup : runwaySetups) {
-                setup.addRunway(runwaySetup);
-            }
+            // Step 6: Initialise engine and start simulation
+            initialiseAndStartEngine(setup);
 
-            // Simulation Configuration
-            SimConfig cfg = SimConfigFactory.fromSetup(setup);
-            EngineOptions opts = SimConfigFactory.engineOptionsFromSetup(setup);
-            SimClock clock = new SimClock(setup.getDtSeconds());
-
-            // Simulation Engine
-            Engine engine = new Engine(cfg, opts, clock);
-            simController.setEngine(engine);
-            simController.startSimulation();
-
-            // Output the results
-            //SimConfigWriter.write(java.nio.file.Path.of("config.json"), cfg);
-            // ======================================
-
-            app.showSimulationPage();   // move to SimulationPage
+            // Step 7: Navigate to simulation page
+            app.showSimulationPage();
 
         } catch (NumberFormatException ex) {
-            // Handle case
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Please enter a valid number.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
+            showErrorDialog(
+                    "Please enter a valid number."
             );
         }
     }
 
+    /**
+     * Validates that all input values are within acceptable ranges
+     *
+     * @param inboundRate the inbound aircraft rate per hour
+     * @param outboundRate the outbound aircraft rate per hour
+     * @param duration the simulation duration in hours
+     * @return true if all values are valid, false otherwise
+     * */
+    private boolean validateInputRanges(int inboundRate, int outboundRate, int duration) {
+        // Check minimum values
+        if (inboundRate < MIN_VALUE || outboundRate < MIN_VALUE || duration < MIN_VALUE) {
+            showWarningDialog(
+                    "Each field should be at least " + MIN_VALUE
+            );
+            return false;
+        }
+
+        // Check maximum values
+        if (inboundRate > MAX_RATE) {
+            showWarningDialog(
+                    "Inbound Rate exceeds maximum (" + MAX_RATE + ")"
+            );
+            return false;
+        }
+
+        if (outboundRate > MAX_RATE) {
+            showWarningDialog(
+                    "Outbound Rate exceeds maximum (" + MAX_RATE + ")"
+            );
+            return false;
+        }
+
+        if (duration > MAX_DURATION) {
+            showWarningDialog(
+                    "Duration exceeds maximum (" + MAX_DURATION + ")"
+            );
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Creates and configures a SimulationSetup object with the provided parameters.
+     *
+     * @param inboundRate the inbound aircraft rate per hour
+     * @param outboundRate the outbound aircraft rate per hour
+     * @param duration the simulation duration in hours
+     * @return a filly configured SimulationSetup instance
+     * */
+    private SimulationSetup createSimulationSetup(int inboundRate, int outboundRate, int duration) {
+        SimulationSetup setup = new SimulationSetup();
+
+        // Basic Parameters
+        setup.setArrivalRatePerHour(inboundRate);
+        setup.setDepartureRatePerHour(outboundRate);
+        setup.setMaxRunways(MAX_RUNWAYS);
+
+        // Time parameters
+        long seconds = duration * 3600L;
+        simController.setDurationSim(seconds);
+        setup.setDurationSeconds(seconds);
+        setup.setDtSeconds(1.0);
+
+        setup.setSpeedMultiplier(1.0);
+        setup.setSeed(42L);
+        setup.setPrintEverySeconds(60);
+        setup.setCsvPath(java.nio.file.Path.of("output.csv"));
+
+        // Adding configured runways
+        for (RunwaySetup runwaySetup : runwaySetups) {
+            setup.addRunway(runwaySetup);
+        }
+
+        return setup;
+    }
+
+    /**
+     * Initializes the simulation engine and starts the simulation
+     *
+     * @param setup the configured SimulationSetup object
+     * */
+    private void initialiseAndStartEngine(SimulationSetup setup) {
+        // Create configuration objects
+        SimConfig cfg = SimConfigFactory.fromSetup(setup);
+        EngineOptions opts = SimConfigFactory.engineOptionsFromSetup(setup);
+        SimClock clock = new SimClock(setup.getDtSeconds());
+
+        // Create and start engine
+        Engine engine = new Engine(cfg, opts, clock);
+        simController.setEngine(engine);
+        simController.startSimulation();
+    }
+
+
+    /**
+     * Checks whether at least one configured runway has AVAILABLE status.
+     *
+     * @return true if at least one runway is available, false otherwise
+     */
     private boolean atLeastRunwayAvailable() {
         for (RunwaySetup runwaySetup : runwaySetups) {
             if (runwaySetup.getStatus() == SimConfig.RunwayStatus.AVAILABLE) {
@@ -464,6 +637,50 @@ public class InputPage extends BasicPage {
             }
         }
         return false;
+    }
+
+    /**
+     * Shows a warning dialog with the specified message and title
+     *
+     * @param message the message to display
+     */
+    private void showWarningDialog(String message) {
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Configuration Incomplete",
+                JOptionPane.WARNING_MESSAGE
+        );
+    }
+
+    /**
+     * Shows a warning dialog with the specified message
+     *
+     * @param message the message to display
+     */
+    private void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+
+    /**
+     * Prints the simulation parameters to the console for debugging purposes
+     *
+     * @param inboundRate the inbound aircraft rate per hour
+     * @param outboundRate the outbound aircraft rate per hour
+     * @param duration the simulation duration in hours
+     * */
+    private void printSimulationParameters(int inboundRate, int outboundRate, int duration) {
+        System.out.println("=== Simulation Parameters ===");
+        System.out.println("Duration: " + duration + "hours");
+        System.out.println("Inbound rate: " + inboundRate + "aircraft/hour");
+        System.out.println("Outbound rate: " + outboundRate + "aircraft/hour");
+        System.out.println("Runways configured: " + numRunways);
+        System.out.println("=============================");
     }
 
 }

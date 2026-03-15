@@ -2,27 +2,51 @@ package sim.view.components;
 
 import sim.config.SimConfig;
 import sim.core.viewmodel.RunwaySetup;
-import sim.model.stores.Runway;
 
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A panel that allows users to configure an individual runway's mode and status.
+ * This component is used in the Input page to let users set up each runway's
+ * operational parameters before starting a simulation.
+ * Any changes made to the dropdown selections are immediately reflected in the associated {@link RunwaySetup} object.
+ *
+ * @see RunwaySetup
+ * @see sim.config.SimConfig.RunwayMode
+ * @see sim.config.SimConfig.RunwayStatus
+ */
 public class RunwayInputPanel extends JPanel {
-    //private final Runway runway;
     private final RunwaySetup runwaySetup;
     private final String runwayId;
 
     private JComboBox<String> modeCombo;
     private JComboBox<String> statusCombo;
 
+    // ===================== CONSTRUCTOR =====================
+
+    /**
+     * Constructs a new RunwayInputPanel for the specified runway setup.
+     *
+     * @param runwaySetup the runway object to display and modify
+     */
     public RunwayInputPanel(RunwaySetup runwaySetup) {
-        //this.runway = runway;
         this.runwaySetup = runwaySetup;
         this.runwayId = runwaySetup.getId();
 
         setupUI();
     }
 
+    // ===================== UI INITIALISATION =====================
+
+    /**
+     * Initialises the user interface components.
+     * Creates a vertically stacked layout with:
+     * <ol>
+     *     <li>A title panel showing the runway ID</li>
+     *     <li>An options panel with mode and status dropdowns</li>
+     * </ol>
+     */
     private void setupUI() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Color.white);
@@ -81,54 +105,40 @@ public class RunwayInputPanel extends JPanel {
         add(optionPanel);
     }
 
+    // ===================== EVENT HANDLERS =====================
+
+    /**
+     * Updates the runway mode in the associated {@link RunwaySetup} object
+     * based on the current selection in the mode combo box.
+     * This method is called whenever the user selects a different mode from the dropdown.
+     */
     private void updateMode() {
         String selectedMode = (String) modeCombo.getSelectedItem();
 
         if (selectedMode != null) {
             switch (selectedMode) {
-                case "Landing Only" -> {
-                    //runway.setMode(SimConfig.RunwayMode.LANDING);
-                    runwaySetup.setMode(SimConfig.RunwayMode.LANDING);
-                }
-                case "Takeoff Only" -> {
-                    //runway.setMode(SimConfig.RunwayMode.TAKEOFF);
-                    runwaySetup.setMode(SimConfig.RunwayMode.TAKEOFF);
-                }
-                case "Mixed Mode" -> {
-                    //runway.setMode(SimConfig.RunwayMode.MIXED);
-                    runwaySetup.setMode(SimConfig.RunwayMode.MIXED);
-                    ;
-                }
+                case "Landing Only" -> runwaySetup.setMode(SimConfig.RunwayMode.LANDING);
+                case "Takeoff Only" -> runwaySetup.setMode(SimConfig.RunwayMode.TAKEOFF);
+                case "Mixed Mode" -> runwaySetup.setMode(SimConfig.RunwayMode.MIXED);
             }
         }
     }
 
+    /**
+     * Updates the runway status in the associated {@link RunwaySetup} object
+     * based on the current selection in the status combo box.
+     * This method is called whenever the user selects a different status from the dropdown.
+     */
     private void updateStatus() {
         String selectedStatus = (String) statusCombo.getSelectedItem();
 
         if (selectedStatus != null) {
             switch (selectedStatus) {
-                case "Available" -> {
-                    //runway.setStatus(SimConfig.RunwayStatus.AVAILABLE);
-                    runwaySetup.setStatus(SimConfig.RunwayStatus.AVAILABLE);
-                }
-                case "Runway Inspection" -> {
-                    //runway.setStatus(SimConfig.RunwayStatus.INSPECTION);
-                    runwaySetup.setStatus(SimConfig.RunwayStatus.INSPECTION);
-                }
-                case "Snow Clearance" -> {
-                    //runway.setStatus(SimConfig.RunwayStatus.SNOW);
-                    runwaySetup.setStatus(SimConfig.RunwayStatus.SNOW);
-                }
-                case "Failure" -> {
-                    //runway.setStatus(SimConfig.RunwayStatus.FAILURE);
-                    runwaySetup.setStatus(SimConfig.RunwayStatus.FAILURE);
-                }
-                case "Unavailable" -> {
-                    //runway.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
-                    runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
-
-                }
+                case "Available" -> runwaySetup.setStatus(SimConfig.RunwayStatus.AVAILABLE);
+                case "Runway Inspection" -> runwaySetup.setStatus(SimConfig.RunwayStatus.INSPECTION);
+                case "Snow Clearance" -> runwaySetup.setStatus(SimConfig.RunwayStatus.SNOW);
+                case "Failure" -> runwaySetup.setStatus(SimConfig.RunwayStatus.FAILURE);
+                case "Unavailable" -> runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
             }
         }
     }

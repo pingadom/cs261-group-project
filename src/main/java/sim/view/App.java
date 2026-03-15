@@ -6,16 +6,29 @@ import sim.view.pages.*;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Main application window for the Airport Simulator.
+ * Manages the CardLayout navigation between different pages and holds the main controller
+ */
 public class App extends JFrame {
+
+    /** Layout manager for switching between different application pages */
     private final CardLayout cardLayout;
+
+    /** Main container panel that holds all pages using CardLayout */
     private final JPanel mainPanel;
 
-    SimulationPage simulationPage;
+    SimulationPage simulationPage;  // Reference to the simulation page
 
-    // Dimension constants
+    // Constants
     private static final int APP_HEIGHT = 720;
     private static final int APP_WIDTH = 1280;
 
+    /**
+     * Constructs the main application window and initialises all pages.
+     * Set up the window properties, loads the app. icon, creates the simulation controller,
+     * and initialises all pages before adding them to the CardLayout for navigation.
+     */
     public App() {
         setTitle("Airport Simulator");
         setSize(APP_WIDTH, APP_HEIGHT);
@@ -23,6 +36,7 @@ public class App extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
+        // Load and set application icon
         java.net.URL imgPath = getClass().getResource("/images/airport_icon.png");
         if (imgPath != null) {
             ImageIcon icon = new ImageIcon(imgPath);
@@ -31,15 +45,14 @@ public class App extends JFrame {
             System.out.println("Path not found");
         }
 
-
-        // Controller
+        // Initialise simulation controller
         SimController simController = new SimController();
 
-        // Setup CardLayout
+        // Setup CardLayout for page navigation
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // Create pages
+        // Create all application pages
         InputPage inputPage = new InputPage(this, simController);
         simulationPage = new SimulationPage(this, simController);
         SimulationResultsPage resultsPage = new SimulationResultsPage(this, "Simulation Results", resultColumns, resultData);
@@ -49,7 +62,7 @@ public class App extends JFrame {
         BasePanel holdingPatternPage = new BasePanel(this, "Holding Pattern", soonArrivingColumns, soonArrivingData);
         BasePanel takeoffQueuePage = new BasePanel(this, "Take-off Queue", soonDepartingColumns, soonDepartingData);
 
-        // Add pages to CardLayout
+        // Register pages with CardLayout using string identifiers
         mainPanel.add(inputPage, "INPUT");
         mainPanel.add(simulationPage, "SIMULATION");
         mainPanel.add(resultsPage, "RESULT");
@@ -63,48 +76,85 @@ public class App extends JFrame {
         setVisible(true);
     }
 
-    // Getters
+
+    /**
+     * Returns a reference to the simulation page
+     *
+     * @return the SimulationPage instance currently displayed
+     */
     public SimulationPage getSimulationPage() {
         return simulationPage;
     }
 
 
     // Navigation methods
+    /**
+     * Switches the display to the Input page where users can configure simulation parameters.
+     * Updates the window title to reflect Input page.
+     */
     public void showInputPage() {
         this.setTitle("Airport Simulator");
         cardLayout.show(mainPanel, "INPUT");
     }
 
+    /**
+     * Switches the display to the Simulation page where active simulation is visualised.
+     * Updates the window title to reflect Simulation page.
+     */
     public void showSimulationPage() {
         this.setTitle("Airport Simulator - Simulation");
         cardLayout.show(mainPanel, "SIMULATION");
     }
 
+    /**
+     * Switches the display to the Results page showing final simulation statistics and outcomes.
+     * Updates the window title to reflect the results view.
+     */
     public void showResultsPage() {
         this.setTitle("Simulation Results");
         cardLayout.show(mainPanel, "RESULT");
     }
 
+    /**
+     * Switches the display to the Post-Processing page showing flights that has been processed
+     * Updates the window title to reflect the post-processing view.
+     */
     public void showPostProcessingPage() {
         this.setTitle("Post Processing Flights");
         cardLayout.show(mainPanel, "POST");
     }
 
+    /**
+     * Switches the display to the page showing flights that will arrive soon.
+     * Updates the window title to reflect the page.
+     */
     public void showSoonArrivingPage() {
         this.setTitle("Flights Soon Arriving");
         cardLayout.show(mainPanel, "SOON_ARRIVING");
     }
 
+    /**
+     * Switches the display to the page showing flights that will depart soon.
+     * Updates the window title to reflect the page.
+     */
     public void showSoonDepartingPage() {
         this.setTitle("Flights Soon Departing");
         cardLayout.show(mainPanel, "SOON_DEPARTING");
     }
 
+    /**
+     * Switches the display to the page showing aircraft currently in holding pattern.
+     * Updates the window title to reflect the page.
+     */
     public void showHoldingPatternPage() {
         this.setTitle("Holding Pattern");
         cardLayout.show(mainPanel, "HOLDING_PATTERN");
     }
 
+    /**
+     * Switches the display to the page showing aircraft queued for takeoff
+     * Updates the window title to reflect the page.
+     */
     public void showTakeoffQueuePage() {
         this.setTitle("Take-off Queue");
         cardLayout.show(mainPanel, "TAKEOFF_QUEUE");
@@ -113,7 +163,6 @@ public class App extends JFrame {
 
     // Sample data for results
     String[] resultColumns = {
-            "Name",
             "Arrived",
             "Departed",
             "Max Holding",
@@ -125,11 +174,7 @@ public class App extends JFrame {
     };
 
     String[][] resultData = {
-            {"Test1","12","12","7","7","16m","9m","6","6"},
-            {"Test2","14","14","6","8","12m","7m","2","1"},
-            {"Test3","11","11","5","6","10m","6m","1","0"},
-            {"Test4","18","18","9","10","20m","11m","4","2"},
-            {"Test5","13","13","6","7","14m","8m","3","1"},
+            {"12","12","7","7","16m","9m","6","6"},
     };
 
 

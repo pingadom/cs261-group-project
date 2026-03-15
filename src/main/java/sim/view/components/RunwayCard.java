@@ -11,9 +11,31 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * A panel that displays the current status of a single runway in the simulation.
+ * <p>
+ *     This component shows:
+ *     <ul>
+ *         <li>Runway identifier</li>
+ *         <li>Current mode</li>
+ *         <li>Current status</li>
+ *         <li>Aircraft occupancy info.</li>
+ *         <li>A "Configure" button to modify runway settings</li>
+ *     </ul>
+ * </p>
+ *
+ * The panel automatically updates its display when the simulation state changes and changes
+ * background colour to indicate runway availability.
+ *
+ * @see RunwayState
+ * @see SimController
+ * @see StyledButton
+ */
 public class RunwayCard extends JPanel {
-    private final JPanel parentPanel;
+    private static final Color RUNWAY_CLOSED_COLOR = new Color(255, 160, 160);
+    private static final Font LABEL_FONT = new Font("Arial", Font.BOLD, 14);
 
+    // ===================== INSTANCE VARIABLES =====================
     JPanel modePanel;
     JPanel statusPanel;
     JPanel aircraftPanel;
@@ -21,34 +43,40 @@ public class RunwayCard extends JPanel {
     private final JLabel statusLabel;
     private final JLabel aircraftLabel;
 
-    private static final Color RUNWAY_CLOSED_COLOR = new Color(255, 160, 160);
-
-    private final RunwayState runwayState;
     private List<RunwayState> runwayStates;
-
     private final String runwayId;
     private SimConfig.RunwayMode mode;
     private SimConfig.RunwayStatus status;
     private String occupied;
 
+    private final JPanel parentPanel;
+    private final RunwayState runwayState;
     private final SimController simController;
 
+    // ===================== CONSTRUCTOR =====================
+
+    /**
+     * Constructs a new RunwayCard for the specified runway
+     *
+     * @param runway the runway state to display
+     * @param parent the parent panel
+     * @param simController the controller for simulation interaction
+     */
     public RunwayCard(RunwayState runway, JPanel parent, SimController simController) {
         this.parentPanel = parent;
-
         this.runwayState = runway;
         this.runwayId = runway.getCode();
         this.mode = runway.getMode();
         this.status = runway.getStatus();
         this.occupied = runway.getOccupied();
-
         this.simController = simController;
 
+        // ===================== UI INITIALISATION =====================
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setBackground(Color.white);
 
+        // Titled border for each card with runway ID
         Border lineBorder = BorderFactory.createLineBorder(Color.black, 1);
-
         TitledBorder titleBorder = BorderFactory.createTitledBorder(
                 lineBorder,
                 runwayId,
@@ -57,17 +85,15 @@ public class RunwayCard extends JPanel {
                 new Font("Arial", Font.ITALIC, 16),
                 Color.black
         );
-
         Border padding = BorderFactory.createEmptyBorder(10, 10, 10, 10);
         Border compoundBorder = BorderFactory.createCompoundBorder(titleBorder, padding);
-
         setBorder(compoundBorder);
+
         setPreferredSize(new Dimension(640, 100));
         setMinimumSize(new Dimension(640, 100));
         setMaximumSize(new Dimension(640, 100));
 
-        Font labelFont = new Font("Arial", Font.BOLD, 14);
-
+        // Creates info panels and labels
         modePanel = new JPanel();
         statusPanel = new JPanel();
         aircraftPanel = new JPanel();
@@ -77,7 +103,7 @@ public class RunwayCard extends JPanel {
         modePanel.setLayout(new BorderLayout());
         modeLabel = new JLabel();
         updateModeLabel();
-        modeLabel.setFont(labelFont);
+        modeLabel.setFont(LABEL_FONT);
         modeLabel.setHorizontalAlignment(JLabel.CENTER);
         modePanel.add(modeLabel, BorderLayout.CENTER);
 
@@ -86,7 +112,7 @@ public class RunwayCard extends JPanel {
         statusPanel.setLayout(new BorderLayout());
         statusLabel = new JLabel();
         updateStatusLabel();
-        statusLabel.setFont(labelFont);
+        statusLabel.setFont(LABEL_FONT);
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         statusPanel.add(statusLabel, BorderLayout.CENTER);
 
@@ -95,14 +121,36 @@ public class RunwayCard extends JPanel {
         aircraftPanel.setLayout(new BorderLayout());
         aircraftLabel = new JLabel();
         updateOccupiedLabel();
-        aircraftLabel.setFont(labelFont);
+        aircraftLabel.setFont(LABEL_FONT);
         aircraftLabel.setHorizontalAlignment(JLabel.CENTER);
         aircraftPanel.add(aircraftLabel, BorderLayout.CENTER);
 
-        // Button to change the runway's configuration
-        StyledButton runwayConfigButton = new StyledButton("Configure", new Color(70, 130, 180), new Color(100, 150, 200), new Color(70, 130, 180), new Color(70, 130, 180));
+        // Add labels and buttons
+        add(modePanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+        add(statusPanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+        add(aircraftPanel);
+        add(Box.createRigidArea(new Dimension(10, 0)));
+
+        // Create the configure button
+        createConfigureButton();
+    }
+
+    /**
+     * Creates and adds the configure button with its action listener
+     */
+    private void createConfigureButton() {
+        StyledButton runwayConfigButton = new StyledButton(
+                "Configure",
+                new Color(70, 130, 180),
+                new Color(100, 150, 200),
+                new Color(70, 130, 180),
+                new Color(70, 130, 180)
+        );
+
         runwayConfigButton.setButtonSize(90, 30);
-        runwayConfigButton.setFont(new Font("Arial", Font.BOLD, 14));
+        runwayConfigButton.setFont(LABEL_FONT);
         runwayConfigButton.addActionListener(e -> {
             if (!simController.getStateSnapshot().isPaused()) {
                 JOptionPane.showMessageDialog(
@@ -116,17 +164,14 @@ public class RunwayCard extends JPanel {
             }
         });
 
-        // Add labels and buttons
-        add(modePanel);
-        add(Box.createRigidArea(new Dimension(10, 0)));
-        add(statusPanel);
-        add(Box.createRigidArea(new Dimension(10, 0)));
-        add(aircraftPanel);
-        add(Box.createRigidArea(new Dimension(10, 0)));
         add(runwayConfigButton);
     }
 
+    // ===================== CONFIGURATION DIALOG =====================
 
+    /**
+     * Shows a dialog for configuring runway mode and status. Only available when simulation is paused.
+     */
     private void createRunwayConfigPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -220,9 +265,7 @@ public class RunwayCard extends JPanel {
                     case "Mixed Mode" -> simController.setRunwayMode(runwayId, SimConfig.RunwayMode.MIXED);
                 }
             }
-            //mode = runwayState.getMode();
             updateModeLabel();
-
 
             // Get the status selected and update UI
             String statusSelected = (String) statusCombo.getSelectedItem();
@@ -235,7 +278,6 @@ public class RunwayCard extends JPanel {
                     case "Unavailable" -> simController.setRunwayStatus(runwayId, SimConfig.RunwayStatus.UNAVAIALABLE);
                 }
             }
-            //status = runwayState.getStatus();
             updateStatusLabel();
         }
 
@@ -244,6 +286,11 @@ public class RunwayCard extends JPanel {
         this.repaint();
     }
 
+    /**
+     * Creates the title panel for the dialog panel.
+     *
+     * @return a JPanel containing the title for the dialog panel.
+     */
     private JPanel createTitlePopupPanel() {
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(Color.white);
@@ -259,7 +306,11 @@ public class RunwayCard extends JPanel {
     }
 
 
-    // Setter for runway attributes
+    // ===================== UPDATE METHODS =====================
+
+    /**
+     * Updates the mode label with the current runway mode from the simulation state.
+     */
     private void updateModeLabel() {
         // Get the most recent list of RunwayStates
         this.runwayStates = simController.getStateSnapshot().getRunways();
@@ -280,6 +331,10 @@ public class RunwayCard extends JPanel {
         }
     }
 
+    /**
+     * Updates the status label with the current runway status from the simulation state.
+     * Also updates the background colour based on availability.
+     */
     private void updateStatusLabel() {
         // Get the most recent list of RunwayStates
         SimState simState = simController.getStateSnapshot();
@@ -311,6 +366,11 @@ public class RunwayCard extends JPanel {
         }
     }
 
+    /**
+     * Sets the background colour of this card and all its info panels.
+     *
+     * @param color the colour to set
+     */
     private void setBackgroundColour(Color color) {
         this.setBackground(color);
         modePanel.setBackground(color);
@@ -318,6 +378,9 @@ public class RunwayCard extends JPanel {
         aircraftPanel.setBackground(color);
     }
 
+    /**
+     * Updates the occupied label with the current aircraft information.
+     */
     public void updateOccupiedLabel() {
         // Get the most recent list of RunwayStates
         this.runwayStates = simController.getStateSnapshot().getRunways();
