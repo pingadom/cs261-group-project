@@ -13,16 +13,49 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
+/**
+ * The page displaying the final summary results of a completed simulation.
+ * <p>
+ *     This page extends {@link BasePanel} to provide:
+ *     <ul>
+ *         <li>A colour-coded summary table of key simulation metrics</li>
+ *         <li>A "Download Simulation Details" button to export data as a CSV file</li>
+ *         <li>A "Back" button to return to the simulation page</li>
+ *         <li>A "New Simulation" button to reset and navigate to the input page</li>
+ *     </ul>
+ * </p>
+ *
+ * @see BasePanel
+ * @see SimulationPage
+ */
 public class SimulationResultsPage extends BasePanel{
     private String[] detailsCol;
     private String[][] detailsData;
 
+    /**
+     * Constructs a new SimulationResultsPage with the specified , title, and table data.
+     *
+     * @param app the main application instance for navigation
+     * @param mainTitle the title text to display at the top of the page
+     * @param detailsCol the column header names for the summary table
+     * @param detailsData the row data to fill the summary table, as a two-dimensional array
+     */
     public SimulationResultsPage(App app, String mainTitle, String[] detailsCol, String[][] detailsData) {
         super(app, mainTitle, detailsCol, detailsData);
         this.detailsCol = detailsCol;
         this.detailsData = detailsData;
     }
 
+    /**
+     * Customises the footer with "Back" and "New Simulation" buttons.
+     * <p>
+     *     The footer is configured with:
+     *     <ul>
+     *         <li>A "Back" button on the left returns to the simulation page</li>
+     *         <li>A "+ New Simulation" button on the right that resets the simulation state and navigates to the input page</li>
+     *     </ul>
+     * </p>
+     */
     @Override
     protected void customizeFooter() {
         StyledButton buttonBack = new StyledButton("Back", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
@@ -34,7 +67,6 @@ public class SimulationResultsPage extends BasePanel{
             app.showSimulationPage();
         });
 
-        // Adding the New Simulation button
         StyledButton newSimButton = new StyledButton("+ New Simulation", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
         newSimButton.setPreferredSize(new Dimension(150, 30));
         newSimButton.setMaximumSize(new Dimension(150, 30));
@@ -44,12 +76,31 @@ public class SimulationResultsPage extends BasePanel{
             app.showInputPage();
         });
 
-        // Add button to the right side of footer
         footerPanel.add(buttonBack);
         footerPanel.add(Box.createHorizontalGlue());
         footerPanel.add(newSimButton);
     }
 
+    /**
+     * Creates a scrollable, colour-coded {@link JTable} wrapped in a {@link JScrollPane}.
+     * <p>
+     *     This method overrides the base implementation to:
+     *     <ul>
+     *         <li>Apply column-level background colours based on the metric category</li>
+     *         <li>Display cell values as tooltips on hover for content that may be truncated</li>
+     *         <li>Prevent column reordering and resizing</li>
+     *         <li>Disable all cell, row, and column selection</li>
+     *     </ul>
+     * </p>
+     *
+     * The colour scheme mirrors the statistics panel on the simulation page:
+     * red for cancellations and diversions, orange for delay metrics, and green for
+     * arrivals and departures.
+     *
+     * @param columnName the column header names for the table
+     * @param data the row data to fill the table
+     * @return a configured JScrollPane containing the colour-coded summary table
+     */
     @Override
     protected JScrollPane createScrollPanel(String[] columnName, String[][] data) {
         DefaultTableModel model = new DefaultTableModel(data, columnName){
@@ -85,7 +136,7 @@ public class SimulationResultsPage extends BasePanel{
 
                 String columnName = table.getColumnName(column);
 
-                // Reset default
+
                 c.setForeground(Color.BLACK);
                 c.setBackground(Color.WHITE);
 
@@ -111,7 +162,7 @@ public class SimulationResultsPage extends BasePanel{
                 return c;
             }
         });
-        //removing access to change the table from the user
+
         table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setResizingAllowed(false);
         table.setRowSelectionAllowed(false);
@@ -125,6 +176,19 @@ public class SimulationResultsPage extends BasePanel{
 
         return scrollPane;
     }
+
+    /**
+     * Creates the main content panel for the results page.
+     * <p>
+     *     The content panel uses a BorderLayout to arrange:
+     *     <ul>
+     *         <li><b>North:</b> Title panel and colour-coded summary table</li>
+     *         <li><b>South:</b> Download button panel</li>
+     *     </ul>
+     * </p>
+     *
+     * @return a JPanel containing the results layout
+     */
     protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(Color.white);
@@ -145,6 +209,14 @@ public class SimulationResultsPage extends BasePanel{
         return contentPanel;
     }
 
+    /**
+     * Exports the simulation details to a CSV file.
+     * Writes the column headers on the first row, followed by one data row per simulation entry.
+     *
+     * @param detailsCol the column header names to write as the CSV header row
+     * @param detailsData the row data to write to the CSV file
+     * @param file the destination file to write to
+     */
     private void exportTableModelToCSV(String[] detailsCol, String[][] detailsData, File file) throws IOException {
         try (FileWriter writer = new FileWriter(file)) {
             for (int col = 0; col < detailsCol.length; col++) {
@@ -164,6 +236,21 @@ public class SimulationResultsPage extends BasePanel{
         }
     }
 
+    /**
+     * Creates the panel containing the "Download Simulation Details" button.
+     * <p>
+     *     When clicked, the button:
+     *     <ul>
+     *         <li>Validates that export data is available</li>
+     *         <li>Opens a file chooser pre-configured for CSV output</li>
+     *         <li>Appends a {@code .csv} extension if not already present</li>
+     *         <li>Writes the simulation details to the chosen file via {@link #exportTableModelToCSV}</li>
+     *         <li>Displays a confirmation or error dialog based on the outcome</li>
+     *     </ul>
+     * </p>
+     *
+     * @return a JPanel containing the download button
+     */
     public JPanel createDownloadButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(Color.white);
