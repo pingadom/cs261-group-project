@@ -268,7 +268,7 @@ public class SimulationPage extends BasicPage {
         double roundedQueueDelay = Math.round(avgQueueDelay * 10) / 10.0;
 
         double totalHolding = currentMetrics.totalDepartureDelaySeconds;
-        double avgHoldingDelay = arrivalsGenerated > 0 ? totalHolding / departuresGenerated : 0;
+        double avgHoldingDelay = departuresGenerated > 0 ? totalHolding / departuresGenerated : 0;
         double roundedHoldingDelay = Math.round(avgHoldingDelay * 10) / 10.0;
 
         double maxQueue = currentMetrics.maxArrivalDelaySeconds;
