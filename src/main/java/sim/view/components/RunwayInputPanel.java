@@ -138,7 +138,7 @@ public class RunwayInputPanel extends JPanel {
                 case "Runway Inspection" -> runwaySetup.setStatus(SimConfig.RunwayStatus.INSPECTION);
                 case "Snow Clearance" -> runwaySetup.setStatus(SimConfig.RunwayStatus.SNOW);
                 case "Failure" -> runwaySetup.setStatus(SimConfig.RunwayStatus.FAILURE);
-                case "Unavailable" -> runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAIALABLE);
+                case "Unavailable" -> runwaySetup.setStatus(SimConfig.RunwayStatus.UNAVAILABLE);
             }
         }
     }
