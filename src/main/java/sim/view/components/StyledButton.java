@@ -5,8 +5,29 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * A custom-styled JButton with hover and press effects.
+ * This button extends {@link JButton} to provide:
+ * <ul>
+ *     <li>Custom colours for normal, hover, and pressed states</li>
+ *     <li>Configurable button sizes</li>
+ * </ul>
+ *
+ * Button uses {@link MouseAdapter} to handle mouse events
+ *
+ * @see MouseAdapter
+ */
 public class StyledButton extends JButton {
 
+    /**
+     * Constructs a new StyledButton with the specified text and colours.
+     *
+     * @param text the text to display on the button
+     * @param normalColor the background colour in normal state
+     * @param hoverColor the background colour when mouse hovers
+     * @param pressColor the background colour when button is pressed
+     * @param borderColor the colour of button's border
+     */
     public StyledButton(String text, Color normalColor, Color hoverColor, Color pressColor, Color borderColor) {
         super(text);
 
@@ -48,6 +69,12 @@ public class StyledButton extends JButton {
         });
     }
 
+    /**
+     * Sets a custom size for the button.
+     *
+     * @param width the desired width in pixels
+     * @param height the desired height in pixels
+     */
     public void setButtonSize(int width, int height) {
         Dimension size = new Dimension(width, height);
         setPreferredSize(size);
