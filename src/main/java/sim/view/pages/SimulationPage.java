@@ -246,7 +246,7 @@ public class SimulationPage extends BasicPage {
      */
     private void refreshRunwayDisplayEverySec() {
         for (RunwayCard runwayCard : runwayCards) {
-            runwayCard.updateOccupiedLabel();
+            runwayCard.refreshCard();
         }
     }
 
