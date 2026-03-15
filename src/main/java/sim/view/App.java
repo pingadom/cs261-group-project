@@ -61,8 +61,8 @@ public class App extends JFrame {
         // Create all application pages
         InputPage inputPage = new InputPage(this, simController);
         simulationPage = new SimulationPage(this, simController);
-        //SimulationResultsPage resultsPage = new SimulationResultsPage(this, "Simulation Results", resultColumns, resultData);
-        //PostProcessingPage postProcessingPage = new PostProcessingPage(this, "Post Processing Flights", postProcessColumns, postProcessData);
+        SimulationResultsPage resultsPage = new SimulationResultsPage(this, simController, "Simulation Results", resultColumns);
+        PostProcessingPage postProcessingPage = new PostProcessingPage(this, simController, "Post Processing Flights", postProcessColumns);
         LiveTablePage soonArrivingPage = new LiveTablePage(
                 this,
                 simController,
@@ -97,8 +97,8 @@ public class App extends JFrame {
         // Register pages with CardLayout using string identifiers
         mainPanel.add(inputPage, "INPUT");
         mainPanel.add(simulationPage, "SIMULATION");
-        //mainPanel.add(resultsPage, "RESULT");
-        //mainPanel.add(postProcessingPage, "POST");
+        mainPanel.add(resultsPage, "RESULT");
+        mainPanel.add(postProcessingPage, "POST");
         mainPanel.add(soonArrivingPage, "SOON_ARRIVING");
         mainPanel.add(soonDepartingPage, "SOON_DEPARTING");
         mainPanel.add(holdingPatternPage, "HOLDING_PATTERN");
@@ -294,17 +294,33 @@ public class App extends JFrame {
     };
 
     String[] soonDepartingColumns = {
-            "Callsign", "Operator", "Origin", "Scheduled Departure",
-            "Altitude", "Speed", "Fuel", "Emergency"
+        "Callsign", "Operator", "Origin", "Scheduled Departure",
+        "Altitude", "Speed", "Fuel", "Emergency"
     };
 
     String[] holdingPatternColumns = {
-            "Callsign", "Operator", "Origin", "Scheduled Time",
-            "Altitude", "Speed", "Fuel", "Emergency"
+        "Callsign", "Operator", "Origin", "Scheduled Time",
+        "Altitude", "Speed", "Fuel", "Emergency"
     };
 
     String[] takeoffQueueColumns = {
-            "Callsign", "Operator", "Origin", "Scheduled Time",
-            "Altitude", "Speed", "Fuel", "Emergency"
+        "Callsign", "Operator", "Origin", "Scheduled Time",
+        "Altitude", "Speed", "Fuel", "Emergency"
+    };
+
+    String[] resultColumns = {
+        "Arrived",
+        "Departed",
+        "Max Queue Delay",
+        "Max Holding Delay",
+        "Avg Holding Delay",
+        "Avg Queue Delay",
+        "Diverted",
+        "Cancelled"
+    };
+
+String[] postProcessColumns = {
+        "Callsign", "Operator", "Origin", "Destination",
+        "Departure", "Arrival", "Fuel", "StatusFlag"
     };
 }

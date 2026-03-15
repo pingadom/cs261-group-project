@@ -1,37 +1,41 @@
 package sim.view.pages;
 
+import sim.core.events.ArrivalEvent;
+import sim.core.events.DepartureEvent;
+import sim.core.viewmodel.SimController;
+import sim.core.viewmodel.SimState;
+import sim.model.stores.Aircraft;
 import sim.view.App;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.Map;
 
 /**
- * The page displaying post-simulation processed flight data in a colour-coded table.
- * <p>
- *     This page extends {@link BasePanel} to provide:
- *     <ul>
- *         <li>A scrollable table of processed flights with row-level colour coding</li>
- *         <li>A legend panel indicating the meaning of each row colour</li>
- *         <li>Green rows for arrived flights and red rows for cancelled flights</li>
- *     </ul>
- * </p>
- *
- * @see BasePanel
+ * Live page displaying processed flights.
  */
 public class PostProcessingPage extends BasePanel {
-    /**
-     * Constructs a new PostProcessingPage with the specified title, and table data.
-     *
-     * @param app the main application instance for navigation
-     * @param mainTitle the title text to display at the top of the page
-     * @param columnNames the column header names for the data table
-     * @param data the row data to fill the table, as a two-dimensional array
-     */
-    public PostProcessingPage(App app, String mainTitle, String[] columnNames, String[][] data) {
-        super(app, mainTitle, columnNames, data);
+
+    private final SimController simController;
+
+    private JTable table;
+    private DefaultTableModel model;
+
+    public PostProcessingPage(App app, SimController simController, String mainTitle, String[] columnNames) {
+        super(app, mainTitle, columnNames, new String[0][0]);
+        this.simController = simController;
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                refreshProcessedFlights();
+            }
+        });
     }
 
     @Override
@@ -39,12 +43,6 @@ public class PostProcessingPage extends BasePanel {
         super.customizeFooter();
     }
 
-    /**
-     * Creates the main content panel by extending the original content panel with a flight status legend.
-     * Adds a colour legend panel below the table to explain the row colour coding.
-     *
-     * @return a JPanel containing the original content and the post-flight legend
-     */
     @Override
     protected JPanel createContentPanel() {
         JPanel contentPanel = super.createContentPanel();
@@ -55,93 +53,70 @@ public class PostProcessingPage extends BasePanel {
         return contentPanel;
     }
 
-    /**
-     * Creates the legend panel that describes the row colour coding used in the flights table.
-     * The legend displays a red box labelled "Cancelled" and a green box labelled "Arrived".
-     *
-     * @return a JPanel containing the colour legend
-     */
     private JPanel createPostFlightLegendPanel() {
         JPanel postFooter = new JPanel();
         postFooter.setBackground(new Color(0xF5F6F8));
         postFooter.setLayout(new FlowLayout(FlowLayout.LEFT));
-        postFooter.setBounds(440, 620, 400, 60);
-
+        postFooter.setBounds(440, 620, 500, 60);
 
         JPanel redBox = new JPanel();
         redBox.setBackground(new Color(0xE0470A));
         redBox.setPreferredSize(new Dimension(25, 25));
         redBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-
-        JLabel falseFlight = new JLabel();
-        falseFlight.setText("Cancelled");
+        JLabel falseFlight = new JLabel("Cancelled / Diverted");
         falseFlight.setFont(new Font("Calibri", Font.BOLD, 18));
-
 
         JPanel greenBox = new JPanel();
         greenBox.setBackground(new Color(0x0AE04E));
         greenBox.setPreferredSize(new Dimension(25, 25));
         greenBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-
-        JLabel trueFlights = new JLabel();
-        trueFlights.setText("Arrived");
-        trueFlights.setFont((new Font("Calibri", Font.BOLD, 18)));
-
+        JLabel trueFlights = new JLabel("Processed Normally");
+        trueFlights.setFont(new Font("Calibri", Font.BOLD, 18));
 
         postFooter.add(redBox);
         postFooter.add(falseFlight);
+        postFooter.add(Box.createRigidArea(new Dimension(20, 0)));
         postFooter.add(greenBox);
         postFooter.add(trueFlights);
-
 
         return postFooter;
     }
 
-    /**
-     * Creates a scrollable, colour-coded {@link JTable} wrapped in a {@link JScrollPane}.
-     * <p>
-     *     This method overrides the base implementation to:
-     *     <ul>
-     *         <li>Apply row-level background colours based on flight status</li>
-     *         <li>Display cell values as tooltips on hover for content that may be truncated</li>
-     *         <li>Prevent column reordering and resizing</li>
-     *         <li>Disable all cell, row, and column selection</li>
-     *         <li>Remove the hidden status column used for colour logic after rendering</li>
-     *     </ul>
-     * </p>
-     *
-     * @param columnName the column header names for the table
-     * @param data the row data to fill the table
-     * @return a configured JScrollPane containing the colour-coded data table
-     */
     @Override
     protected JScrollPane createScrollPanel(String[] columnName, String[][] data) {
-        DefaultTableModel model = new DefaultTableModel(data, columnName) {
+        model = new DefaultTableModel(columnName, 0) {
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        JTable table = new JTable(model);
+
+        table = new JTable(model);
         table.setFont(new Font("Arial", Font.PLAIN, 15));
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setPreferredSize(new Dimension(1040, 460));
+
         table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            public Component getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+            ) {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                String status = (String) table.getModel().getValueAt(row, columnName.length - 1);
-                if (status.equals("true")) {
+
+                String statusFlag = (String) table.getModel().getValueAt(row, columnName.length - 1);
+                if ("true".equals(statusFlag)) {
                     c.setBackground(new Color(0x0AE04E));
                 } else {
                     c.setBackground(new Color(0xE0470A));
                 }
+
                 return c;
-
-
             }
         });
+
         table.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -159,11 +134,97 @@ public class PostProcessingPage extends BasePanel {
         table.setRowSelectionAllowed(false);
         table.setColumnSelectionAllowed(false);
         table.setCellSelectionEnabled(false);
+
         table.getColumnModel().removeColumn(table.getColumnModel().getColumn(columnName.length - 1));
+
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         return scrollPane;
     }
 
+    private void refreshProcessedFlights() {
+        if (simController == null) return;
+
+        SimState state = simController.getStateSnapshot();
+        if (state == null) return;
+
+        Map<String, ArrivalEvent> arrivalMap = state.getArrivalEventByCallsign();
+        Map<String, DepartureEvent> departureMap = state.getDepartureEventByCallsign();
+
+        model.setRowCount(0);
+
+        for (Aircraft ac : state.getPostProcessing()) {
+            if (ac == null) continue;
+
+            String callsign = safe(ac.getCallsign());
+            ArrivalEvent arr = arrivalMap.get(callsign);
+            DepartureEvent dep = departureMap.get(callsign);
+
+            boolean success = true;
+
+            if (arr != null) {
+                if (arr.diverted) {
+                    success = false;
+                } else if (arr.completed) {
+                    success = true;
+                }
+            } else if (dep != null) {
+                if (dep.cancelled) {
+                    success = false;
+                } else if (dep.completed) {
+                    success = true;
+                }
+            }
+
+            model.addRow(buildPostProcessingRow(ac, arr, dep, success));
+        }
+    }
+
+    private Object[] buildPostProcessingRow(
+        Aircraft ac,
+        ArrivalEvent arr,
+        DepartureEvent dep,
+        boolean success
+    ) {
+        String origin;
+        String destination;
+        String departureTime;
+        String arrivalTime;
+
+        if (arr != null) {
+            // Arrival flight
+            origin = "N/A";
+            destination = safe(ac.getOrigin());
+            departureTime = "";
+            arrivalTime = ac.getTime() != null ? ac.getTime().toString() : "";
+        } else if (dep != null) {
+            // Departure flight
+            origin = "HOME";
+            destination = "N/A";
+            departureTime = ac.getTime() != null ? ac.getTime().toString() : "";
+            arrivalTime = "";
+        } else {
+            // Fallback
+            origin = "";
+            destination = "";
+            departureTime = "";
+            arrivalTime = "";
+        }
+
+        return new Object[] {
+                safe(ac.getCallsign()),
+                safe(ac.getOperator()),
+                origin,
+                destination,
+                departureTime,
+                arrivalTime,
+                Integer.toString(ac.getFuel()),
+                Boolean.toString(success)
+        };
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
 }
