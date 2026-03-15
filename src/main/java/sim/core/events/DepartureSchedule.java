@@ -62,7 +62,13 @@ public final class DepartureSchedule {
 
             int altitude = 0;
             int groundSpeed = 0;
-            int fuel = 0;
+
+            // Randomised departure fuel, stored in seconds like arrivals.
+            // Mean around 35 minutes, with variation, clamped to a sensible range.
+            int fuelSeconds = (int) Math.round((35 * 60) + rng.nextGaussian() * (8 * 60));
+            fuelSeconds = Math.max(15 * 60, Math.min(55 * 60, fuelSeconds));
+
+            int fuel = fuelSeconds;
             String emergency = "None";
 
             Aircraft ac = new Aircraft(callsign, operator, origin, time, altitude, groundSpeed, fuel, emergency);

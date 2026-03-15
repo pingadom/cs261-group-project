@@ -178,6 +178,7 @@ public class PostProcessingPage extends BasePanel {
             }
 
             model.addRow(buildPostProcessingRow(ac, arr, dep, success));
+            model.addRow(buildPostProcessingRow(ac, arr, dep, success));
         }
     }
 
@@ -193,19 +194,16 @@ public class PostProcessingPage extends BasePanel {
         String arrivalTime;
 
         if (arr != null) {
-            // Arrival flight
             origin = "N/A";
             destination = safe(ac.getOrigin());
             departureTime = "";
             arrivalTime = ac.getTime() != null ? ac.getTime().toString() : "";
         } else if (dep != null) {
-            // Departure flight
             origin = "HOME";
             destination = "N/A";
             departureTime = ac.getTime() != null ? ac.getTime().toString() : "";
             arrivalTime = "";
         } else {
-            // Fallback
             origin = "";
             destination = "";
             departureTime = "";
@@ -223,6 +221,10 @@ public class PostProcessingPage extends BasePanel {
                 Boolean.toString(success)
         };
     }
+
+    
+
+    
 
     private String safe(String value) {
         return value == null ? "" : value;

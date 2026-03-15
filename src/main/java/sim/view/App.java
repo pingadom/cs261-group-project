@@ -284,6 +284,46 @@ public class App extends JFrame {
         };
     }
 
+    private Object[] buildPostProcessingRow(
+        Aircraft ac,
+        ArrivalEvent arr,
+        DepartureEvent dep,
+        boolean success
+    ) {
+        String origin;
+        String destination;
+        String departureTime;
+        String arrivalTime;
+
+        if (arr != null) {
+            origin = "N/A";
+            destination = safe(ac.getOrigin());
+            departureTime = "";
+            arrivalTime = ac.getTime() != null ? ac.getTime().toString() : "";
+        } else if (dep != null) {
+            origin = "HOME";
+            destination = "N/A";
+            departureTime = ac.getTime() != null ? ac.getTime().toString() : "";
+            arrivalTime = "";
+        } else {
+            origin = "";
+            destination = "";
+            departureTime = "";
+            arrivalTime = "";
+        }
+
+        return new Object[] {
+                safe(ac.getCallsign()),
+                safe(ac.getOperator()),
+                origin,
+                destination,
+                departureTime,
+                arrivalTime,
+                Integer.toString(ac.getFuel()),
+                Boolean.toString(success)
+        };
+    }
+
     private String safe(String value) {
         return value == null ? "" : value;
     }
