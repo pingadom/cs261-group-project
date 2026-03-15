@@ -26,41 +26,94 @@ import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Core simulation engine for the airport runway model.
+ *
+ * <p>This class is responsible for:
+ * <ul>
+ *   <li>initialising arrival and departure schedules,</li>
+ *   <li>advancing simulated time,</li>
+ *   <li>releasing aircraft into queues,</li>
+ *   <li>updating runway usage,</li>
+ *   <li>handling fuel burn, diversions, and cancellations,</li>
+ *   <li>recording metrics and CSV outputs,</li>
+ *   <li>providing snapshots for the frontend/view layer.</li>
+ * </ul>
+ *
+ * <p>The engine acts as the central coordinator between the clock,
+ * generated flight events, runway handling logic, and reporting/output logic.
+ */
 public final class Engine {
 
+  /** Maximum time a departure may wait in the take-off queue before being cancelled. */
   private static final int TAKEOFF_CANCEL_THRESHOLD_SECONDS = 1800;
 
+  /** Lookup table for arrival events by callsign, used for fast event updates. */
   private final Map<String, ArrivalEvent> arrivalEventByCallsign = new HashMap<>();
+
+  /** Lookup table for departure events by callsign, used for fast event updates. */
   private final Map<String, DepartureEvent> departureEventByCallsign = new HashMap<>();
 
+  /** Writer for per-flight CSV output. */
   private FlightCsvWriter flightCsv;
 
+  /** Pre-generated outbound flight events. */
   private ArrayList<DepartureEvent> outboundEvents;
+
+  /** Pointer to the next outbound event waiting to be released into the queue. */
   private int outboundPtr = 0;
 
+  /** Pre-generated inbound flight events. */
   private ArrayList<ArrivalEvent> inboundEvents;
+
+  /** Pointer to the next inbound event waiting to be released into the holding pattern. */
   private int inboundPtr = 0;
 
+  /** Holding pattern for arriving aircraft, split internally by emergency priority. */
   private final HoldingPattern<Aircraft> holdingPattern = new HoldingPattern<>();
+
+  /** List of available runways in the simulation. */
   private final List<Runway> runways = new List<>();
+
+  /** Aircraft that have finished processing, diverted, or been cancelled. */
   private final List<Aircraft> postProcessing = new List<>();
+
+  /** Queue of aircraft waiting for take-off. */
   private final List<Aircraft> takeOffQueue = new List<>();
 
+  /** Time-series record of delay trend points for reporting and graph output. */
   private final ArrayList<DelayTrendPoint> delayTrend = new ArrayList<>();
 
+  /** Simulation configuration loaded from external config. */
   private final SimConfig cfg;
+
+  /** Runtime options such as duration, speed, CSV path, and random seed. */
   private final EngineOptions opts;
+
+  /** Simulation clock used to control stepped simulation time. */
   private final SimClock clock;
+
+  /** Random generator used for schedule generation. */
   private Random rng;
 
+  /** Current simulation speed multiplier. */
   private volatile double currentSpeedMultiplier;
+
+  /** Flag indicating that a reset has been requested. */
   private volatile boolean resetRequested = false;
 
+  /** Aggregated simulation metrics. */
   private final Metrics metrics = new Metrics();
+
+  /** Writer for metrics CSV output. */
   private MetricsCsvWriter csv;
 
+  /** Runway allocation and handling logic. */
   private final RunwayHandling runwayHandling = new RunwayHandling();
 
+  /**
+   * Immutable point used to record average and maximum delay values over time.
+   */
   private static final class DelayTrendPoint {
     final double simTime;
     final double avgArrDelay;
@@ -68,6 +121,15 @@ public final class Engine {
     final double avgDepDelay;
     final double maxDepDelay;
 
+    /**
+     * Creates a delay trend point.
+     *
+     * @param simTime simulation time in seconds
+     * @param avgArrDelay average arrival delay at this time
+     * @param maxArrDelay maximum arrival delay at this time
+     * @param avgDepDelay average departure delay at this time
+     * @param maxDepDelay maximum departure delay at this time
+     */
     DelayTrendPoint(double simTime, double avgArrDelay, double maxArrDelay, double avgDepDelay, double maxDepDelay) {
       this.simTime = simTime;
       this.avgArrDelay = avgArrDelay;
@@ -77,6 +139,13 @@ public final class Engine {
     }
   }
 
+  /**
+   * Constructs a new simulation engine.
+   *
+   * @param cfg simulation configuration including runways and traffic rates
+   * @param opts runtime options such as duration, speed, CSV path, and seed
+   * @param clock simulation clock used to advance and track simulation time
+   */
   public Engine(SimConfig cfg, EngineOptions opts, SimClock clock) {
     this.cfg = cfg;
     this.opts = opts;
@@ -98,6 +167,18 @@ public final class Engine {
     System.out.println("=== END RUNWAYS ===");
   }
 
+  /**
+   * Runs the simulation from start until the configured duration is reached.
+   *
+   * <p>This method:
+   * <ul>
+   *   <li>starts the console control thread,</li>
+   *   <li>initialises arrival and departure schedules,</li>
+   *   <li>opens CSV outputs if enabled,</li>
+   *   <li>advances time in real-time scaled steps,</li>
+   *   <li>processes simulation steps until the end time.</li>
+   * </ul>
+   */
   public void run() {
     startConsoleControlThread();
     initialiseSchedules();
@@ -173,6 +254,12 @@ public final class Engine {
     System.out.println("Finished at real time: " + Instant.now());
   }
 
+  /**
+   * Pre-generates inbound and outbound aircraft schedules for the full simulation duration.
+   *
+   * <p>The generated events are sorted by release time and stored for later release
+   * into the holding pattern or take-off queue as simulation time advances.
+   */
   private void initialiseSchedules() {
     inboundEvents = ArrivalSchedule.preGenerateInbound(
         cfg.arrivalRatePerHour,
@@ -215,6 +302,12 @@ public final class Engine {
     System.out.println("=== END OUTBOUND EVENTS ===");
   }
 
+  /**
+   * Rebuilds the runway list from the configuration file.
+   *
+   * <p>If a runway ID cannot be parsed numerically, a fallback sequential ID is used.
+   * Each runway is assigned a default service time.
+   */
   private void rebuildRunwaysFromConfig() {
     runways.clear();
     final int DEFAULT_SERVICE_TIME_SECONDS = 60;
@@ -232,6 +325,21 @@ public final class Engine {
     }
   }
 
+  /**
+   * Executes a single simulation step.
+   *
+   * <p>This includes:
+   * <ul>
+   *   <li>updating queue sizes,</li>
+   *   <li>ticking runway service timers,</li>
+   *   <li>releasing scheduled arrivals and departures,</li>
+   *   <li>burning fuel and adjusting altitudes,</li>
+   *   <li>cancelling overdue departures,</li>
+   *   <li>running runway assignment logic.</li>
+   * </ul>
+   *
+   * @param dt time step in simulation seconds
+   */
   private void step(double dt) {
     metrics.arrivalQueue = holdingPattern.getSize();
     metrics.departureQueue = takeOffQueue.getSize();
@@ -296,6 +404,13 @@ public final class Engine {
     );
   }
 
+  /**
+   * Cancels departures that have exceeded the maximum allowed waiting time
+   * in the take-off queue.
+   *
+   * <p>Cancelled aircraft are moved to post-processing and their event record
+   * is updated accordingly.
+   */
   private void cancelOverdueDepartures() {
     int i = 0;
     while (i < takeOffQueue.getSize()) {
@@ -323,6 +438,13 @@ public final class Engine {
     }
   }
 
+  /**
+   * Reduces the remaining service time of all occupied runways.
+   *
+   * <p>If a runway completes its current operation during this tick, it becomes free.
+   *
+   * @param dt time step in seconds
+   */
   private void tickRunways(double dt) {
     int delta = (int) Math.round(dt);
     if (delta <= 0) delta = 1;
@@ -342,6 +464,9 @@ public final class Engine {
     }
   }
 
+  /**
+   * Prints a summary of the current simulation state to the console.
+   */
   private void printStatus() {
     double avgArrDelay = metrics.arrivalsProcessed == 0 ? 0.0
         : metrics.totalArrivalDelaySeconds / metrics.arrivalsProcessed;
@@ -364,6 +489,9 @@ public final class Engine {
     );
   }
 
+  /**
+   * Writes the current metrics row to the metrics CSV file, if enabled.
+   */
   private void tryWriteCsvRow() {
     metrics.arrivalQueue = holdingPattern.getSize();
     metrics.departureQueue = takeOffQueue.getSize();
@@ -376,10 +504,12 @@ public final class Engine {
   }
 
   /**
-   * Ensures the aircraft in the holding pattern all remain in the air, in order,
-   * with 1000 feet of vertical separation between all aircraft
-   * 
-   * @param @param holdingPattern FIFO data structure holding aircraft waiting to land
+   * Assigns altitude levels to aircraft in the holding pattern.
+   *
+   * <p>Emergency aircraft are assigned first, followed by non-emergency aircraft,
+   * in 1000-foot vertical separation increments.
+   *
+   * @param holdingPattern the holding pattern to update
    */
   private void adjustAltitude(HoldingPattern<Aircraft> holdingPattern) {
     int i = 1;
@@ -401,15 +531,17 @@ public final class Engine {
     }
   }
 
-  /** 
-   * Reduces the fuel level of all aircraft in the holding pattern.
-   * Fuel level is stored as a value representing how long the aircraft remains in the air.
-   * If an aircraft goes below 1200 seconds (20 mins) of fuel remaining, it is promoted to emergency status
-   * If an aircraft goes below 600 seconds (10 mins) of fuel remaining, it is diverted.
-   * 
-   * @param holdingPattern FIFO data structure holding aircraft waiting to land
-   * @param dtSeconds the number of seconds since this function has last been called
-   * @param postProcessing store of all departed, arrived, cancelled, or diverted planes
+  /**
+   * Applies fuel burn to aircraft in the holding pattern and handles
+   * emergency promotion or diversion when fuel becomes critically low.
+   *
+   * <p>Aircraft with low fuel are promoted to emergency priority.
+   * Aircraft below the diversion threshold are removed from the holding pattern
+   * and marked as diverted.
+   *
+   * @param holdingPattern holding pattern containing inbound aircraft
+   * @param dtSeconds elapsed step time in seconds
+   * @param postProcessing list receiving diverted aircraft
    */
   private void fuelConsumption(
       HoldingPattern<Aircraft> holdingPattern,
@@ -467,64 +599,73 @@ public final class Engine {
     }
   }
 
+  /**
+   * Writes per-flight output rows for all arrival and departure events.
+   *
+   * <p>Each row records the flight type, release time, runway time, delay,
+   * completion state, outcome, emergency state, and final fuel value.
+   */
   private void writeFlightCsvRows() {
-  if (flightCsv == null) return;
+    if (flightCsv == null) return;
 
-  try {
-    for (ArrivalEvent e : inboundEvents) {
-      String outcome;
-      if (e.diverted) {
-        outcome = "DIVERTED";
-      } else if (e.completed) {
-        outcome = "LANDED";
-      } else {
-        outcome = "UNFINISHED";
+    try {
+      for (ArrivalEvent e : inboundEvents) {
+        String outcome;
+        if (e.diverted) {
+          outcome = "DIVERTED";
+        } else if (e.completed) {
+          outcome = "LANDED";
+        } else {
+          outcome = "UNFINISHED";
+        }
+
+        flightCsv.writeFlight(
+            e.aircraft.getCallsign(),
+            "ARRIVAL",
+            e.releaseTimeSeconds,
+            e.actualRunwayTimeSeconds,
+            e.delaySeconds,
+            e.completed,
+            outcome,
+            e.aircraft.getEmergency(),
+            e.diverted,
+            false,
+            e.completed && e.fuelOnRunway != null ? e.fuelOnRunway : e.aircraft.getFuel()
+        );
       }
 
-      flightCsv.writeFlight(
-          e.aircraft.getCallsign(),
-          "ARRIVAL",
-          e.releaseTimeSeconds,
-          e.actualRunwayTimeSeconds,
-          e.delaySeconds,
-          e.completed,
-          outcome,
-          e.aircraft.getEmergency(),
-          e.diverted,
-          false,
-          e.completed && e.fuelOnRunway != null ? e.fuelOnRunway : e.aircraft.getFuel()
-      );
-    }
+      for (DepartureEvent e : outboundEvents) {
+        String outcome;
+        if (e.cancelled) {
+          outcome = "CANCELLED";
+        } else if (e.completed) {
+          outcome = "TOOK_OFF";
+        } else {
+          outcome = "UNFINISHED";
+        }
 
-    for (DepartureEvent e : outboundEvents) {
-      String outcome;
-      if (e.cancelled) {
-        outcome = "CANCELLED";
-      } else if (e.completed) {
-        outcome = "TOOK_OFF";
-      } else {
-        outcome = "UNFINISHED";
+        flightCsv.writeFlight(
+            e.aircraft.getCallsign(),
+            "DEPARTURE",
+            e.releaseTimeSeconds,
+            e.actualRunwayTimeSeconds,
+            e.delaySeconds,
+            e.completed,
+            outcome,
+            e.aircraft.getEmergency(),
+            false,
+            e.cancelled,
+            e.completed && e.fuelOnRunway != null ? e.fuelOnRunway : e.aircraft.getFuel()
+        );
       }
-
-      flightCsv.writeFlight(
-          e.aircraft.getCallsign(),
-          "DEPARTURE",
-          e.releaseTimeSeconds,
-          e.actualRunwayTimeSeconds,
-          e.delaySeconds,
-          e.completed,
-          outcome,
-          e.aircraft.getEmergency(),
-          false,
-          e.cancelled,
-          e.completed && e.fuelOnRunway != null ? e.fuelOnRunway : e.aircraft.getFuel()
-      );
+    } catch (IOException e) {
+      System.err.println("Flight CSV write failed: " + e.getMessage());
     }
-  } catch (IOException e) {
-    System.err.println("Flight CSV write failed: " + e.getMessage());
   }
-}
 
+  /**
+   * Records a point in the delay trend series for later CSV/SVG output.
+   */
   private void recordDelayTrendPoint() {
     double avgArrDelay = metrics.arrivalsProcessed == 0 ? 0.0
         : metrics.totalArrivalDelaySeconds / metrics.arrivalsProcessed;
@@ -540,6 +681,9 @@ public final class Engine {
     ));
   }
 
+  /**
+   * Writes delay trend outputs as both CSV data and a simple SVG graph.
+   */
   private void writeDelayTrendOutputs() {
     if (opts.csvPath() == null || delayTrend.isEmpty()) return;
 
@@ -589,6 +733,12 @@ public final class Engine {
     }
   }
 
+  /**
+   * Starts a daemon thread that listens for console commands while the simulation runs.
+   *
+   * <p>Supported commands include pause, resume, reset, speed changes,
+   * runway status updates, and runway mode changes.
+   */
   private void startConsoleControlThread() {
     Thread t = new Thread(() -> {
       Scanner scanner = new Scanner(System.in);
@@ -606,6 +756,11 @@ public final class Engine {
     t.start();
   }
 
+  /**
+   * Parses and executes a console command entered by the user.
+   *
+   * @param line raw command line input
+   */
   private void handleConsoleCommand(String line) {
     String[] parts = line.split("\\s+");
     if (parts.length == 0) return;
@@ -663,6 +818,14 @@ public final class Engine {
     }
   }
 
+  /**
+   * Updates the status of a runway by ID or code.
+   *
+   * <p>If a runway is made unavailable, any current operation on it is cleared.
+   *
+   * @param idOrCode runway numeric ID or code
+   * @param statusText new runway status as text
+   */
   private void setRunwayStatus(String idOrCode, String statusText) {
     SimConfig.RunwayStatus status;
     try {
@@ -693,6 +856,12 @@ public final class Engine {
     System.out.println("Runway not found.");
   }
 
+  /**
+   * Resets the simulation back to its initial state.
+   *
+   * <p>This clears queues, resets counters, rebuilds runways, recreates schedules,
+   * and restores the random generator state.
+   */
   private void doReset() {
     resetRequested = false;
 
@@ -728,29 +897,51 @@ public final class Engine {
     System.out.println("Simulation reset.");
   }
 
+  /** Pauses the simulation clock. */
   public void pauseSimulation() {
     clock.pause();
   }
 
+  /** Resumes the simulation clock. */
   public void resumeSimulation() {
     clock.resume();
   }
 
+  /** Requests that the simulation be reset on the next main loop cycle. */
   public void requestReset() {
     resetRequested = true;
   }
 
+  /**
+   * Updates the simulation speed multiplier.
+   *
+   * @param speed new speed multiplier; must be greater than zero
+   */
   public void setSimulationSpeed(double speed) {
     if (speed > 0) {
       currentSpeedMultiplier = speed;
     }
   }
-  
 
+  /**
+   * Updates a runway's operational status.
+   *
+   * @param idOrCode runway numeric ID or code
+   * @param status new status to apply
+   */
   public void updateRunwayStatus(String idOrCode, SimConfig.RunwayStatus status) {
     setRunwayStatus(idOrCode, status.name());
   }
 
+  /**
+   * Updates a runway's mode if the runway is currently idle.
+   *
+   * <p>Mode changes are blocked while a runway is occupied to avoid
+   * changing its operating rules mid-operation.
+   *
+   * @param idOrCode runway numeric ID or code
+   * @param mode new runway mode
+   */
   public void updateRunwayMode(String idOrCode, SimConfig.RunwayMode mode) {
     LinkedListElement<Runway> ptr = runways.getHead();
 
@@ -767,7 +958,7 @@ public final class Engine {
                 "Cannot change mode of runway %s (#%d) while occupied by %s%n",
                 rw.getCode(), rw.getID(), rw.getOccupied()
             );
-            return; 
+            return;
           }
 
           rw.setMode(mode);
@@ -785,6 +976,14 @@ public final class Engine {
     System.out.println("Runway not found.");
   }
 
+  /**
+   * Creates a snapshot of the current simulation state for the frontend/view layer.
+   *
+   * <p>The snapshot includes time information, queue contents, runway states,
+   * pre-generated event lists, processed aircraft, event lookup maps, and copied metrics.
+   *
+   * @return immutable-style view of the current simulation state
+   */
   public synchronized SimState snapshot() {
     java.util.List<RunwayState> runwayStates = new ArrayList<>();
     LinkedListElement<Runway> ptr = runways.getHead();
@@ -844,6 +1043,9 @@ public final class Engine {
     );
   }
 
+  /**
+   * Prints the current state of every runway to the console.
+   */
   private void printRunways() {
     System.out.println("=== RUNWAY STATE ===");
     LinkedListElement<Runway> ptr = runways.getHead();

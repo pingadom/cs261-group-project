@@ -7,12 +7,34 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
 
+/**
+ * Utility class for pre-generating departure events before the simulation starts.
+ *
+ * <p>Departures are generated from evenly spaced target times, then varied using
+ * a normal distribution to simulate real-life timing differences. Times that fall
+ * outside the simulation period are wrapped back into range instead of clamped,
+ * which helps avoid clustering near the start and end of the simulation window.
+ */
 public final class DepartureSchedule {
 
+    /** Standard deviation used when varying departure times from their ideal spacing. */
     private static final double SD_SECONDS = 5 * 60.0; // 5 minutes (same as arrivals)
 
+    /** Prevents instantiation of this utility class. */
     private DepartureSchedule() {}
 
+    /**
+     * Pre-generates a list of outbound departure events for the full simulation duration.
+     *
+     * <p>The number of events is based on the requested departures per hour and the
+     * total simulation length. Each aircraft is assigned basic placeholder values
+     * and is then wrapped in a {@link DepartureEvent}.
+     *
+     * @param departuresPerHour target departure rate per hour
+     * @param durationSeconds total simulation duration in seconds
+     * @param rng random generator used for timing variation
+     * @return sorted list of generated departure events
+     */
     public static ArrayList<DepartureEvent> preGenerateOutbound(
             int departuresPerHour,
             long durationSeconds,
@@ -51,6 +73,17 @@ public final class DepartureSchedule {
         return events;
     }
 
+    /**
+     * Wraps a generated time into the valid simulation interval.
+     *
+     * <p>This uses modular arithmetic so that values below 0 or above the
+     * simulation duration are re-entered into the valid range without creating
+     * artificial clustering at the boundaries.
+     *
+     * @param value generated time value
+     * @param duration simulation duration
+     * @return wrapped time within the valid interval
+     */
     private static double wrap(double value, double duration) {
         return ((value % duration) + duration) % duration;
     }
