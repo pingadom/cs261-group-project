@@ -67,7 +67,7 @@ public final class ArrivalSchedule {
 
             int altitude = 10000;      
             int groundSpeed = 250;     
-            int fuelMinutes = 30 + rng.nextInt(30); // 30–60 min
+            int fuelMinutes = 20 + rng.nextInt(20); // 20–40 min
             int fuel = fuelMinutes * 60;             // convert to seconds)
             String emergency = (rng.nextDouble() < EMERGENCY_PROB) ? randomEmergencyType(rng) : "None";
 

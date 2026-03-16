@@ -39,41 +39,65 @@ public class List<E> {
         return ptr;
     }
 
-    public int add(LinkedListElement<E> element){
-        // added check for empty
+    public int add(LinkedListElement<E> element) {
+        if (element == null) {
+            return 0;
+        }
+
+        element.setNext(null); // always detach before adding
+
         if (size == 0) {
             head = element;
             tail = element;
             size = 1;
             return 1;
         }
+
         tail.setNext(element);
         tail = element;
         size++;
         return 1;
     }
 
-    public LinkedListElement<E> pop(int index){
-        if (size == 1){
-            LinkedListElement<E> element = head;
-            clear();
-            return element;
-        }
-        if (size == 0){
+    public LinkedListElement<E> pop(int index) {
+        if (index < 0 || index >= size) {
             return null;
         }
-        if (index == 0){
+
+        if (size == 0) {
+            return null;
+        }
+
+        if (size == 1) {
+            LinkedListElement<E> element = head;
+            clear();
+            if (element != null) {
+                element.setNext(null);
+            }
+            return element;
+        }
+
+        if (index == 0) {
             LinkedListElement<E> element = head;
             head = head.getNext();
+            element.setNext(null);   // detach popped node
             size--;
             return element;
         }
-        LinkedListElement<E> element = get(index);
-        LinkedListElement<E> prev = get(index - 1);
-        prev.setNext(element.getNext());
-        size--;
-        return element;
 
+        LinkedListElement<E> prev = get(index - 1);
+        LinkedListElement<E> element = prev.getNext();
+
+        prev.setNext(element.getNext());
+
+        if (index == size - 1) {
+            tail = prev;   // update tail when removing last node
+        }
+
+        element.setNext(null);   // detach popped node
+        size--;
+
+        return element;
     }
 
     public int clear(){

@@ -54,7 +54,7 @@ public class SimCommand implements Runnable {
         durationSeconds,
         dtSeconds,
         speed,
-        seed,
+        null,
         csvPath,
         printEverySeconds
 );

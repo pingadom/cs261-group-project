@@ -67,7 +67,7 @@ public final class SimulationSetup {
     }
 
     public Long getSeed() {
-        return seed;
+        return null;
     }
 
     public void setSeed(Long seed) {
