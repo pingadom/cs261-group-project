@@ -16,7 +16,7 @@ This will compile the source code, run the unit tests, and create an executable 
 ## Execution
 The simulation runs with a visual GUI. You must provide the configuration file via the command line to start. To run the compiled simulation from the terminal and open the UI, use:
 ```bash
-java -jar target/airport-sim-prototype-1.0.0.jar --config config.json --duration 600 --speed 10 --csv output.csv
+java -jar target/airport-sim-prototype-1.0.0.jar
 ```
 
 ## Configuration
@@ -35,7 +35,10 @@ The simulation is highly customisable when the GUI launches. Key parameters that
 - Dynamic runway assignment (Landing, Take-Off, Mixed Use) and status management
 - Queuing systems including holding patterns and take-off queues
 - Real-time logging of flight events, delays, diversions, and emergencies
-- CSV metrics generation for post-simulation analysis
+- CSV metrics generation for post-simulation analysis, stored in the source folder
+  - output.csv - contains cumulative details on departures and arrivals
+  - flights.csv - contains highly detailed data on every individual flight
+  - delay_trend.svg - delay trend graph (arrival and departure delay over the course of the simulation)
 
 
 ## Contributors

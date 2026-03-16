@@ -3,6 +3,12 @@ package sim.view;
 import sim.core.viewmodel.SimController;
 import sim.view.pages.*;
 
+import sim.core.viewmodel.SimState;
+import sim.model.stores.Aircraft;
+import sim.model.stores.LinkedListElement;
+import sim.core.events.ArrivalEvent;
+import sim.core.events.DepartureEvent;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -55,13 +61,39 @@ public class App extends JFrame {
         // Create all application pages
         InputPage inputPage = new InputPage(this, simController);
         simulationPage = new SimulationPage(this, simController);
-        SimulationResultsPage resultsPage = new SimulationResultsPage(this, "Simulation Results", resultColumns, resultData);
-        PostProcessingPage postProcessingPage = new PostProcessingPage(this, "Post Processing Flights", postProcessColumns, postProcessData);
-        BasePanel soonArrivingPage = new BasePanel(this, "Flights Soon Arriving", soonArrivingColumns, soonArrivingData);
-        BasePanel soonDepartingPage = new BasePanel(this, "Flights Soon Departing", soonDepartingColumns, soonDepartingData);
-        BasePanel holdingPatternPage = new BasePanel(this, "Holding Pattern", soonArrivingColumns, soonArrivingData);
-        BasePanel takeoffQueuePage = new BasePanel(this, "Take-off Queue", soonDepartingColumns, soonDepartingData);
+        SimulationResultsPage resultsPage = new SimulationResultsPage(this, simController, "Simulation Results", resultColumns);
+        PostProcessingPage postProcessingPage = new PostProcessingPage(this, simController, "Post Processing Flights", postProcessColumns);
+        LiveTablePage soonArrivingPage = new LiveTablePage(
+                this,
+                simController,
+                "Flights Soon Arriving",
+                soonArrivingColumns,
+                this::buildSoonArrivingRows
+        );
 
+        LiveTablePage soonDepartingPage = new LiveTablePage(
+                this,
+                simController,
+                "Flights Soon Departing",
+                soonDepartingColumns,
+                this::buildSoonDepartingRows
+        );
+
+        LiveTablePage holdingPatternPage = new LiveTablePage(
+                this,
+                simController,
+                "Holding Pattern",
+                holdingPatternColumns,
+                this::buildHoldingPatternRows
+        );
+
+        LiveTablePage takeoffQueuePage = new LiveTablePage(
+                this,
+                simController,
+                "Take-off Queue",
+                takeoffQueueColumns,
+                this::buildTakeoffQueueRows
+        );
         // Register pages with CardLayout using string identifiers
         mainPanel.add(inputPage, "INPUT");
         mainPanel.add(simulationPage, "SIMULATION");
@@ -160,73 +192,175 @@ public class App extends JFrame {
         cardLayout.show(mainPanel, "TAKEOFF_QUEUE");
     }
 
+    private java.util.List<String[]> buildHoldingPatternRows(SimState state) {
+    java.util.List<String[]> rows = new java.util.ArrayList<>();
 
-    // Sample data for results
-    String[] resultColumns = {
-            "Arrived",
-            "Departed",
-            "Max Holding",
-            "Max Queue",
-            "Avg Hold",
-            "Avg Delay",
-            "Diverted",
-            "Canceled"
-    };
+    LinkedListElement<Aircraft> ptr = state.getHoldingPattern().getEmergency().getHead();
+    while (ptr != null) {
+        Aircraft ac = ptr.getValue();
+        if (ac != null) {
+            rows.add(buildAircraftRow(ac));
+        }
+        ptr = ptr.getNext();
+    }
 
-    String[][] resultData = {
-            {"12","12","7","7","16m","9m","6","6"},
-    };
+    ptr = state.getHoldingPattern().getNonEmergency().getHead();
+    while (ptr != null) {
+        Aircraft ac = ptr.getValue();
+        if (ac != null) {
+            rows.add(buildAircraftRow(ac));
+        }
+        ptr = ptr.getNext();
+    }
 
+    return rows;
+}
 
-    // Sample data for post-processing flights
-    String[] postProcessColumns = {
-            "Callsign", "Operator", "Origin", "Destination",
-            "Departure", "Arrival", "Altitude", "Speed",
-            "Fuel", "StatusFlag"
-    };
+    private java.util.List<String[]> buildTakeoffQueueRows(SimState state) {
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
 
-    String[][] postProcessData = {
-            {"QR2101","Qatar Airways","DOH","LHR","06:00","12:00","1800m","180 knots","30000 L","true"},
-            {"EK432","Emirates","DXB","JFK","08:30","18:45","2500m","340 knots","52000 L","false"},
-            {"LH789","Lufthansa","FRA","DOH","09:15","15:30","2000m","310 knots","41000 L","true"},
-            {"TK102","Turkish Airlines","IST","CDG","10:00","12:45","1500m","170 knots","26000 L","true"},
-            {"BA215","British Airways","LHR","DOH","11:20","19:10","2200m","320 knots","45000 L","false"},
-            {"AF990","Air France","CDG","DXB","12:40","21:00","2300m","330 knots","47000 L","true"},
-    };
+        LinkedListElement<Aircraft> ptr = state.getTakeoffQueue().getHead();
+        while (ptr != null) {
+            Aircraft ac = ptr.getValue();
+            if (ac != null) {
+                rows.add(buildAircraftRow(ac));
+            }
+            ptr = ptr.getNext();
+        }
 
+        return rows;
+    }
 
-    // Sample data for flights soon arriving and departing
+    private java.util.List<String[]> buildSoonArrivingRows(SimState state) {
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
+        double now = state.getSimTimeSeconds();
+
+        java.util.List<ArrivalEvent> arrivals = new java.util.ArrayList<>(state.getGeneratedArrivals());
+        arrivals.sort(java.util.Comparator.comparingDouble(a -> a.releaseTimeSeconds));
+
+        for (ArrivalEvent event : arrivals) {
+            if (event == null || event.aircraft == null) continue;
+
+            if (!event.completed && !event.diverted && event.releaseTimeSeconds >= now) {
+                rows.add(buildAircraftRow(event.aircraft));
+            }
+
+            if (rows.size() >= 20) break;
+        }
+
+        return rows;
+    }
+
+    private java.util.List<String[]> buildSoonDepartingRows(SimState state) {
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
+        double now = state.getSimTimeSeconds();
+
+        java.util.List<DepartureEvent> departures = new java.util.ArrayList<>(state.getGeneratedDepartures());
+        departures.sort(java.util.Comparator.comparingDouble(d -> d.releaseTimeSeconds));
+
+        for (DepartureEvent event : departures) {
+            if (event == null || event.aircraft == null) continue;
+
+            if (!event.completed && !event.cancelled && event.releaseTimeSeconds >= now) {
+                rows.add(buildAircraftRow(event.aircraft));
+            }
+
+            if (rows.size() >= 20) break;
+        }
+
+        return rows;
+    }
+
+    private String[] buildAircraftRow(Aircraft ac) {
+        return new String[] {
+                safe(ac.getCallsign()),
+                safe(ac.getOperator()),
+                safe(ac.getOrigin()),
+                ac.getTime() != null ? ac.getTime().toString() : "",
+                Integer.toString(ac.getAltitude()),
+                Integer.toString(ac.getGroundspeed()),
+                Integer.toString(ac.getFuel()),
+                safe(ac.getEmergency())
+        };
+    }
+
+    private Object[] buildPostProcessingRow(
+        Aircraft ac,
+        ArrivalEvent arr,
+        DepartureEvent dep,
+        boolean success
+    ) {
+        String origin;
+        String destination;
+        String departureTime;
+        String arrivalTime;
+
+        if (arr != null) {
+            origin = "N/A";
+            destination = safe(ac.getOrigin());
+            departureTime = "";
+            arrivalTime = ac.getTime() != null ? ac.getTime().toString() : "";
+        } else if (dep != null) {
+            origin = "HOME";
+            destination = "N/A";
+            departureTime = ac.getTime() != null ? ac.getTime().toString() : "";
+            arrivalTime = "";
+        } else {
+            origin = "";
+            destination = "";
+            departureTime = "";
+            arrivalTime = "";
+        }
+
+        return new Object[] {
+                safe(ac.getCallsign()),
+                safe(ac.getOperator()),
+                origin,
+                destination,
+                departureTime,
+                arrivalTime,
+                Integer.toString(ac.getFuel()),
+                Boolean.toString(success)
+        };
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
+
     String[] soonArrivingColumns = {
-            "Callsign", "Operator", "Origin", "Destination",
-            "Departure", "Arrival", "Altitude", "Speed",
-            "Fuel"
+        "Callsign", "Operator", "Origin", "Scheduled Arrival",
+        "Altitude", "Speed", "Fuel", "Emergency"
     };
 
-    String[][] soonArrivingData = {
-            {"QR2101","Qatar Airways","DOH","LHR","06:00","12:00","1800m","180 knots","30000 L"},
-            {"EK432","Emirates","DXB","JFK","08:30","18:45","2500m","340 knots","52000 L"},
-            {"LH789","Lufthansa","FRA","DOH","09:15","15:30","2000m","310 knots","41000 L"},
-            {"TK102","Turkish Airlines","IST","CDG","10:00","12:45","1500m","170 knots","26000 L"},
-            {"BA215","British Airways","LHR","DOH","11:20","19:10","2200m","320 knots","45000 L"},
-            {"AF990","Air France","CDG","DXB","12:40","21:00","2300m","330 knots","47000 L"},
-    };
-
-
-    // Sample data for flights soon arriving and departing
     String[] soonDepartingColumns = {
-            "Callsign", "Operator", "Origin", "Destination",
-            "Departure", "Arrival", "Altitude", "Speed",
-            "Fuel"
+        "Callsign", "Operator", "Origin", "Scheduled Departure",
+        "Altitude", "Speed", "Fuel", "Emergency"
     };
 
-    String[][] soonDepartingData = {
-            {"QR2101","Qatar Airways","DOH","LHR","06:00","12:00","1800m","180 knots","30000 L"},
-            {"EK432","Emirates","DXB","JFK","08:30","18:45","2500m","340 knots","52000 L"},
-            {"LH789","Lufthansa","FRA","DOH","09:15","15:30","2000m","310 knots","41000 L"},
-            {"TK102","Turkish Airlines","IST","CDG","10:00","12:45","1500m","170 knots","26000 L"},
-            {"BA215","British Airways","LHR","DOH","11:20","19:10","2200m","320 knots","45000 L"},
-            {"AF990","Air France","CDG","DXB","12:40","21:00","2300m","330 knots","47000 L"},
+    String[] holdingPatternColumns = {
+        "Callsign", "Operator", "Origin", "Scheduled Time",
+        "Altitude", "Speed", "Fuel", "Emergency"
     };
 
+    String[] takeoffQueueColumns = {
+        "Callsign", "Operator", "Origin", "Scheduled Time",
+        "Altitude", "Speed", "Fuel", "Emergency"
+    };
 
+    String[] resultColumns = {
+        "Arrived",
+        "Departed",
+        "Max Queue Delay",
+        "Max Holding Delay",
+        "Avg Holding Delay",
+        "Avg Queue Delay",
+        "Diverted",
+        "Cancelled"
+    };
+
+String[] postProcessColumns = {
+        "Callsign", "Operator", "Origin", "Destination",
+        "Departure", "Arrival", "Fuel", "StatusFlag"
+    };
 }

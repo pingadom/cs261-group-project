@@ -8,6 +8,8 @@ import sim.core.events.DepartureEvent;
 
 import java.util.Map;
 
+
+
 /**
  * Handles runway assignment for arrivals and departures during the simulation.
  *
@@ -24,6 +26,9 @@ import java.util.Map;
  * starts using a runway.
  */
 public final class RunwayHandling {
+
+  /** Waiting time at which a departure is treated as urgent on mixed runways. */
+  private static final int DEPARTURE_URGENT_THRESHOLD_SECONDS = 1500;
 
   /**
    * Repeatedly assigns aircraft to available runways until no further assignment
@@ -182,22 +187,46 @@ public final class RunwayHandling {
     return true;
   }
 
-  /**
-   * Assigns one aircraft to an available mixed-mode runway.
-   *
-   * <p>Mixed runways prioritise arrivals first. If no arrivals are waiting,
-   * the runway is given to the next departure in the take-off queue.
-   *
-   * @param holdingPattern holding pattern containing inbound aircraft
-   * @param takeOffQueue queue containing outbound aircraft
-   * @param runways list of configured runways
-   * @param postProcessing list receiving the aircraft after assignment
-   * @param clock simulation clock
-   * @param metrics simulation metrics to update
-   * @param arrivalEventByCallsign lookup table of arrival events by callsign
-   * @param departureEventByCallsign lookup table of departure events by callsign
-   * @return {@code true} if an aircraft was assigned, otherwise {@code false}
-   */
+/**
+ * Assigns one aircraft to an available mixed-mode runway.
+ *
+ * <p>Mixed runways prioritise the longer queue:
+ * <ul>
+ *   <li>if the holding pattern is larger, assign an arrival,</li>
+ *   <li>if the take-off queue is larger, assign a departure,</li>
+ *   <li>if both queues are equal, arrivals are preferred as the tie-break.</li>
+ * </ul>
+ *
+ * @param holdingPattern holding pattern containing inbound aircraft
+ * @param takeOffQueue queue containing outbound aircraft
+ * @param runways list of configured runways
+ * @param postProcessing list receiving the aircraft after assignment
+ * @param clock simulation clock
+ * @param metrics simulation metrics to update
+ * @param arrivalEventByCallsign lookup table of arrival events by callsign
+ * @param departureEventByCallsign lookup table of departure events by callsign
+ * @return {@code true} if an aircraft was assigned, otherwise {@code false}
+ */
+/**
+ * Assigns one aircraft to an available mixed-mode runway.
+ *
+ * <p>Mixed runways apply urgency-based priority:
+ * <ol>
+ *   <li>emergency arrivals are always prioritised,</li>
+ *   <li>departures waiting at least 1500 seconds are treated as urgent,</li>
+ *   <li>otherwise the longer queue is prioritised, with arrivals winning ties.</li>
+ * </ol>
+ *
+ * @param holdingPattern holding pattern containing inbound aircraft
+ * @param takeOffQueue queue containing outbound aircraft
+ * @param runways list of configured runways
+ * @param postProcessing list receiving the aircraft after assignment
+ * @param clock simulation clock
+ * @param metrics simulation metrics to update
+ * @param arrivalEventByCallsign lookup table of arrival events by callsign
+ * @param departureEventByCallsign lookup table of departure events by callsign
+ * @return {@code true} if an aircraft was assigned, otherwise {@code false}
+ */
   private boolean assignMixed(
       HoldingPattern<Aircraft> holdingPattern,
       List<Aircraft> takeOffQueue,
@@ -208,58 +237,47 @@ public final class RunwayHandling {
       Map<String, ArrivalEvent> arrivalEventByCallsign,
       Map<String, DepartureEvent> departureEventByCallsign
   ) {
-    Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
-    if (rw == null) return false;
+      Runway rw = findAvailableRunway(runways, SimConfig.RunwayMode.MIXED);
+      if (rw == null) return false;
 
-    if (holdingPattern.getSize() > 0) {
-      LinkedListElement<Aircraft> arrival = holdingPattern.pop();
-      postProcessing.add(arrival);
+      int holdingSize = holdingPattern.getSize();
+      int takeoffSize = takeOffQueue.getSize();
 
-      rw.occupy(arrival.getValue().getCallsign());
-      metrics.arrivalsProcessed++;
-
-      ArrivalEvent ev = arrivalEventByCallsign.get(arrival.getValue().getCallsign());
-      if (ev != null && !ev.completed) {
-        ev.markRunwayTime(clock.now());
-        ev.fuelOnRunway = arrival.getValue().getFuel();
-        metrics.totalArrivalDelaySeconds += ev.delaySeconds;
-        metrics.maxArrivalDelaySeconds = Math.max(metrics.maxArrivalDelaySeconds, ev.delaySeconds);
+      if (holdingSize == 0 && takeoffSize == 0) {
+          return false;
       }
 
-      System.out.printf("[t=%.0fs] LAND start: %s on mixed runway #%d delay=%.0fs%n",
-          clock.now(),
-          arrival.getValue().getCallsign(),
-          rw.getID(),
-          (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
-      );
-      return true;
-    }
-
-    if (takeOffQueue.getSize() > 0) {
-      LinkedListElement<Aircraft> dep = takeOffQueue.pop(0);
-      postProcessing.add(dep);
-
-      rw.occupy(dep.getValue().getCallsign());
-      metrics.departuresProcessed++;
-
-      DepartureEvent ev = departureEventByCallsign.get(dep.getValue().getCallsign());
-      if (ev != null && !ev.completed) {
-        ev.markRunwayTime(clock.now());
-        ev.fuelOnRunway = dep.getValue().getFuel();
-        metrics.totalDepartureDelaySeconds += ev.delaySeconds;
-        metrics.maxDepartureDelaySeconds = Math.max(metrics.maxDepartureDelaySeconds, ev.delaySeconds);
+      // Priority 1: emergency arrivals always first
+      if (holdingPattern.getEmergency().getSize() > 0) {
+          return assignArrivalFromMixedRunway(
+              holdingPattern, rw, postProcessing, clock, metrics, arrivalEventByCallsign
+          );
       }
 
-      System.out.printf("[t=%.0fs] TOFF start: %s on mixed runway #%d delay=%.0fs%n",
-          clock.now(),
-          dep.getValue().getCallsign(),
-          rw.getID(),
-          (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+      // Priority 2: urgent departures (waited >= 1500s)
+      int urgentDepartureIndex = findUrgentDepartureIndex(
+          takeOffQueue, departureEventByCallsign, clock.now()
       );
-      return true;
-    }
+      if (urgentDepartureIndex >= 0) {
+          return assignDepartureFromMixedRunway(
+              takeOffQueue, urgentDepartureIndex, rw, postProcessing, clock, metrics, departureEventByCallsign
+          );
+      }
 
-    return false;
+      // Priority 3: longer queue wins, arrivals win ties
+      if (holdingSize >= takeoffSize && holdingSize > 0) {
+          return assignArrivalFromMixedRunway(
+              holdingPattern, rw, postProcessing, clock, metrics, arrivalEventByCallsign
+          );
+      }
+
+      if (takeoffSize > 0) {
+          return assignDepartureFromMixedRunway(
+              takeOffQueue, 0, rw, postProcessing, clock, metrics, departureEventByCallsign
+          );
+      }
+
+      return false;
   }
 
   /**
@@ -278,4 +296,127 @@ public final class RunwayHandling {
     }
     return null;
   }
+
+  /**
+ * Finds the first departure in the take-off queue that has waited at least the urgent threshold.
+ *
+ * @param takeOffQueue queue of aircraft waiting for take-off
+ * @param departureEventByCallsign lookup table of departure events by callsign
+ * @param now current simulation time in seconds
+ * @return index of the first urgent departure, or {@code -1} if none are urgent
+ */
+  private int findUrgentDepartureIndex(
+      List<Aircraft> takeOffQueue,
+      Map<String, DepartureEvent> departureEventByCallsign,
+      double now
+  ) {
+      for (int i = 0; i < takeOffQueue.getSize(); i++) {
+          LinkedListElement<Aircraft> node = takeOffQueue.get(i);
+          if (node == null || node.getValue() == null) continue;
+
+          Aircraft ac = node.getValue();
+          DepartureEvent ev = departureEventByCallsign.get(ac.getCallsign());
+          if (ev == null || ev.completed || ev.cancelled) continue;
+
+          double waited = now - ev.releaseTimeSeconds;
+          if (waited >= DEPARTURE_URGENT_THRESHOLD_SECONDS) {
+              return i;
+          }
+      }
+
+      return -1;
+  }
+
+  /**
+ * Assigns the next arrival from the holding pattern onto a mixed runway.
+ *
+ * @param holdingPattern holding pattern containing inbound aircraft
+ * @param rw mixed runway to occupy
+ * @param postProcessing list receiving the aircraft after assignment
+ * @param clock simulation clock
+ * @param metrics simulation metrics to update
+ * @param arrivalEventByCallsign lookup table of arrival events by callsign
+ * @return {@code true} once assignment succeeds
+ */
+  private boolean assignArrivalFromMixedRunway(
+      HoldingPattern<Aircraft> holdingPattern,
+      Runway rw,
+      List<Aircraft> postProcessing,
+      SimClock clock,
+      Metrics metrics,
+      Map<String, ArrivalEvent> arrivalEventByCallsign
+  ) {
+      if (holdingPattern.getSize() == 0) return false;
+
+      LinkedListElement<Aircraft> arrival = holdingPattern.pop();
+      postProcessing.add(arrival);
+
+      rw.occupy(arrival.getValue().getCallsign());
+      metrics.arrivalsProcessed++;
+
+      ArrivalEvent ev = arrivalEventByCallsign.get(arrival.getValue().getCallsign());
+      if (ev != null && !ev.completed) {
+          ev.markRunwayTime(clock.now());
+          ev.fuelOnRunway = arrival.getValue().getFuel();
+          metrics.totalArrivalDelaySeconds += ev.delaySeconds;
+          metrics.maxArrivalDelaySeconds = Math.max(metrics.maxArrivalDelaySeconds, ev.delaySeconds);
+      }
+
+      System.out.printf("[t=%.0fs] LAND start: %s on mixed runway #%d delay=%.0fs%n",
+          clock.now(),
+          arrival.getValue().getCallsign(),
+          rw.getID(),
+          (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+      );
+
+      return true;
+  }
+
+  /**
+ * Assigns a departure from the take-off queue onto a mixed runway.
+ *
+ * @param takeOffQueue queue of aircraft waiting for take-off
+ * @param index index of the departure to remove from the queue
+ * @param rw mixed runway to occupy
+ * @param postProcessing list receiving the aircraft after assignment
+ * @param clock simulation clock
+ * @param metrics simulation metrics to update
+ * @param departureEventByCallsign lookup table of departure events by callsign
+ * @return {@code true} once assignment succeeds
+ */
+  private boolean assignDepartureFromMixedRunway(
+      List<Aircraft> takeOffQueue,
+      int index,
+      Runway rw,
+      List<Aircraft> postProcessing,
+      SimClock clock,
+      Metrics metrics,
+      Map<String, DepartureEvent> departureEventByCallsign
+  ) {
+      if (takeOffQueue.getSize() == 0) return false;
+
+      LinkedListElement<Aircraft> dep = takeOffQueue.pop(index);
+      postProcessing.add(dep);
+
+      rw.occupy(dep.getValue().getCallsign());
+      metrics.departuresProcessed++;
+
+      DepartureEvent ev = departureEventByCallsign.get(dep.getValue().getCallsign());
+      if (ev != null && !ev.completed) {
+          ev.markRunwayTime(clock.now());
+          ev.fuelOnRunway = dep.getValue().getFuel();
+          metrics.totalDepartureDelaySeconds += ev.delaySeconds;
+          metrics.maxDepartureDelaySeconds = Math.max(metrics.maxDepartureDelaySeconds, ev.delaySeconds);
+      }
+
+      System.out.printf("[t=%.0fs] TOFF start: %s on mixed runway #%d delay=%.0fs%n",
+          clock.now(),
+          dep.getValue().getCallsign(),
+          rw.getID(),
+          (ev != null && ev.delaySeconds != null) ? ev.delaySeconds : 0.0
+      );
+
+      return true;
+  }
+  
 }

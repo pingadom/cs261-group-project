@@ -260,7 +260,7 @@ public final class Engine {
    * <p>The generated events are sorted by release time and stored for later release
    * into the holding pattern or take-off queue as simulation time advances.
    */
-  private void initialiseSchedules() {
+  private synchronized void initialiseSchedules() {
     inboundEvents = ArrivalSchedule.preGenerateInbound(
         cfg.arrivalRatePerHour,
         opts.durationSeconds(),
@@ -300,6 +300,17 @@ public final class Engine {
           i, e.aircraft.getCallsign(), e.aircraft.getTime().toSecondOfDay(), e.releaseTimeSeconds);
     }
     System.out.println("=== END OUTBOUND EVENTS ===");
+
+    System.out.println("Arrival rate per hour: " + cfg.arrivalRatePerHour);
+    System.out.println("Departure rate per hour: " + cfg.departureRatePerHour);
+    System.out.println("Duration seconds: " + opts.durationSeconds());
+
+    System.out.println("Expected arrivals count: " +
+        Math.round(cfg.arrivalRatePerHour * (opts.durationSeconds() / 3600.0)));
+
+    System.out.println("Expected departures count: " +
+        Math.round(cfg.departureRatePerHour * (opts.durationSeconds() / 3600.0)));
+
   }
 
   /**
@@ -340,7 +351,7 @@ public final class Engine {
    *
    * @param dt time step in simulation seconds
    */
-  private void step(double dt) {
+  private synchronized void step(double dt) {
     metrics.arrivalQueue = holdingPattern.getSize();
     metrics.departureQueue = takeOffQueue.getSize();
 
@@ -862,7 +873,7 @@ public final class Engine {
    * <p>This clears queues, resets counters, rebuilds runways, recreates schedules,
    * and restores the random generator state.
    */
-  private void doReset() {
+  private synchronized void doReset() {
     resetRequested = false;
 
     clock.reset();
@@ -898,17 +909,17 @@ public final class Engine {
   }
 
   /** Pauses the simulation clock. */
-  public void pauseSimulation() {
+  public synchronized void pauseSimulation() {
     clock.pause();
   }
 
   /** Resumes the simulation clock. */
-  public void resumeSimulation() {
+  public synchronized void resumeSimulation() {
     clock.resume();
   }
 
   /** Requests that the simulation be reset on the next main loop cycle. */
-  public void requestReset() {
+  public synchronized void requestReset() {
     resetRequested = true;
   }
 
@@ -917,7 +928,7 @@ public final class Engine {
    *
    * @param speed new speed multiplier; must be greater than zero
    */
-  public void setSimulationSpeed(double speed) {
+  public synchronized void setSimulationSpeed(double speed) {
     if (speed > 0) {
       currentSpeedMultiplier = speed;
     }
@@ -929,7 +940,7 @@ public final class Engine {
    * @param idOrCode runway numeric ID or code
    * @param status new status to apply
    */
-  public void updateRunwayStatus(String idOrCode, SimConfig.RunwayStatus status) {
+  public synchronized void updateRunwayStatus(String idOrCode, SimConfig.RunwayStatus status) {
     setRunwayStatus(idOrCode, status.name());
   }
 
@@ -942,7 +953,7 @@ public final class Engine {
    * @param idOrCode runway numeric ID or code
    * @param mode new runway mode
    */
-  public void updateRunwayMode(String idOrCode, SimConfig.RunwayMode mode) {
+  public synchronized void updateRunwayMode(String idOrCode, SimConfig.RunwayMode mode) {
     LinkedListElement<Runway> ptr = runways.getHead();
 
     while (ptr != null) {

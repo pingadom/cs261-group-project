@@ -398,4 +398,12 @@ public class RunwayCard extends JPanel {
             aircraftLabel.setText("Aircraft: " + occupied);
         }
     }
+
+    public void refreshCard() {
+        updateModeLabel();
+        updateStatusLabel();
+        updateOccupiedLabel();
+        revalidate();
+        repaint();
+    }
 }

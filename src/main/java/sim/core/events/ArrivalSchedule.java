@@ -58,8 +58,8 @@ public final class ArrivalSchedule {
             actual = Math.ceil(actual);
             if (actual >= durationSeconds) actual = durationSeconds - 1;
 
-            String callsign = "BA" + (100 + i);
-            String operator = "BA";
+            String callsign = "ARR" + (100 + i);
+            String operator = "ARR";
             String origin = "AAA";
 
             // store time as HH:MM:SS from midnight
@@ -67,7 +67,7 @@ public final class ArrivalSchedule {
 
             int altitude = 10000;      
             int groundSpeed = 250;     
-            int fuelMinutes = 30 + rng.nextInt(30); // 30–60 min
+            int fuelMinutes = 20 + rng.nextInt(20); // 20–40 min
             int fuel = fuelMinutes * 60;             // convert to seconds)
             String emergency = (rng.nextDouble() < EMERGENCY_PROB) ? randomEmergencyType(rng) : "None";
 
