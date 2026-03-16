@@ -8,7 +8,7 @@ import sim.view.components.StyledButton;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.JOptionPane;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
@@ -20,15 +20,40 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 /**
- * Live results page showing final simulation summary metrics.
+ * Live results page showing the final summary metrics of a completed simulation.
+ *
+ * <p>The page displays a single summary row containing key performance measures such as:
+ * <ul>
+ *   <li>arrivals processed,</li>
+ *   <li>departures processed,</li>
+ *   <li>maximum delays,</li>
+ *   <li>average delays,</li>
+ *   <li>diversions,</li>
+ *   <li>cancellations.</li>
+ * </ul>
+ *
+ * <p>The page also provides a download button to export the currently displayed summary
+ * table as a CSV file.
  */
 public class SimulationResultsPage extends BasePanel {
 
+    /** Controller used to access the latest live simulation snapshot. */
     private final SimController simController;
 
+    /** Table used to display simulation summary results. */
     private JTable table;
+
+    /** Non-editable table model backing the results table. */
     private DefaultTableModel model;
 
+    /**
+     * Constructs a new live simulation results page.
+     *
+     * @param app main application instance used for navigation
+     * @param simController controller used to read simulation state
+     * @param mainTitle title displayed at the top of the page
+     * @param detailsCol column headers for the results table
+     */
     public SimulationResultsPage(App app, SimController simController, String mainTitle, String[] detailsCol) {
         super(app, mainTitle, detailsCol, new String[0][0]);
         this.simController = simController;
@@ -41,6 +66,15 @@ public class SimulationResultsPage extends BasePanel {
         });
     }
 
+    /**
+     * Customises the footer with navigation controls.
+     *
+     * <p>The footer includes:
+     * <ul>
+     *   <li>a Back button to return to the simulation page,</li>
+     *   <li>a New Simulation button to go back to the input page and reset the ended flag.</li>
+     * </ul>
+     */
     @Override
     protected void customizeFooter() {
         StyledButton buttonBack = new StyledButton("Back", Color.black, new Color(0x333333), new Color(0x000000), Color.black);
@@ -66,6 +100,20 @@ public class SimulationResultsPage extends BasePanel {
         footerPanel.add(newSimButton);
     }
 
+    /**
+     * Creates a non-editable, colour-coded summary results table.
+     *
+     * <p>Columns are coloured by category:
+     * <ul>
+     *   <li>green for arrivals/departures,</li>
+     *   <li>orange for delay metrics,</li>
+     *   <li>red for diversions/cancellations.</li>
+     * </ul>
+     *
+     * @param columnName result column headers
+     * @param data unused placeholder data array required by the base signature
+     * @return scroll pane containing the formatted results table
+     */
     @Override
     protected JScrollPane createScrollPanel(String[] columnName, String[][] data) {
         model = new DefaultTableModel(columnName, 0) {
@@ -141,6 +189,18 @@ public class SimulationResultsPage extends BasePanel {
         return scrollPane;
     }
 
+    /**
+     * Creates the main content area for the results page.
+     *
+     * <p>The page contains:
+     * <ul>
+     *   <li>the title panel,</li>
+     *   <li>the summary results table,</li>
+     *   <li>the CSV download button panel.</li>
+     * </ul>
+     *
+     * @return results page content panel
+     */
     @Override
     protected JPanel createContentPanel() {
         JPanel contentPanel = new JPanel(new BorderLayout());
@@ -162,6 +222,12 @@ public class SimulationResultsPage extends BasePanel {
         return contentPanel;
     }
 
+    /**
+     * Refreshes the summary results table from the current simulation metrics.
+     *
+     * <p>Average delays are calculated from total delays divided by the number of
+     * successfully processed arrivals/departures.
+     */
     private void refreshResults() {
         if (simController == null) return;
 
@@ -180,21 +246,33 @@ public class SimulationResultsPage extends BasePanel {
 
         model.setRowCount(0);
         model.addRow(new Object[]{
-                arrived,
-                departed,
-                round1(m.maxArrivalDelaySeconds),
-                round1(m.maxDepartureDelaySeconds),
-                round1(avgHoldingDelay),
-                round1(avgQueueDelay),
-                diverted,
-                cancelled
+            arrived,
+            departed,
+            round1(m.maxDepartureDelaySeconds),
+            round1(m.maxArrivalDelaySeconds),
+            round1(avgHoldingDelay),
+            round1(avgQueueDelay),
+            diverted,
+            cancelled
         });
     }
 
+    /**
+     * Rounds a numeric value to 1 decimal place for display.
+     *
+     * @param value raw value
+     * @return rounded value to 1 decimal place
+     */
     private double round1(double value) {
         return Math.round(value * 10.0) / 10.0;
     }
 
+    /**
+     * Exports the currently displayed summary table to a CSV file.
+     *
+     * @param file destination file
+     * @throws IOException if writing fails
+     */
     private void exportTableModelToCSV(File file) throws IOException {
         try (FileWriter writer = new FileWriter(file)) {
             for (int col = 0; col < model.getColumnCount(); col++) {
@@ -214,6 +292,13 @@ public class SimulationResultsPage extends BasePanel {
         }
     }
 
+    /**
+     * Creates the panel containing the CSV export button.
+     *
+     * <p>The user can choose a save location and export the current summary table as a CSV file.
+     *
+     * @return panel containing the download button
+     */
     public JPanel createDownloadButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(Color.white);

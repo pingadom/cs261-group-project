@@ -17,15 +17,42 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.Map;
 
 /**
- * Live page displaying processed flights.
+ * Live page displaying flights that have finished processing in the simulation.
+ *
+ * <p>This includes aircraft that have:
+ * <ul>
+ *   <li>arrived successfully,</li>
+ *   <li>departed successfully,</li>
+ *   <li>been diverted, or</li>
+ *   <li>been cancelled.</li>
+ * </ul>
+ *
+ * <p>The table is populated from the latest simulation snapshot when the page is shown.
+ * Rows are colour-coded using a hidden status flag column:
+ * <ul>
+ *   <li>green for normally processed flights,</li>
+ *   <li>red/orange for cancelled or diverted flights.</li>
+ * </ul>
  */
 public class PostProcessingPage extends BasePanel {
 
+    /** Controller used to access the latest live simulation snapshot. */
     private final SimController simController;
 
+    /** Table used to display processed flight data. */
     private JTable table;
+
+    /** Non-editable table model backing the processed flights table. */
     private DefaultTableModel model;
 
+    /**
+     * Constructs a new live post-processing page.
+     *
+     * @param app main application instance used for navigation
+     * @param simController controller used to read live simulation state
+     * @param mainTitle title displayed at the top of the page
+     * @param columnNames column names for the processed flights table
+     */
     public PostProcessingPage(App app, SimController simController, String mainTitle, String[] columnNames) {
         super(app, mainTitle, columnNames, new String[0][0]);
         this.simController = simController;
@@ -38,11 +65,20 @@ public class PostProcessingPage extends BasePanel {
         });
     }
 
+    /**
+     * Uses the default footer customisation from {@link BasePanel}.
+     */
     @Override
     protected void customizeFooter() {
         super.customizeFooter();
     }
 
+    /**
+     * Creates the page content by combining the standard titled table content
+     * from {@link BasePanel} with an additional legend explaining row colours.
+     *
+     * @return panel containing the processed flights table and legend
+     */
     @Override
     protected JPanel createContentPanel() {
         JPanel contentPanel = super.createContentPanel();
@@ -53,6 +89,14 @@ public class PostProcessingPage extends BasePanel {
         return contentPanel;
     }
 
+    /**
+     * Creates the legend panel shown below the table.
+     *
+     * <p>The legend explains the row colour coding:
+     * green for normally processed flights and red/orange for cancelled or diverted flights.
+     *
+     * @return legend panel for processed flight row colours
+     */
     private JPanel createPostFlightLegendPanel() {
         JPanel postFooter = new JPanel();
         postFooter.setBackground(new Color(0xF5F6F8));
@@ -84,6 +128,16 @@ public class PostProcessingPage extends BasePanel {
         return postFooter;
     }
 
+    /**
+     * Creates a non-editable scrollable table for processed flights.
+     *
+     * <p>The final column is a hidden status flag used only for colouring rows.
+     * Tooltips are enabled so the full content of a cell can be read on hover.
+     *
+     * @param columnName column headers for the table
+     * @param data unused placeholder data array required by the base signature
+     * @return scroll pane containing the processed flights table
+     */
     @Override
     protected JScrollPane createScrollPanel(String[] columnName, String[][] data) {
         model = new DefaultTableModel(columnName, 0) {
@@ -143,6 +197,13 @@ public class PostProcessingPage extends BasePanel {
         return scrollPane;
     }
 
+    /**
+     * Refreshes the processed flights table from the latest simulation snapshot.
+     *
+     * <p>For each aircraft in the post-processing list, this method determines whether it
+     * was an arrival or departure, checks whether it completed successfully, was cancelled,
+     * or was diverted, and then adds an appropriately formatted row to the table.
+     */
     private void refreshProcessedFlights() {
         if (simController == null) return;
 
@@ -178,10 +239,34 @@ public class PostProcessingPage extends BasePanel {
             }
 
             model.addRow(buildPostProcessingRow(ac, arr, dep, success));
-            model.addRow(buildPostProcessingRow(ac, arr, dep, success));
         }
     }
 
+    /**
+     * Builds one processed-flight table row from an aircraft and its matching event.
+     *
+     * <p>Arrival rows are displayed with:
+     * <ul>
+     *   <li>origin as {@code N/A},</li>
+     *   <li>destination taken from the aircraft origin field,</li>
+     *   <li>arrival time filled,</li>
+     *   <li>departure time blank.</li>
+     * </ul>
+     *
+     * <p>Departure rows are displayed with:
+     * <ul>
+     *   <li>origin as {@code HOME},</li>
+     *   <li>destination as {@code N/A},</li>
+     *   <li>departure time filled,</li>
+     *   <li>arrival time blank.</li>
+     * </ul>
+     *
+     * @param ac aircraft being displayed
+     * @param arr matching arrival event, or {@code null} if not an arrival
+     * @param dep matching departure event, or {@code null} if not a departure
+     * @param success whether the aircraft completed normally
+     * @return row data for insertion into the processed flights table
+     */
     private Object[] buildPostProcessingRow(
         Aircraft ac,
         ArrivalEvent arr,
@@ -222,10 +307,12 @@ public class PostProcessingPage extends BasePanel {
         };
     }
 
-    
-
-    
-
+    /**
+     * Safely converts a possibly null string into a non-null display value.
+     *
+     * @param value input string that may be null
+     * @return the original string, or an empty string if null
+     */
     private String safe(String value) {
         return value == null ? "" : value;
     }

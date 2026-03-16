@@ -58,8 +58,8 @@ public final class ArrivalSchedule {
             actual = Math.ceil(actual);
             if (actual >= durationSeconds) actual = durationSeconds - 1;
 
-            String callsign = "BA" + (100 + i);
-            String operator = "BA";
+            String callsign = "ARR" + (100 + i);
+            String operator = "ARR";
             String origin = "AAA";
 
             // store time as HH:MM:SS from midnight
